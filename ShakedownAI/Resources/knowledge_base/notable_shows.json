@@ -1,0 +1,605 @@
+[
+  {
+    "date": "1966-07-03",
+    "venue": "Fillmore Auditorium",
+    "location": "San Francisco, CA",
+    "eraID": "primal",
+    "tags": ["primal", "raw", "psychedelic", "pigpen-era", "early-tape"],
+    "blurb": "One of the earliest well-circulated Dead tapes, from a Fillmore bill shared with the band Love. The repertoire is pure 1966: jug-band and blues covers cranked into garage-rock overdrive, with Pigpen out front and 'Viola Lee Blues' already stretching toward the jamming to come.",
+    "standoutSongs": ["Viola Lee Blues", "Cream Puff War", "Dancing in the Street"]
+  },
+  {
+    "date": "1966-11-29",
+    "venue": "The Matrix",
+    "location": "San Francisco, CA",
+    "eraID": "primal",
+    "tags": ["primal", "raw", "mellow", "pigpen-era", "early-tape"],
+    "blurb": "An intimate club tape from Marty Balin's tiny Matrix, catching the Dead between their jug-band roots and the psychedelic explosion. You can hear the folk and blues material up close, with 'Viola Lee Blues' as the night's launching pad.",
+    "standoutSongs": ["Viola Lee Blues", "Cold Rain and Snow", "Me and My Uncle"]
+  },
+  {
+    "date": "1967-03-18",
+    "venue": "Winterland Arena",
+    "location": "San Francisco, CA",
+    "eraID": "primal",
+    "tags": ["primal", "high-energy", "raw", "pigpen-era", "psychedelic"],
+    "blurb": "Played the weekend their self-titled debut album hit the shelves, this Winterland set is the first record's songbook brought to sweaty, amphetamine-paced life. 'Viola Lee Blues' and a haunting early 'Death Don't Have No Mercy' show both sides of the young band.",
+    "standoutSongs": ["Viola Lee Blues", "Morning Dew", "Death Don't Have No Mercy"]
+  },
+  {
+    "date": "1967-06-18",
+    "venue": "Monterey County Fairgrounds",
+    "location": "Monterey, CA",
+    "eraID": "primal",
+    "tags": ["primal", "festival", "high-energy", "raw", "historic"],
+    "blurb": "The Dead's slot at the Monterey Pop Festival, wedged between The Who and Jimi Hendrix on one of the most famous nights in rock history. They declined to appear in the film, but the short set captures the San Francisco sound crashing the international stage.",
+    "standoutSongs": ["Cold Rain and Snow", "Viola Lee Blues"]
+  },
+  {
+    "date": "1967-09-03",
+    "venue": "Dance Hall",
+    "location": "Rio Nido, CA",
+    "eraID": "primal",
+    "tags": ["primal", "psychedelic", "exploratory", "epic-jams", "early-tape"],
+    "blurb": "A tiny dance hall on the Russian River hosted one of the great leaps in Dead history: a 'Viola Lee Blues' that sprawls past twenty minutes into genuinely uncharted territory. Many collectors point to this tape as the moment the primal Dead became a jam band.",
+    "standoutSongs": ["Viola Lee Blues", "Alligator", "Dancing in the Street"]
+  },
+  {
+    "date": "1968-02-14",
+    "venue": "Carousel Ballroom",
+    "location": "San Francisco, CA",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "dark", "exploratory", "pigpen-era", "broadcast", "historic"],
+    "blurb": "The opening of the band-run Carousel Ballroom, broadcast on KMPX, with the second set dedicated to the memory of Neal Cassady, who had died days earlier. An early 'Dark Star' and the full 'That's It for the Other One' suite show the Anthem of the Sun material at its most volatile.",
+    "standoutSongs": ["Dark Star", "That's It for the Other One", "Spanish Jam"]
+  },
+  {
+    "date": "1968-08-24",
+    "venue": "Shrine Auditorium",
+    "location": "Los Angeles, CA",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "high-energy", "official-release", "pigpen-era", "epic-jams"],
+    "blurb": "Released as Two from the Vault, this Shrine Auditorium show captures the 1968 septet at full boil. 'Dark Star' into 'St. Stephen' into 'The Eleven' was becoming the band's signature sequence, and here it hits with ferocious, overdriven energy.",
+    "standoutSongs": ["Dark Star", "St. Stephen", "The Eleven"]
+  },
+  {
+    "date": "1969-02-27",
+    "venue": "Fillmore West",
+    "location": "San Francisco, CA",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "epic-jams", "official-release", "soundboard-classic", "beginner-friendly", "dark-star"],
+    "blurb": "The heart of Live/Dead: the 'Dark Star' recorded this night is still the yardstick every other version gets measured against. If you want to understand why people never stopped talking about the 1969 Dead, this is the place to start.",
+    "standoutSongs": ["Dark Star", "St. Stephen", "The Eleven", "Turn On Your Lovelight"]
+  },
+  {
+    "date": "1969-03-01",
+    "venue": "Fillmore West",
+    "location": "San Francisco, CA",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "epic-jams", "exploratory", "dark-star", "soundboard-classic"],
+    "blurb": "Another night from the legendary Live/Dead stand at Fillmore West, opening with the complete 'That's It for the Other One' suite and rolling through 'Dark Star' and 'The Eleven.' The whole four-night run is essential; this show proves the magic wasn't a one-off.",
+    "standoutSongs": ["That's It for the Other One", "Dark Star", "The Eleven"]
+  },
+  {
+    "date": "1969-08-16",
+    "venue": "Woodstock Music & Art Fair",
+    "location": "Bethel, NY",
+    "eraID": "anthem",
+    "tags": ["festival", "psychedelic", "raw", "historic", "pigpen-era"],
+    "blurb": "The Dead's famously star-crossed Woodstock set: rain delays, a waterlogged stage delivering electric shocks, and a 'Turn On Your Lovelight' that stretched deep into the night. The band hated it enough to stay out of the movie, but as a piece of history it's irresistible.",
+    "standoutSongs": ["Dark Star", "St. Stephen", "Turn On Your Lovelight"]
+  },
+  {
+    "date": "1970-02-13",
+    "venue": "Fillmore East",
+    "location": "New York, NY",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "epic-jams", "dark-star", "official-release", "soundboard-classic"],
+    "blurb": "The late show from this Fillmore East run, released on Dick's Picks 4, contains a 'Dark Star' that many Heads rank as the finest ever played. The whole sequence into 'The Other One' and 'Lovelight' is the 1970 Dead at their absolute peak.",
+    "standoutSongs": ["Dark Star", "That's It for the Other One", "Turn On Your Lovelight"]
+  },
+  {
+    "date": "1970-02-14",
+    "venue": "Fillmore East",
+    "location": "New York, NY",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "epic-jams", "acoustic", "official-release", "joyful"],
+    "blurb": "Valentine's Day 1970 at the Fillmore East, the other half of the Dick's Picks 4 material. Between an early-show 'Dark Star' sequence and a late show mixing acoustic songs with a furious 'Alligator' and 'Caution,' it's a full portrait of what the Dead could do in a single night.",
+    "standoutSongs": ["Dark Star", "Alligator", "Caution (Do Not Stop on Tracks)", "And We Bid You Goodnight"]
+  },
+  {
+    "date": "1970-05-02",
+    "venue": "Harpur College",
+    "location": "Binghamton, NY",
+    "eraID": "anthem",
+    "tags": ["acoustic", "epic-jams", "high-energy", "official-release", "beginner-friendly", "soundboard-classic"],
+    "blurb": "The gold standard of the 1970 'An Evening with the Grateful Dead' format: a gorgeous acoustic set, a country interlude, and then an electric set that goes for the throat. Released as Dick's Picks 8, it's one of the most beloved tapes in the entire vault.",
+    "standoutSongs": ["St. Stephen", "That's It for the Other One", "Cosmic Charlie", "Uncle John's Band"]
+  },
+  {
+    "date": "1971-02-18",
+    "venue": "Capitol Theatre",
+    "location": "Port Chester, NY",
+    "eraID": "europe-wall",
+    "tags": ["historic", "breakout-debuts", "exploratory", "dark-star", "tight"],
+    "blurb": "One of the great debut nights in Dead history: 'Bertha,' 'Loser,' 'Wharf Rat,' 'Bird Song,' 'Greatest Story Ever Told,' and 'Playing in the Band' all premiered here. It was also Mickey Hart's final show before his long absence, making it a genuine hinge point for the band.",
+    "standoutSongs": ["Bertha", "Wharf Rat", "Dark Star"]
+  },
+  {
+    "date": "1971-04-29",
+    "venue": "Fillmore East",
+    "location": "New York, NY",
+    "eraID": "europe-wall",
+    "tags": ["historic", "joyful", "high-energy", "official-release", "soundboard-classic"],
+    "blurb": "The Dead's farewell to the Fillmore East, closing a five-night run that produced the Ladies and Gentlemen... box set. A stately 'Morning Dew' and a raving 'Alligator' jam send the room off in style, capped with 'And We Bid You Good Night.'",
+    "standoutSongs": ["Morning Dew", "Alligator", "And We Bid You Goodnight"]
+  },
+  {
+    "date": "1971-08-06",
+    "venue": "Hollywood Palladium",
+    "location": "Hollywood, CA",
+    "eraID": "europe-wall",
+    "tags": ["high-energy", "pigpen-era", "raw", "tight", "soundboard-classic"],
+    "blurb": "A ferocious single-drummer 1971 show best known for Pigpen's 'Hard to Handle,' a version so explosive it's often called the definitive one. The five-piece Dead of this summer was lean, loud, and rocking harder than at any other point in their history.",
+    "standoutSongs": ["Hard to Handle", "The Other One", "Morning Dew"]
+  },
+  {
+    "date": "1972-04-08",
+    "venue": "Wembley Empire Pool",
+    "location": "London, England",
+    "eraID": "europe-wall",
+    "tags": ["europe72", "psychedelic", "epic-jams", "dark-star", "exploratory"],
+    "blurb": "From the opening London stand of the Europe '72 tour, with the band firing on all cylinders in front of a curious British crowd. The 'Dark Star' into 'Sugar Magnolia' into 'Caution' sequence shows how fearless the band felt right out of the gate.",
+    "standoutSongs": ["Dark Star", "Sugar Magnolia", "Caution (Do Not Stop on Tracks)"]
+  },
+  {
+    "date": "1972-05-03",
+    "venue": "Olympia Theatre",
+    "location": "Paris, France",
+    "eraID": "europe-wall",
+    "tags": ["europe72", "epic-jams", "exploratory", "soundboard-classic", "beginner-friendly"],
+    "blurb": "A beloved night from the Paris leg of Europe '72, long treasured by collectors. The second-set 'Truckin'' dissolves into a sprawling 'Other One' journey threaded with 'Me and Bobby McGee' before landing in a heartbreaking 'Wharf Rat.'",
+    "standoutSongs": ["Truckin'", "The Other One", "Wharf Rat"]
+  },
+  {
+    "date": "1972-05-11",
+    "venue": "Civic Hall",
+    "location": "Rotterdam, Netherlands",
+    "eraID": "europe-wall",
+    "tags": ["europe72", "psychedelic", "epic-jams", "dark-star", "exploratory"],
+    "blurb": "Home to one of the longest and deepest 'Dark Stars' the band ever played, unspooling for the better part of an hour before crashing into 'Sugar Magnolia' and a rare late 'Caution.' For pure improvisational daring, Rotterdam is Europe '72's summit.",
+    "standoutSongs": ["Dark Star", "Caution (Do Not Stop on Tracks)", "Morning Dew"]
+  },
+  {
+    "date": "1972-05-26",
+    "venue": "Lyceum Theatre",
+    "location": "London, England",
+    "eraID": "europe-wall",
+    "tags": ["europe72", "epic-jams", "joyful", "historic", "soundboard-classic"],
+    "blurb": "The final night of the Europe '72 tour, closing the four-show Lyceum stand that supplied much of the live triple album. The 'Truckin'' into 'The Other One' with 'Morning Dew' nestled inside is a fittingly grand farewell to the greatest tour they ever played.",
+    "standoutSongs": ["Truckin'", "The Other One", "Morning Dew", "Sing Me Back Home"]
+  },
+  {
+    "date": "1972-08-27",
+    "venue": "Old Renaissance Faire Grounds",
+    "location": "Veneta, OR",
+    "eraID": "europe-wall",
+    "tags": ["epic-jams", "psychedelic", "dark-star", "official-release", "beginner-friendly", "festival"],
+    "blurb": "The legendary Kesey Creamery benefit, played in 100-degree Oregon heat and filmed for Sunshine Daydream. The 'Dark Star' and 'Playing in the Band' are all-time versions, and 'Bird Song' floats like a heat mirage. Many Heads simply call this the best show ever.",
+    "standoutSongs": ["Dark Star", "Playing in the Band", "Bird Song"]
+  },
+  {
+    "date": "1972-09-21",
+    "venue": "The Spectrum",
+    "location": "Philadelphia, PA",
+    "eraID": "europe-wall",
+    "tags": ["psychedelic", "epic-jams", "dark-star", "official-release", "dark"],
+    "blurb": "Released as Dick's Picks 36 and home to a 'Dark Star' that regularly tops fan polls: a long, spectral journey through the 'Mind Left Body' theme that resolves into a shattering 'Morning Dew.' Fall 1972 in one show.",
+    "standoutSongs": ["Dark Star", "Morning Dew", "Playing in the Band"]
+  },
+  {
+    "date": "1973-02-09",
+    "venue": "Maples Pavilion, Stanford University",
+    "location": "Palo Alto, CA",
+    "eraID": "europe-wall",
+    "tags": ["historic", "breakout-debuts", "jazzy", "mellow", "exploratory"],
+    "blurb": "The single biggest batch of debuts the band ever dropped in one night: 'Eyes of the World,' 'China Doll,' 'Here Comes Sunshine,' 'Row Jimmy,' 'They Love Each Other,' 'Loose Lucy,' and 'Wave That Flag' all premiered here. The Wake of the Flood era begins on this stage.",
+    "standoutSongs": ["Eyes of the World", "China Doll", "Here Comes Sunshine"]
+  },
+  {
+    "date": "1973-06-10",
+    "venue": "RFK Stadium",
+    "location": "Washington, DC",
+    "eraID": "europe-wall",
+    "tags": ["epic-jams", "jazzy", "guest-sitin", "dark-star", "stadium"],
+    "blurb": "A marathon summer day in Washington with the Allman Brothers, capped by members of the Allmans joining the Dead for a rollicking finale. The 'Dark Star' into 'He's Gone' into 'Wharf Rat' sequence is 1973 jamming at its most patient and rewarding.",
+    "standoutSongs": ["Dark Star", "He's Gone", "Eyes of the World"]
+  },
+  {
+    "date": "1973-11-11",
+    "venue": "Winterland Arena",
+    "location": "San Francisco, CA",
+    "eraID": "europe-wall",
+    "tags": ["jazzy", "epic-jams", "dark-star", "official-release", "mellow", "exploratory"],
+    "blurb": "The closing night of the run captured in the Winterland 1973 box set. The 'Dark Star' drifts through the 'Mind Left Body' jam before melting into a glorious 'Eyes of the World' and 'China Doll' — the gentle, jazz-inflected '73 sound in full flower.",
+    "standoutSongs": ["Dark Star", "Eyes of the World", "China Doll", "Weather Report Suite"]
+  },
+  {
+    "date": "1973-12-19",
+    "venue": "Curtis Hixon Convention Hall",
+    "location": "Tampa, FL",
+    "eraID": "europe-wall",
+    "tags": ["jazzy", "epic-jams", "official-release", "soundboard-classic", "exploratory"],
+    "blurb": "The show that launched the entire archival series as Dick's Picks Volume 1. 'Here Comes Sunshine' glows, and the 'He's Gone' into 'Truckin'' sequence detours through a haunting 'Nobody's Fault but Mine' jam before dissolving into 'Stella Blue.'",
+    "standoutSongs": ["Here Comes Sunshine", "Playing in the Band", "Stella Blue"]
+  },
+  {
+    "date": "1974-05-19",
+    "venue": "Portland Memorial Coliseum",
+    "location": "Portland, OR",
+    "eraID": "europe-wall",
+    "tags": ["wall-of-sound", "epic-jams", "jazzy", "exploratory", "soundboard-classic"],
+    "blurb": "A Pacific Northwest gem from the Wall of Sound spring, with an early 'Scarlet Begonias' and a 'Truckin'' that sails through the 'Mind Left Body' jam. The giant PA gave the '74 band a clarity and patience you can hear all over this tape.",
+    "standoutSongs": ["Scarlet Begonias", "Weather Report Suite", "Truckin'"]
+  },
+  {
+    "date": "1974-06-18",
+    "venue": "Freedom Hall",
+    "location": "Louisville, KY",
+    "eraID": "europe-wall",
+    "tags": ["wall-of-sound", "jazzy", "epic-jams", "mellow", "exploratory"],
+    "blurb": "A quietly devastating Wall of Sound show: 'Eyes of the World' folds into 'China Doll' in the first set, the 'Weather Report Suite' opens onto a deep 'Other One,' and the night ends with a rare and gorgeous 'Morning Dew' encore.",
+    "standoutSongs": ["Eyes of the World", "Weather Report Suite", "Morning Dew"]
+  },
+  {
+    "date": "1974-06-28",
+    "venue": "Boston Garden",
+    "location": "Boston, MA",
+    "eraID": "europe-wall",
+    "tags": ["wall-of-sound", "epic-jams", "official-release", "jazzy", "high-energy"],
+    "blurb": "Released on Dick's Picks 12, this Boston Garden night rides the Wall of Sound through a nearly seamless second set, from 'Sugar Magnolia' into 'Scarlet Begonias' to a 'Weather Report Suite' that jams all the way into 'U.S. Blues.'",
+    "standoutSongs": ["Weather Report Suite", "Scarlet Begonias", "Goin' Down the Road Feeling Bad"]
+  },
+  {
+    "date": "1974-10-18",
+    "venue": "Winterland Arena",
+    "location": "San Francisco, CA",
+    "eraID": "europe-wall",
+    "tags": ["wall-of-sound", "dark-star", "historic", "psychedelic", "epic-jams"],
+    "blurb": "From the five-night 'farewell' run filmed for The Grateful Dead Movie before the band's touring hiatus. After a Phil-and-Ned electronic prelude, 'Dark Star' descends into 'Morning Dew' — a monumental goodbye to the first decade of the Grateful Dead.",
+    "standoutSongs": ["Dark Star", "Morning Dew", "Weather Report Suite"]
+  },
+  {
+    "date": "1975-08-13",
+    "venue": "Great American Music Hall",
+    "location": "San Francisco, CA",
+    "eraID": "hiatus-return",
+    "tags": ["jazzy", "tight", "official-release", "exploratory", "beginner-friendly"],
+    "blurb": "One of only four shows played in 1975, unveiling the Blues for Allah material to a small invited crowd and released as One from the Vault. The debut 'Help on the Way' into 'Slipknot!' into 'Franklin's Tower' announces the intricate, rehearsed brilliance of the hiatus-era band.",
+    "standoutSongs": ["Help on the Way", "Slipknot!", "Franklin's Tower", "Blues for Allah"]
+  },
+  {
+    "date": "1976-06-14",
+    "venue": "Beacon Theatre",
+    "location": "New York, NY",
+    "eraID": "hiatus-return",
+    "tags": ["mellow", "jazzy", "exploratory", "historic", "tight"],
+    "blurb": "From the intimate theater tour that brought the Dead back from their hiatus, with Mickey Hart returned to the fold. The long second-set weave from 'Crazy Fingers' through 'Cosmic Charlie' into 'Help on the Way' shows how supple and searching the '76 band could be.",
+    "standoutSongs": ["The Wheel", "Crazy Fingers", "Franklin's Tower"]
+  },
+  {
+    "date": "1976-12-31",
+    "venue": "Cow Palace",
+    "location": "Daly City, CA",
+    "eraID": "hiatus-return",
+    "tags": ["new-years", "joyful", "high-energy", "official-release", "beginner-friendly"],
+    "blurb": "New Year's Eve 1976, officially released as Live at the Cow Palace. A dance-party 'Eyes of the World' and a mighty 'Morning Dew' make this the bridge between the mellow '76 sound and the powerhouse spring of 1977 waiting around the corner.",
+    "standoutSongs": ["Sugar Magnolia", "Eyes of the World", "Morning Dew"]
+  },
+  {
+    "date": "1977-05-05",
+    "venue": "Veterans Memorial Coliseum",
+    "location": "New Haven, CT",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "tight", "high-energy", "official-release", "soundboard-classic"],
+    "blurb": "The opening night of the fabled May '77 New England run, released in the Get Shown the Light box. An early 'Scarlet Begonias' into 'Fire on the Mountain' pairing and a roaring 'St. Stephen' set the table for the historic week that followed.",
+    "standoutSongs": ["Scarlet Begonias", "Fire on the Mountain", "St. Stephen"]
+  },
+  {
+    "date": "1977-05-07",
+    "venue": "Boston Garden",
+    "location": "Boston, MA",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "tight", "jazzy", "official-release", "epic-jams"],
+    "blurb": "The night before Cornell, and some Heads argue it's just as good. A majestic 'Terrapin Station' opens the second set, and the 'Eyes of the World' into 'The Wheel' into 'Wharf Rat' sequence is May '77 elegance at its finest.",
+    "standoutSongs": ["Terrapin Station", "Eyes of the World", "The Wheel"]
+  },
+  {
+    "date": "1977-05-08",
+    "venue": "Barton Hall, Cornell University",
+    "location": "Ithaca, NY",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "soundboard-classic", "beginner-friendly", "tight", "official-release", "epic-jams"],
+    "blurb": "The most famous Grateful Dead show of them all, preserved on Betty Cantor-Jackson's pristine soundboard and inducted into the Library of Congress National Recording Registry. The 'Scarlet' into 'Fire' and the transcendent 'Morning Dew' justify every bit of the legend.",
+    "standoutSongs": ["Scarlet Begonias", "Fire on the Mountain", "Morning Dew", "St. Stephen"]
+  },
+  {
+    "date": "1977-05-09",
+    "venue": "Buffalo Memorial Auditorium",
+    "location": "Buffalo, NY",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "high-energy", "tight", "official-release", "epic-jams"],
+    "blurb": "The night after Cornell, and plenty of Heads will tell you Buffalo beat it. 'Help on the Way' into 'Slipknot!' into 'Franklin's Tower' opens the show at full sprint, and the 'Comes a Time' emerging from 'Not Fade Away' is one of Garcia's most tender moments on tape.",
+    "standoutSongs": ["Help on the Way", "Slipknot!", "Franklin's Tower", "Comes a Time"]
+  },
+  {
+    "date": "1977-05-22",
+    "venue": "The Sportatorium",
+    "location": "Pembroke Pines, FL",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "epic-jams", "official-release", "jazzy", "soundboard-classic"],
+    "blurb": "The Florida capstone of May 1977, released as Dick's Picks 3. The closing sequence — 'Estimated Prophet' into 'Eyes of the World' into 'Wharf Rat' into 'Terrapin Station' into 'Morning Dew' — is one of the most gorgeous stretches of music the band ever strung together.",
+    "standoutSongs": ["Estimated Prophet", "Eyes of the World", "Terrapin Station", "Morning Dew"]
+  },
+  {
+    "date": "1977-06-07",
+    "venue": "Winterland Arena",
+    "location": "San Francisco, CA",
+    "eraID": "hiatus-return",
+    "tags": ["spring77", "tight", "epic-jams", "official-release", "joyful"],
+    "blurb": "Opening night of the hometown Winterland stand captured in the June 1977 box set. A silky 'Scarlet' into 'Fire' and a second set that flows from 'Estimated Prophet' all the way to 'Terrapin' and 'Morning Dew' prove the May magic followed the band home to San Francisco.",
+    "standoutSongs": ["Scarlet Begonias", "Fire on the Mountain", "Terrapin Station", "Morning Dew"]
+  },
+  {
+    "date": "1977-09-03",
+    "venue": "Raceway Park",
+    "location": "Englishtown, NJ",
+    "eraID": "hiatus-return",
+    "tags": ["festival", "high-energy", "official-release", "epic-jams", "beginner-friendly"],
+    "blurb": "One of the biggest crowds the Dead ever played to on their own, over a hundred thousand strong at a New Jersey drag strip, released as Dick's Picks 15. The 'Eyes of the World' is a stone classic and the 'Terrapin Station' encore sends the sea of people home glowing.",
+    "standoutSongs": ["Eyes of the World", "Terrapin Station", "Truckin'"]
+  },
+  {
+    "date": "1977-10-29",
+    "venue": "Evans Field House, Northern Illinois University",
+    "location": "DeKalb, IL",
+    "eraID": "hiatus-return",
+    "tags": ["high-energy", "epic-jams", "official-release", "tight", "soundboard-classic"],
+    "blurb": "Proof that the magic of 1977 ran deep into the fall, released as Dave's Picks 33. The second set barely pauses for breath, rolling from 'Estimated Prophet' through 'Eyes of the World' into a fierce 'St. Stephen' and 'Not Fade Away.'",
+    "standoutSongs": ["Estimated Prophet", "Eyes of the World", "St. Stephen"]
+  },
+  {
+    "date": "1978-04-24",
+    "venue": "Horton Field House, Illinois State University",
+    "location": "Normal, IL",
+    "eraID": "transition",
+    "tags": ["high-energy", "epic-jams", "official-release", "joyful", "soundboard-classic"],
+    "blurb": "A monster night in a college field house, released as Dave's Picks 7. The 'Scarlet' into 'Fire' into 'Good Lovin'' is pure joy, 'Terrapin' anchors a deep second set, and the 'Werewolves of London' encore captures the loose fun of 1978.",
+    "standoutSongs": ["Scarlet Begonias", "Fire on the Mountain", "Terrapin Station", "Werewolves of London"]
+  },
+  {
+    "date": "1978-07-08",
+    "venue": "Red Rocks Amphitheatre",
+    "location": "Morrison, CO",
+    "eraID": "transition",
+    "tags": ["high-energy", "epic-jams", "official-release", "beginner-friendly", "joyful"],
+    "blurb": "From the band's first-ever Red Rocks stand, and arguably the best of the celebrated July 1978 tour. The second set runs 'Estimated' into 'The Other One' into 'Eyes' before landing in 'Wharf Rat' and 'Franklin's Tower' — huge music in one of America's most beautiful venues.",
+    "standoutSongs": ["Estimated Prophet", "The Other One", "Eyes of the World", "Franklin's Tower"]
+  },
+  {
+    "date": "1978-09-16",
+    "venue": "Gizah Sound and Light Theater",
+    "location": "Giza, Egypt",
+    "eraID": "transition",
+    "tags": ["historic", "psychedelic", "exploratory", "guest-sitin", "official-release"],
+    "blurb": "The final night at the Great Pyramid, played under a total lunar eclipse with Nubian master Hamza El Din leading the band from 'Ollin Arageed' into 'Fire on the Mountain.' Musically loose, historically unmatched — the most audacious field trip in rock history.",
+    "standoutSongs": ["Ollin Arageed", "Fire on the Mountain", "Shakedown Street"]
+  },
+  {
+    "date": "1978-12-31",
+    "venue": "Winterland Arena",
+    "location": "San Francisco, CA",
+    "eraID": "transition",
+    "tags": ["new-years", "historic", "dark-star", "epic-jams", "official-release", "broadcast"],
+    "blurb": "The Closing of Winterland: an all-night farewell to Bill Graham's ballroom, broadcast live, with the Blues Brothers opening and breakfast served at dawn. The third set unleashed a rare late-'70s 'Dark Star' folded around 'The Other One' — a fitting send-off for hallowed ground.",
+    "standoutSongs": ["Dark Star", "St. Stephen", "Sugar Magnolia"]
+  },
+  {
+    "date": "1979-10-27",
+    "venue": "Cape Cod Coliseum",
+    "location": "South Yarmouth, MA",
+    "eraID": "transition",
+    "tags": ["high-energy", "exploratory", "dark", "epic-jams", "brent-era"],
+    "blurb": "A favorite from Brent Mydland's first fall tour, when his Hammond and harmonies were re-energizing the band. 'Dancing in the Street' into 'Franklin's Tower' cooks, and the 'He's Gone' jam wanders into a menacing 'Caution' groove before 'The Other One' hits.",
+    "standoutSongs": ["Dancing in the Street", "Franklin's Tower", "The Other One"]
+  },
+  {
+    "date": "1979-12-26",
+    "venue": "Oakland Auditorium Arena",
+    "location": "Oakland, CA",
+    "eraID": "transition",
+    "tags": ["epic-jams", "official-release", "joyful", "soundboard-classic", "brent-era"],
+    "blurb": "A hometown SEVA benefit released as Dick's Picks 5, and one of the great single-show arguments for the young Brent-era band. The second set flows unbroken from 'Uncle John's Band' to 'Brokedown Palace,' then tops itself with a 'Shakedown Street' encore.",
+    "standoutSongs": ["Uncle John's Band", "Estimated Prophet", "Brokedown Palace", "Shakedown Street"]
+  },
+  {
+    "date": "1980-05-16",
+    "venue": "Nassau Coliseum",
+    "location": "Uniondale, NY",
+    "eraID": "brent",
+    "tags": ["high-energy", "official-release", "tight", "brent-era", "beginner-friendly"],
+    "blurb": "Half of the Go to Nassau release, from the spring tour behind Go to Heaven. The second set is one seamless ride: 'Feel Like a Stranger' into 'Althea' into the 'Lost Sailor'/'Saint' suite, an 'Eyes of the World,' and a 'Morning Dew' to bring it home.",
+    "standoutSongs": ["Feel Like a Stranger", "Althea", "Eyes of the World", "Morning Dew"]
+  },
+  {
+    "date": "1980-10-31",
+    "venue": "Radio City Music Hall",
+    "location": "New York, NY",
+    "eraID": "brent",
+    "tags": ["acoustic", "broadcast", "joyful", "historic", "brent-era"],
+    "blurb": "Halloween at Radio City during the 15th-anniversary acoustic-electric run that produced Reckoning and Dead Set, simulcast far and wide. The acoustic 'Bird Song' into 'Ripple' is as intimate as the Dead ever got on a New York stage.",
+    "standoutSongs": ["Ripple", "Bird Song", "Fire on the Mountain"]
+  },
+  {
+    "date": "1981-05-16",
+    "venue": "Barton Hall, Cornell University",
+    "location": "Ithaca, NY",
+    "eraID": "brent",
+    "tags": ["high-energy", "exploratory", "dark", "brent-era", "soundboard-classic"],
+    "blurb": "The return to Barton Hall four years after the most famous show ever played there, and the band came loaded. 'Shakedown Street' into 'Bertha' lights the fuse, and the 'Spanish Jam' erupting out of the 'Saint of Circumstance' is early-'80s Dead at their hungriest.",
+    "standoutSongs": ["Shakedown Street", "Spanish Jam", "Nobody's Fault but Mine"]
+  },
+  {
+    "date": "1982-04-06",
+    "venue": "The Spectrum",
+    "location": "Philadelphia, PA",
+    "eraID": "brent",
+    "tags": ["high-energy", "epic-jams", "dark", "brent-era", "soundboard-classic"],
+    "blurb": "A Philadelphia classic that shows how strong the supposedly quiet early '80s could be. The entire second set is one connected arc from 'Shakedown Street' through 'Terrapin' and 'The Other One' into a mighty 'Morning Dew,' with a 'Baby Blue' benediction to close.",
+    "standoutSongs": ["Shakedown Street", "Terrapin Station", "Morning Dew"]
+  },
+  {
+    "date": "1983-10-21",
+    "venue": "The Centrum",
+    "location": "Worcester, MA",
+    "eraID": "brent",
+    "tags": ["high-energy", "epic-jams", "brent-era", "soundboard-classic", "beginner-friendly"],
+    "blurb": "A fall '83 barnburner with a 'Scarlet' into 'Fire' that tape traders have pushed on friends for decades. An early 'Touch of Grey,' years before it became a hit, closes a second set that never lets up.",
+    "standoutSongs": ["Scarlet Begonias", "Fire on the Mountain", "Uncle John's Band", "Touch of Grey"]
+  },
+  {
+    "date": "1984-10-12",
+    "venue": "Augusta Civic Center",
+    "location": "Augusta, ME",
+    "eraID": "brent",
+    "tags": ["exploratory", "dark", "raw", "brent-era", "epic-jams"],
+    "blurb": "A beloved tape from the scrappy, underrated fall of 1984. The 'Uncle John's Band' split around the drums and a searing 'Morning Dew' show that even in the leanest years the band could summon the old depth on any given night in a small New England city.",
+    "standoutSongs": ["Uncle John's Band", "Morning Dew", "Saint of Circumstance"]
+  },
+  {
+    "date": "1985-06-14",
+    "venue": "Greek Theatre, UC Berkeley",
+    "location": "Berkeley, CA",
+    "eraID": "brent",
+    "tags": ["historic", "high-energy", "brent-era", "joyful", "exploratory"],
+    "blurb": "Opening night of the hometown 20th-anniversary run at the beloved Greek Theatre. A rare 'Keep On Growing' with Brent out front and a 'Morning Dew' boldly opening the second set make it a worthy birthday party for the first twenty years.",
+    "standoutSongs": ["Keep On Growing", "Morning Dew", "Comes a Time"]
+  },
+  {
+    "date": "1985-11-01",
+    "venue": "Richmond Coliseum",
+    "location": "Richmond, VA",
+    "eraID": "brent",
+    "tags": ["exploratory", "official-release", "dark", "brent-era", "epic-jams"],
+    "blurb": "Released as Dick's Picks 21 and a favorite argument that 1985 was secretly great. The second-set journey from 'He's Gone' through a growling 'Spoonful' into a fragile 'Comes a Time' ends with the one-two punch of 'She Belongs to Me' and a raving 'Gloria.'",
+    "standoutSongs": ["Comes a Time", "She Belongs to Me", "Gloria"]
+  },
+  {
+    "date": "1987-09-18",
+    "venue": "Madison Square Garden",
+    "location": "New York, NY",
+    "eraID": "brent",
+    "tags": ["high-energy", "joyful", "brent-era", "beginner-friendly", "soundboard-classic"],
+    "blurb": "Peak Touch of Grey-mania at the Garden, with Weir jokingly urging the crowd to 'levitate Garcia.' A giant 'Shakedown Street' opens the second set, a stately 'Morning Dew' brings it down, and the 'La Bamba' sandwiched inside 'Good Lovin'' is pure late-'87 delight.",
+    "standoutSongs": ["Shakedown Street", "Morning Dew", "La Bamba"]
+  },
+  {
+    "date": "1988-07-03",
+    "venue": "Oxford Plains Speedway",
+    "location": "Oxford, ME",
+    "eraID": "brent",
+    "tags": ["festival", "joyful", "high-energy", "brent-era", "stadium"],
+    "blurb": "The giant Maine speedway weekend that became a rite of passage for a whole generation of East Coast Deadheads, with Little Feat opening. A soaring 'Bird Song' and the 'Dear Mr. Fantasy' into 'Hey Jude' finale capture the communal high of the Dead's biggest boom.",
+    "standoutSongs": ["Bird Song", "Eyes of the World", "Dear Mr. Fantasy"]
+  },
+  {
+    "date": "1989-07-07",
+    "venue": "JFK Stadium",
+    "location": "Philadelphia, PA",
+    "eraID": "brent",
+    "tags": ["stadium", "high-energy", "official-release", "brent-era", "beginner-friendly"],
+    "blurb": "The last concert ever held at Philadelphia's crumbling JFK Stadium, released as Crimson, White & Indigo. A rare 'Box of Rain' opens the second set before 'Scarlet' into 'Fire,' and Garcia pours everything into a brand-new 'Standing on the Moon.'",
+    "standoutSongs": ["Box of Rain", "Scarlet Begonias", "Fire on the Mountain", "Standing on the Moon"]
+  },
+  {
+    "date": "1989-08-17",
+    "venue": "Greek Theatre, UC Berkeley",
+    "location": "Berkeley, CA",
+    "eraID": "brent",
+    "tags": ["joyful", "epic-jams", "brent-era", "soundboard-classic", "high-energy"],
+    "blurb": "From the band's final run at their beloved hometown Greek Theatre, right in the middle of the astonishing late-'89 renaissance. The 'Estimated Prophet' into 'Eyes of the World' sails, and the post-space run to 'The Wheel' and 'The Mighty Quinn' is all smiles.",
+    "standoutSongs": ["Estimated Prophet", "Eyes of the World", "The Wheel"]
+  },
+  {
+    "date": "1989-10-09",
+    "venue": "Hampton Coliseum",
+    "location": "Hampton, VA",
+    "eraID": "brent",
+    "tags": ["historic", "dark-star", "epic-jams", "official-release", "psychedelic", "brent-era"],
+    "blurb": "Billed as 'Formerly the Warlocks' to keep the crowds down, and the band repaid the faithful with miracles: the first 'Dark Star' in five years, the return of 'Death Don't Have No Mercy,' and an 'Attics of My Life' revived after seventeen years. Released as part of the Formerly the Warlocks box.",
+    "standoutSongs": ["Dark Star", "Death Don't Have No Mercy", "Attics of My Life", "Playing in the Band"]
+  },
+  {
+    "date": "1990-03-29",
+    "venue": "Nassau Coliseum",
+    "location": "Uniondale, NY",
+    "eraID": "brent",
+    "tags": ["jazzy", "guest-sitin", "official-release", "epic-jams", "beginner-friendly", "brent-era"],
+    "blurb": "The night Branford Marsalis sat in and lifted the band to someplace new, released as Wake Up to Find Out. The 'Eyes of the World' with Branford is one of the most celebrated pieces of late-era Dead music, and the 'Dark Star' that follows keeps the séance going.",
+    "standoutSongs": ["Eyes of the World", "Dark Star", "Bird Song"]
+  },
+  {
+    "date": "1990-09-20",
+    "venue": "Madison Square Garden",
+    "location": "New York, NY",
+    "eraID": "brent",
+    "tags": ["dark-star", "exploratory", "dark", "epic-jams", "historic"],
+    "blurb": "Weeks after Brent Mydland's death, with Vince Welnick newly aboard, the band answered grief with one of their finest latter-day sets. Out of the space emerges a haunted 'Dark Star' wrapped around the 'Playing' reprise — proof the deep magic survived the transition.",
+    "standoutSongs": ["Dark Star", "Truckin'", "China Cat Sunflower", "I Know You Rider"]
+  },
+  {
+    "date": "1991-06-17",
+    "venue": "Giants Stadium",
+    "location": "East Rutherford, NJ",
+    "eraID": "vince",
+    "tags": ["stadium", "epic-jams", "high-energy", "official-release", "exploratory"],
+    "blurb": "The show that opens with 'Eyes of the World' — a jaw-dropper of a first song, with Bruce Hornsby's piano driving the band. The 'New Speedway Boogie' revival era and a seamless second set made this the crown jewel of the stadium years, later released in full.",
+    "standoutSongs": ["Eyes of the World", "Saint of Circumstance", "New Speedway Boogie"]
+  },
+  {
+    "date": "1991-09-10",
+    "venue": "Madison Square Garden",
+    "location": "New York, NY",
+    "eraID": "vince",
+    "tags": ["guest-sitin", "dark-star", "jazzy", "epic-jams", "soundboard-classic"],
+    "blurb": "Branford Marsalis returns, this time with both Vince Welnick and Bruce Hornsby on keys, for a Garden show Heads still speak of in hushed tones. 'Help on the Way' into 'Slipknot!' into 'Franklin's Tower' opens set two, and the sax-laced 'Dark Star' goes deep into the void.",
+    "standoutSongs": ["Help on the Way", "Slipknot!", "Franklin's Tower", "Dark Star"]
+  },
+  {
+    "date": "1993-03-27",
+    "venue": "Knickerbocker Arena",
+    "location": "Albany, NY",
+    "eraID": "vince",
+    "tags": ["mellow", "exploratory", "late-masterpiece", "jazzy", "dark"],
+    "blurb": "A standout from spring 1993, when fresh songs briefly reignited the band. An 'Eyes of the World' opens the second set, and a month-old 'Days Between' — Garcia and Hunter's last great ballad — unfolds with an aching, autumnal beauty.",
+    "standoutSongs": ["Eyes of the World", "Days Between", "The Wheel"]
+  },
+  {
+    "date": "1995-03-19",
+    "venue": "The Spectrum",
+    "location": "Philadelphia, PA",
+    "eraID": "vince",
+    "tags": ["historic", "late-masterpiece", "dark", "mellow", "breakout-debuts"],
+    "blurb": "The night the band finally played 'Unbroken Chain' — Phil's masterpiece, waiting twenty-one years since From the Mars Hotel for its live debut, greeted by a roar of disbelief. A heartfelt 'So Many Roads' makes this late show doubly poignant.",
+    "standoutSongs": ["Unbroken Chain", "So Many Roads", "Crazy Fingers"]
+  },
+  {
+    "date": "1995-07-09",
+    "venue": "Soldier Field",
+    "location": "Chicago, IL",
+    "eraID": "vince",
+    "tags": ["historic", "late-masterpiece", "stadium", "dark", "mellow"],
+    "blurb": "The final Grateful Dead concert. Exactly one month before Garcia's death, the band closed with 'Black Muddy River' and a 'Box of Rain' encore — the last songs the Grateful Dead ever played, and in hindsight an almost unbearably tender goodbye.",
+    "standoutSongs": ["So Many Roads", "Unbroken Chain", "Black Muddy River", "Box of Rain"]
+  }
+]

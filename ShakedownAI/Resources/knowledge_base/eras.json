@@ -1,0 +1,93 @@
+[
+  {
+    "id": "primal",
+    "name": "The Primal Dead",
+    "years": "1965–1967",
+    "startYear": 1965,
+    "endYear": 1967,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Ron \"Pigpen\" McKernan",
+    "style": "Raw garage-band energy applied to jug-band, blues, and R&B material, played fast and loud. Toward 1967 the covers began stretching into long, feedback-laced jams, with 'Viola Lee Blues' as the great proving ground.",
+    "summary": "Born out of Mother McCree's Uptown Jug Champions and baptized as the house band for Ken Kesey's Acid Tests, the earliest Grateful Dead were a scrappy dance band with something strange bubbling underneath. Pigpen was the frontman, belting blues and soul numbers, while Garcia's banjo-trained fingers found a new voice on electric guitar. By late 1966 they were fixtures at the Fillmore and the Avalon, and by 1967 their jams were escaping the three-minute song entirely. The recordings are rough, but the seeds of everything to come are audible.",
+    "beginnerShows": ["1966-07-03", "1967-03-18"],
+    "mustHear": ["1966-07-03", "1967-06-18", "1967-09-03"],
+    "context": "The band formed in Palo Alto in 1965, moved into 710 Ashbury Street, and stood at the center of the Haight-Ashbury scene as it swelled toward the Summer of Love. Their debut album arrived in March 1967, and that June they played the Monterey Pop Festival alongside Hendrix and The Who."
+  },
+  {
+    "id": "anthem",
+    "name": "Anthem of the Sun & the Pigpen Years",
+    "years": "1968–1970",
+    "startYear": 1968,
+    "endYear": 1970,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Ron \"Pigpen\" McKernan, Bill Kreutzmann, Mickey Hart, Tom Constanten (1968–1970)",
+    "style": "Ferocious, dense psychedelia built around suites like 'Dark Star,' 'St. Stephen,' and 'The Eleven,' driven by two drummers. By 1970 the same band could also sit down with acoustic guitars for Workingman's Dead and American Beauty songs.",
+    "summary": "This is the era most people mean when they say 'primal Dead' with awe in their voice: the seven-piece juggernaut that recorded Live/Dead and turned 'Dark Star' into a nightly voyage. Mickey Hart's arrival doubled the rhythmic firepower, and Tom Constanten's keyboards added avant-garde color. Then, in a stunning pivot, 1970 brought the Americana songcraft of Workingman's Dead and American Beauty, and shows grew into evening-long affairs with acoustic and electric sets. Pigpen remained the showman-heart of the band throughout, preaching 'Lovelight' to close the night.",
+    "beginnerShows": ["1969-02-27", "1970-05-02"],
+    "mustHear": ["1968-02-14", "1969-02-27", "1970-02-13", "1970-05-02"],
+    "context": "These were the years of the Carousel Ballroom experiment, the infamous New Orleans bust, Woodstock and Altamont, and mounting debt that pushed the band onto the road for good. The counterculture was cresting and breaking, and the Dead's music absorbed both the ecstasy and the darkness."
+  },
+  {
+    "id": "europe-wall",
+    "name": "Europe '72 & the Wall of Sound",
+    "years": "1971–1974",
+    "startYear": 1971,
+    "endYear": 1974,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Keith Godchaux (from late 1971), Donna Jean Godchaux (from 1972), Ron \"Pigpen\" McKernan (until June 1972)",
+    "style": "Cosmic American music at its peak: cowboy songs and Hunter-Garcia ballads sitting beside patient, jazz-inflected improvisation. The jams grew longer and more harmonically adventurous each year, culminating in the crystalline sound of 1973–74.",
+    "summary": "A golden age by nearly any measure. The lean 1971 quintet gave way to the Keith Godchaux band that conquered Europe in spring 1972, a tour so good it produced a triple live album. Pigpen's health forced him off the road that summer, and he died in March 1973, closing the band's first chapter. The music kept deepening: Wake of the Flood and Mars Hotel material fueled the marathon shows of 1973–74, played through the gargantuan Wall of Sound PA until the sheer expense of it all drove the band into hiatus after the October 1974 Winterland farewell run.",
+    "beginnerShows": ["1972-08-27", "1972-05-03", "1973-11-11"],
+    "mustHear": ["1972-05-11", "1972-08-27", "1972-09-21", "1973-11-11", "1974-10-18"],
+    "context": "The band launched their own record label, hauled the Wall of Sound — over 600 speakers — across the country, and grew from ballroom act to stadium draw. Skull and Roses and Europe '72 minted a national audience, and the term 'Deadhead' entered the language via an invitation printed inside the 1971 live album."
+  },
+  {
+    "id": "hiatus-return",
+    "name": "Hiatus and the Return",
+    "years": "1975–1977",
+    "startYear": 1975,
+    "endYear": 1977,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Mickey Hart, Keith Godchaux, Donna Jean Godchaux",
+    "style": "Intricate, rehearsed, almost orchestral: the funk-tinged precision of Blues for Allah and Terrapin Station material, with the reunited double-drummer lineup giving everything a deep rolling swing. 1977 shows are famous for their balance of tightness and flow.",
+    "summary": "After the 1974 farewell shows the Dead stopped touring, surfacing only four times in 1975 to unveil the knotty brilliance of Blues for Allah. When they returned to the road in June 1976 with Mickey Hart back in the fold, the music was transformed — slower, more detailed, more architectural. That approach ripened into spring 1977, widely considered the pinnacle of the band's ensemble playing, with the May tour producing Cornell and a half-dozen other shows that top best-ever lists. The magic held clear through the fall.",
+    "beginnerShows": ["1977-05-08", "1977-05-05"],
+    "mustHear": ["1975-08-13", "1977-05-08", "1977-05-09", "1977-05-22", "1977-06-07"],
+    "context": "During the break the members scattered into solo projects and The Grateful Dead Movie was assembled from the 1974 Winterland farewells. The band returned to a changed industry, signed with Arista, and released Terrapin Station in 1977 just as their live reputation reached its zenith."
+  },
+  {
+    "id": "transition",
+    "name": "Shakedown Transition",
+    "years": "1978–1979",
+    "startYear": 1978,
+    "endYear": 1979,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Mickey Hart, Keith & Donna Godchaux (until February 1979), Brent Mydland (from April 1979)",
+    "style": "Looser and rowdier than 1977, with disco-era grooves creeping in via 'Shakedown Street' and a rock-and-roll swagger onstage. Brent Mydland's arrival in 1979 brought bright Hammond organ and high harmonies that changed the band's whole texture.",
+    "summary": "A short era that contains multitudes: the first Red Rocks shows, the surreal pilgrimage to play beside the Great Pyramid during a lunar eclipse, and the all-night Closing of Winterland with its rare 'Dark Star.' Keith and Donna Godchaux, road-worn and struggling, left in early 1979, and Keith died in a car accident the following year. Brent Mydland stepped in that April and the band audibly woke up — the fall 1979 tours crackle with fresh energy that set the stage for the decade to come.",
+    "beginnerShows": ["1978-07-08", "1978-04-24"],
+    "mustHear": ["1978-07-08", "1978-09-16", "1978-12-31", "1979-12-26"],
+    "context": "Shakedown Street, produced by Little Feat's Lowell George, arrived in late 1978 amid punk and disco's reshaping of the music business. Winterland, the band's home court since 1966, closed with their marathon New Year's show, ending the ballroom era for good."
+  },
+  {
+    "id": "brent",
+    "name": "The Brent Years",
+    "years": "1980–1990",
+    "startYear": 1980,
+    "endYear": 1990,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Mickey Hart, Brent Mydland (Vince Welnick joined after Brent's death in July 1990)",
+    "style": "Arena-scale rock with soulful keys and harmonies, from the acoustic elegance of the 1980 anniversary shows to the MIDI-expanded space jams of the late '80s. At its best — 1981, 1985, 1989 — the improvisation rediscovered real danger and depth.",
+    "summary": "The longest era, and a rollercoaster. The early '80s brought hot, scrappy tours and the acoustic retrospectives of Reckoning; the middle years saw Garcia's health decline toward his 1986 diabetic coma. His recovery sparked one of music's great comebacks: In the Dark, the 'Touch of Grey' phenomenon, and the astonishing late-1989 renaissance of Hampton's 'Dark Star' revival and the Branford Marsalis Nassau show. Brent Mydland grew from new kid to emotional center before his death in July 1990 — the band played on, but this is where an era truly ended.",
+    "beginnerShows": ["1987-09-18", "1989-07-07", "1983-10-21"],
+    "mustHear": ["1981-05-16", "1985-11-01", "1989-10-09", "1990-03-29", "1980-10-31"],
+    "context": "MTV-era America turned 'Touch of Grey' into the band's only top-ten hit in 1987, and the parking-lot scene exploded beyond anything the band could manage. Stadiums replaced arenas, tickets became scarce, and the Grateful Dead ended the decade as, improbably, one of the biggest touring acts in the world."
+  },
+  {
+    "id": "vince",
+    "name": "The Final Chapter",
+    "years": "1991–1995",
+    "startYear": 1991,
+    "endYear": 1995,
+    "lineup": "Jerry Garcia, Bob Weir, Phil Lesh, Bill Kreutzmann, Mickey Hart, Vince Welnick, Bruce Hornsby (piano, 1990–1992)",
+    "style": "A brighter, synth-colored sound under Vince Welnick, with Bruce Hornsby's piano adding muscle through early 1992. The late songbook — 'So Many Roads,' 'Days Between' — traded fire for a weathered, elegiac beauty.",
+    "summary": "The final years swung between transcendence and struggle. With Hornsby aboard, 1991 produced genuinely great music, including the Giants Stadium 'Eyes of the World' opener and the Branford-graced MSG 'Dark Star.' Garcia's health and addiction troubles deepened after 1992, and the shows grew inconsistent, yet the era kept delivering late miracles: the debut of 'Days Between,' the long-awaited 'Unbroken Chain,' and flashes of the old brilliance right up to the final Soldier Field stand in July 1995. A month later Garcia was gone, and the Grateful Dead ended with him.",
+    "beginnerShows": ["1991-09-10", "1993-03-27"],
+    "mustHear": ["1991-06-17", "1991-09-10", "1995-03-19", "1995-07-09"],
+    "context": "The touring machine was now a small city, and the band spent the '90s wrestling with gate-crashers, ticketless crowds, and Garcia's visibly failing health. His death on August 9, 1995 ended the Grateful Dead after thirty years and roughly 2,300 concerts."
+  }
+]

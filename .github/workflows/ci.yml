@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Added to the run number to produce CFBundleVersion. Raise this if a
+  # manually-uploaded build ever has a higher build number than CI produces.
+  BUILD_OFFSET: "10"
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          NAME=$(xcrun simctl list devices available | grep -oE 'iPhone [^(]+' | head -1 | sed 's/ *$//')
+          echo "Using simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            test | xcbeautify --renderer github-actions
+
+  testflight:
+    name: Upload to TestFlight
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    concurrency:
+      group: testflight
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check App Store Connect secrets
+        id: secrets
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          if [[ -z "$ASC_KEY_ID" || -z "$ASC_ISSUER_ID" || -z "$ASC_PRIVATE_KEY" ]]; then
+            echo "::warning::ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY secrets not set — skipping TestFlight upload. See README → Releasing."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select latest Xcode
+        if: steps.secrets.outputs.configured == 'true'
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        if: steps.secrets.outputs.configured == 'true'
+        run: brew install xcodegen
+
+      - name: Generate project
+        if: steps.secrets.outputs.configured == 'true'
+        run: xcodegen generate
+
+      - name: Write App Store Connect API key
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s' "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey.p8
+
+      - name: Archive
+        if: steps.secrets.outputs.configured == 'true'
+        run: |
+          set -o pipefail
+          BUILD_NUMBER=$(( GITHUB_RUN_NUMBER + BUILD_OFFSET ))
+          echo "CFBundleVersion = $BUILD_NUMBER"
+          xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ShakedownAI.xcarchive \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey.p8 \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            archive | xcbeautify --renderer github-actions
+
+      - name: Upload to App Store Connect
+        if: steps.secrets.outputs.configured == 'true'
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath build/ShakedownAI.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey.p8 \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" | xcbeautify --renderer github-actions
+
+      - name: Clean up API key
+        if: always()
+        run: rm -f ~/private_keys/AuthKey.p8

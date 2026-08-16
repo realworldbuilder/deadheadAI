@@ -1,0 +1,303 @@
+[
+  {
+    "id": "gateway",
+    "title": "The Gateway",
+    "subtitle": "Seven nights that turn the curious into Deadheads.",
+    "days": [
+      {
+        "title": "Night One: The Front Door",
+        "showDate": "1977-05-08",
+        "essay": "Everyone starts at Barton Hall. Cornell 5/8/77 is the consensus front door to the Grateful Dead: the band at peak precision, the soundboard tape pristine, every song a keeper. You don't need context yet — just let Scarlet melt into Fire and notice the moment you stop checking the time. That moment is what this whole journey is about.",
+        "focusTracks": ["Scarlet Begonias", "Fire on the Mountain"],
+        "journalPrompt": "At what point tonight did you stop listening critically and start just riding along?"
+      },
+      {
+        "title": "Night Two: The Primal Dead",
+        "showDate": "1970-02-13",
+        "essay": "Now rewind seven years to the Fillmore East, where the Dead were a louder, stranger, hungrier animal. This is the primal band of Dick's Picks 4: Dark Star into The Other One into Lovelight, one continuous fever dream with Pigpen presiding. Where Cornell is polished, this is volcanic. Hearing both within two days teaches you the first great lesson of the Dead: there is no single Grateful Dead, there are eras.",
+        "focusTracks": ["Dark Star", "Turn On Your Love Light"],
+        "journalPrompt": "How does this rawer 1970 band change what you thought the Dead were?"
+      },
+      {
+        "title": "Night Three: Europe on a Roll",
+        "showDate": "1972-05-03",
+        "essay": "In spring 1972 the band hauled the whole family across Europe for the tour that made Europe '72. Tonight's Paris stop catches them mid-run: road-tight, jazz-loose, with Pigpen making his last stand and Keith Godchaux's piano opening new harmonic doors. Listen for how China Cat tips over into I Know You Rider — the transition jam is a little machine of joy the band rebuilt nightly.",
+        "focusTracks": ["China Cat Sunflower", "I Know You Rider"],
+        "journalPrompt": "What do you hear in the space between songs — the transitions — that the songs alone don't give you?"
+      },
+      {
+        "title": "Night Four: The Field Trip",
+        "showDate": "1972-08-27",
+        "essay": "Veneta, Oregon, 100-plus degrees, a benefit for the Springfield Creamery thrown by Ken Kesey's family — and arguably the greatest single show the band ever played. The heat pushed everything past reason: the Dark Star hallucinates, the Playin' seethes, the Bird Song floats. This is the show the film Sunshine Daydream captured, and it is the purest document of what 1972 Dead could do outdoors with the family gathered.",
+        "focusTracks": ["Dark Star", "Bird Song"],
+        "journalPrompt": "Where did this show take you that a studio record never could?"
+      },
+      {
+        "title": "Night Five: The Secret Show",
+        "showDate": "1975-08-13",
+        "essay": "During the 1975 touring hiatus the band played a handful of shows, and this one — the Great American Music Hall gig released as One From The Vault — is the jewel. The new Blues for Allah material gets its coming-out party, and Help on the Way>Slipknot!>Franklin's Tower arrives fully formed: jazz-complex, funky, unlike anything they'd written before. It's the sound of the band reinventing itself in private.",
+        "focusTracks": ["Help on the Way", "Franklin's Tower"],
+        "journalPrompt": "What surprises you most about how different this band sounds from the one in 1972?"
+      },
+      {
+        "title": "Night Six: The Resurrection",
+        "showDate": "1989-10-09",
+        "essay": "Hampton Coliseum, billed as 'Formerly the Warlocks,' and the night the band shocked everyone by dropping Dark Star for the first time in years. The roar when those first notes hit is one of the great crowd moments on tape. Late-eighties Dead had its own colors — Brent's keys, MIDI weirdness, arena scale — and this show proves the old magic and the new band could occupy the same stage.",
+        "focusTracks": ["Dark Star", "Attics of My Life"],
+        "journalPrompt": "Why do you think a single song's return could mean so much to ten thousand people?"
+      },
+      {
+        "title": "Night Seven: Wake Up to Find Out",
+        "showDate": "1990-03-29",
+        "essay": "Your last stop is Nassau Coliseum with saxophonist Branford Marsalis sitting in — the show released as Wake Up to Find Out. The Eyes of the World here may be the finest late-era jamming the band ever produced, everyone listening hard and playing up to the guest. It closes the loop on this journey: twenty years after the primal Dead, the conversation is still alive. Now you're not a tourist anymore; pick an era and dig.",
+        "focusTracks": ["Eyes of the World", "Dark Star"],
+        "journalPrompt": "Which of these seven nights is calling you back — and what does that tell you about your ears?"
+      }
+    ]
+  },
+  {
+    "id": "evolution-of-dark-star",
+    "title": "The Evolution of Dark Star",
+    "subtitle": "One song, twenty years, and the whole story of the band inside it.",
+    "days": [
+      {
+        "title": "Day One: The Benchmark",
+        "showDate": "1969-02-27",
+        "essay": "Start where nearly everyone starts: the Fillmore West performance immortalized on Live/Dead. This is Dark Star as scripture — the version fans memorized note for note, twenty-three minutes of patient, melodic ascent. The band is still working within the song here, orbiting its theme rather than escaping it. Learn its shape now, because everything after this is the band leaving that shape behind.",
+        "focusTracks": ["Dark Star", "St. Stephen"],
+        "journalPrompt": "What does the 'home' melody of Dark Star feel like to you — and when do you first notice the band drifting from it?"
+      },
+      {
+        "title": "Day Two: The Fever Dream",
+        "showDate": "1970-02-13",
+        "essay": "A year later at the Fillmore East, Dark Star has become a doorway rather than a destination. This version — the heart of Dick's Picks 4 — is stranger and more turbulent than Live/Dead, feeding directly into The Other One in one of the most celebrated sequences ever taped. The primal band is at its absolute peak, and you can hear them realizing the song can hold anything they pour into it.",
+        "focusTracks": ["Dark Star", "The Other One"],
+        "journalPrompt": "Where does the song end and pure improvisation begin — and does the difference matter?"
+      },
+      {
+        "title": "Day Three: Europe Deep Space",
+        "showDate": "1972-05-11",
+        "essay": "Rotterdam. The Europe '72 band — with Keith Godchaux's piano and without the old garage fuzz — takes Dark Star somewhere colder and vaster than ever before, a massive continuous jam that swallows the Other One whole. This is the pivot point: melody giving way to pure texture and group mind. Bring patience; the payoff is enormous.",
+        "focusTracks": ["Dark Star", "The Other One"],
+        "journalPrompt": "How do you experience the passages with no melody at all — as tension, as freedom, or as something else?"
+      },
+      {
+        "title": "Day Four: The Sun-Melted Star",
+        "showDate": "1972-08-27",
+        "essay": "Veneta's Dark Star, played in punishing Oregon heat at the Kesey family's creamery benefit, is many heads' desert-island version. It has everything: the gorgeous opening theme, a descent into genuine chaos, and a return that feels like sunrise. Where Rotterdam is deep space, Veneta is deep summer — proof that even the band's most abstract vehicle was shaped by the day it was played on.",
+        "focusTracks": ["Dark Star"],
+        "journalPrompt": "How does knowing the setting — heat, dust, a benefit for friends — change what you hear?"
+      },
+      {
+        "title": "Day Five: The Dark Turn",
+        "showDate": "1972-09-21",
+        "essay": "Back in the States, the fall '72 band pushed Dark Star into its most challenging territory. This Philadelphia version, released decades later on Dick's Picks 36, is revered by connoisseurs for its willingness to get genuinely dissonant — long stretches of abstraction that reward close listening. This is Dark Star as avant-garde music, played for a hockey arena that mostly came along for the ride.",
+        "focusTracks": ["Dark Star"],
+        "journalPrompt": "What's the most uncomfortable moment in tonight's jam — and what happens if you lean into it instead of away?"
+      },
+      {
+        "title": "Day Six: The Last Voyages",
+        "showDate": "1974-06-23",
+        "essay": "By 1974 Dark Star had become a rarity, surfacing only when conditions were right. This Miami version, cherished by collectors, folds in the majestic 'Mind Left Body' chord progression and shows the Wall of Sound band at its most orchestral. There's a valedictory feeling here: within months the band would retire from touring, and Dark Star would all but vanish with them.",
+        "focusTracks": ["Dark Star"],
+        "journalPrompt": "Does this version sound like an ending to you? What gives music a sense of farewell?"
+      },
+      {
+        "title": "Day Seven: The Return",
+        "showDate": "1989-10-09",
+        "essay": "Fifteen years of near-total silence, then Hampton: the opening notes of Dark Star and a coliseum losing its mind. The 1989 band — Brent's keyboards, MIDI textures, Garcia's weathered voice — can't and doesn't try to replicate 1972; instead they find their own way through the old door. Hearing this after a week in the seventies is the whole point: the song survived because it was never really a song. It was a place.",
+        "focusTracks": ["Dark Star", "Attics of My Life"],
+        "journalPrompt": "After seven versions, what IS Dark Star to you — a song, a method, a place, or something else?"
+      }
+    ]
+  },
+  {
+    "id": "europe-72-crash-course",
+    "title": "Europe '72 Crash Course",
+    "subtitle": "Five nights across the water with the hottest band the Dead ever were.",
+    "days": [
+      {
+        "title": "Night One: Wembley Kickoff",
+        "showDate": "1972-04-08",
+        "essay": "In April 1972 the Dead packed up the whole extended family and crossed the Atlantic for two months that would produce the beloved Europe '72 album. The opening stand at Wembley's Empire Pool finds them shaking off jet lag and hitting stride fast, with the new songbook — Jack Straw, Tennessee Jed, Ramble On Rose — road-testing in front of curious British crowds. This is the tour's baseline: tight, country-flecked, and ready to explode.",
+        "focusTracks": ["Playin' in the Band", "Cumberland Blues"],
+        "journalPrompt": "What sounds distinctly 'American' about this music, and how do you imagine it landed on a London crowd in 1972?"
+      },
+      {
+        "title": "Night Two: Paris in Spring",
+        "showDate": "1972-05-03",
+        "essay": "By early May the band had played a dozen shows and the machine was humming. The Olympia Theatre in Paris — an ornate old music hall — gave them a listening room, and it shows: the jams breathe, the ballads land, and Pigpen, in his final months of touring, still commands the stage. Notice how effortless the ensemble playing has become compared to Wembley just weeks before.",
+        "focusTracks": ["China Cat Sunflower", "I Know You Rider"],
+        "journalPrompt": "Tour is a pressure cooker: what specifically sounds more confident tonight than on night one?"
+      },
+      {
+        "title": "Night Three: Second Night in Paris",
+        "showDate": "1972-05-04",
+        "essay": "Second nights in the same hall are where the Dead traditionally got weird, and this Olympia show digs deeper than its predecessor. With the room dialed in and nothing to prove, the band stretches out — Pigpen's showcases roll long, and the big second-set jamming gets adventurous. Hearing consecutive nights is the best education in how the Dead never repeated themselves: same city, same stage, different show entirely.",
+        "focusTracks": ["Good Lovin'", "Truckin'"],
+        "journalPrompt": "Comparing the two Paris nights, what did the band do differently when they felt at home?"
+      },
+      {
+        "title": "Night Four: The Rotterdam Monster",
+        "showDate": "1972-05-11",
+        "essay": "Tonight is the tour's improvisational summit. At Rotterdam's Grote Zaal the band uncorked one of the longest continuous jams of their career, a Dark Star that dissolves into drums and reemerges as The Other One — an unbroken expedition that collectors speak of in hushed tones. If Europe '72 has a single Everest, this is it. Clear your evening.",
+        "focusTracks": ["Dark Star", "The Other One"],
+        "journalPrompt": "What did sustained, unbroken improvisation do to your sense of time tonight?"
+      },
+      {
+        "title": "Night Five: Farewell at the Lyceum",
+        "showDate": "1972-05-26",
+        "essay": "The tour ends with a legendary stand at London's Lyceum Theatre, and this final night is both victory lap and farewell — it was among the last full shows of Pigpen's touring life. Much of the Europe '72 album was drawn from these London nights, so a lot of what you hear will feel like meeting famous recordings in their natural habitat. The band leaves everything on the stage.",
+        "focusTracks": ["Truckin'", "Morning Dew"],
+        "journalPrompt": "Knowing this was effectively Pigpen's last ride, how does that color the celebration you're hearing?"
+      },
+      {
+        "title": "Epilogue: Home to Oregon",
+        "showDate": "1972-08-27",
+        "essay": "Three months after Europe, the same band stood on a plywood stage in a hayfield outside Veneta, Oregon, playing a benefit for their old Prankster friends in hundred-degree heat. Everything the tour built — the stamina, the telepathy, the repertoire — pays off in what many call their greatest show. It's the perfect epilogue: the world tour comes home to the family picnic, and the music goes further than it ever went abroad.",
+        "focusTracks": ["Playin' in the Band", "Dark Star"],
+        "journalPrompt": "After six shows, how would you describe the 1972 Grateful Dead to someone in one sentence?"
+      }
+    ]
+  },
+  {
+    "id": "may-77",
+    "title": "May '77",
+    "subtitle": "The tour that perfectionists call perfect, one night at a time.",
+    "days": [
+      {
+        "title": "Night One: New Haven",
+        "showDate": "1977-05-05",
+        "essay": "Spring 1977 caught the Dead at a singular moment: rested, rehearsed after recording Terrapin Station, with Keith and Donna fully integrated and the songbook deeper than ever. This New Haven show opens your week with the tour's signature sound — glassy, unhurried, immaculately balanced. The May '77 band rarely rushed anything; settle into their tempo and notice how much room every instrument gets.",
+        "focusTracks": ["Estimated Prophet", "Sugaree"],
+        "journalPrompt": "What does 'polish' mean in improvised music — and where do you hear it tonight?"
+      },
+      {
+        "title": "Night Two: Boston Garden",
+        "showDate": "1977-05-07",
+        "essay": "Two nights later the band filled Boston Garden and played a show that would be legendary in any month that didn't also contain Cornell. The new Terrapin material is settling into its ceremonial power, and the second-set jamming shows how adventurous this supposedly 'clean' era could get. Many veteran heads will tell you, half-seriously, that Boston was better than Cornell. Tonight you get to have an opinion.",
+        "focusTracks": ["Terrapin Station", "Playin' in the Band"],
+        "journalPrompt": "Great shows in famous months get overshadowed. What's tonight's case for itself?"
+      },
+      {
+        "title": "Night Three: Barton Hall",
+        "showDate": "1977-05-08",
+        "essay": "Cornell. The most famous tape in Grateful Dead history, inducted into the Library of Congress, endlessly debated and endlessly loved. Heard in sequence with the nights around it, it stops being a myth and becomes what it actually was: one more night on a tour where the band could seemingly do no wrong — except this night, everything landed. The Morning Dew finale remains one of the most devastating performances they ever gave.",
+        "focusTracks": ["Morning Dew", "St. Stephen"],
+        "journalPrompt": "Now that you've heard its neighbors, is Cornell's reputation earned — or is something else going on with how legends form?"
+      },
+      {
+        "title": "Night Four: Buffalo",
+        "showDate": "1977-05-09",
+        "essay": "The night after Cornell, the band drove up to Buffalo and — as if to prove a point — opened the show cold with the complete Help on the Way>Slipknot!>Franklin's Tower suite. No warm-up, straight into their most intricate material. The show that follows is loose and joyful where Cornell was stately, capped by a Comes a Time of aching beauty. Back-to-back, these two nights are the best argument that the Dead's greatness was a streak, not a lightning strike.",
+        "focusTracks": ["Help on the Way", "Comes a Time"],
+        "journalPrompt": "Which do you value more after tonight: perfection or audacity?"
+      },
+      {
+        "title": "Night Five: Florida Finale",
+        "showDate": "1977-05-22",
+        "essay": "Your week ends in the Florida heat at the Sportatorium in Pembroke Pines, a show later immortalized as Dick's Picks 3. Two weeks deeper into the tour, the band is looser and sweatier, riding grooves harder — the disco-tinged strut of this era in full effect. It's the right way out of May '77: not another cathedral, but a dance party, reminding you this band's precision was always in service of joy.",
+        "focusTracks": ["Estimated Prophet", "Eyes of the World"],
+        "journalPrompt": "How would you describe the May '77 sound now — and what one night of it would you hand a friend first?"
+      }
+    ]
+  },
+  {
+    "id": "rise-of-brent",
+    "title": "The Rise of Brent",
+    "subtitle": "How the new kid on keys became the beating heart of the eighties Dead.",
+    "days": [
+      {
+        "title": "Day One: The New Voice",
+        "showDate": "1980-05-16",
+        "essay": "Brent Mydland joined in April 1979 with an impossible job: replace the Godchauxs and modernize the band's sound. A year in, this spring 1980 show catches the transition complete — his Hammond B3 growl and high harmony vocals have reshaped everything, and the new Go to Heaven material like Althea and Feel Like a Stranger is built around his textures. The eighties Dead start here.",
+        "focusTracks": ["Althea", "Feel Like a Stranger"],
+        "journalPrompt": "What does Brent's organ and harmony singing change about the band's basic character?"
+      },
+      {
+        "title": "Day Two: Back to Barton Hall",
+        "showDate": "1981-05-16",
+        "essay": "Four years and a week after Cornell '77, the Dead returned to Barton Hall with a new keyboardist and a harder-edged sound. The 1981 band was scrappy and fast where '77 was stately — a leaner machine that could still surprise on any given night. Listening in the same room where the legend was made makes the contrast vivid: same band, same hall, different decade, different animal.",
+        "focusTracks": ["Bertha", "Not Fade Away"],
+        "journalPrompt": "Freed from comparing eras as better or worse, what does the '81 band do that the '77 band didn't?"
+      },
+      {
+        "title": "Day Three: Twenty Years In",
+        "showDate": "1985-06-14",
+        "essay": "The band marked its twentieth anniversary with a June 1985 run at Berkeley's Greek Theatre, their spiritual home venue. By now Brent was no longer the new guy; he was a full creative partner, and his blue-eyed-soul rasp — showcased on covers like Keep on Growing — gave the mid-eighties band its emotional counterweight to Garcia. These Greek shows crackle with hometown celebration.",
+        "focusTracks": ["Keep on Growing", "Not Fade Away"],
+        "journalPrompt": "Where do you hear Brent pushing the band, rather than just supporting it?"
+      },
+      {
+        "title": "Day Four: Summer Peak",
+        "showDate": "1989-07-07",
+        "essay": "Summer 1989 is widely held as the late-era peak, and this JFK Stadium show in Philadelphia — released as Crimson, White & Indigo — is its crown jewel. Garcia is healthy and hungry, the band is playing with stadium-sized confidence, and Brent's own Blow Away becomes a full-on gospel-rock eruption, the sideman now commanding a hundred thousand people. It was also the last concert ever held at JFK Stadium; the Dead closed the building.",
+        "focusTracks": ["Blow Away", "Morning Dew"],
+        "journalPrompt": "What does Brent's own songwriting reveal about him that his playing alone doesn't?"
+      },
+      {
+        "title": "Day Five: Homecoming at the Greek",
+        "showDate": "1989-08-17",
+        "essay": "A month later the band came home to the Greek Theatre for what turned out to be their final run at the beloved Berkeley venue. The intimate setting concentrated everything good about 1989 Dead: deep song choices, patient jamming, and Brent singing like a man with no skin between himself and the material. His anguished soul delivery in this era — thrilling and a little frightening — is the sound of the eighties band at its most human.",
+        "focusTracks": ["Death Don't Have No Mercy", "Foolish Heart"],
+        "journalPrompt": "Brent sang like everything was at stake. What's the line between performance and confession?"
+      },
+      {
+        "title": "Day Six: The Summit",
+        "showDate": "1990-03-29",
+        "essay": "Spring 1990 was the last fully great Dead tour, and this Nassau Coliseum show with Branford Marsalis is its summit — released as Wake Up to Find Out. Listen to how Brent responds to the saxophonist: trading lines, opening space, absolutely fearless. Four months later he would be gone, and the band would never be the same. This is the rise of Brent at its apex, and the best possible place to leave him: mid-flight.",
+        "focusTracks": ["Eyes of the World", "Dark Star"],
+        "journalPrompt": "Having followed the whole arc, what did Brent Mydland give the Grateful Dead that no one else did?"
+      }
+    ]
+  },
+  {
+    "id": "wall-of-sound",
+    "title": "The Wall of Sound",
+    "subtitle": "1974: the biggest PA ever built, and the band that burned out gloriously behind it.",
+    "days": [
+      {
+        "title": "Day One: The Machine Awakens",
+        "showDate": "1974-05-19",
+        "essay": "In 1974 the Dead toured behind the Wall of Sound: Owsley's six-hundred-speaker monolith that gave every instrument its own tower and every note surgical clarity. This Portland show captures the machine and the band in fresh alignment — the sound crystalline, the jamming jazzy and precise. As you listen this week, remember the absurd context: the band was hauling seventy-five tons of gear to play like chamber musicians.",
+        "focusTracks": ["Weather Report Suite", "China Cat Sunflower"],
+        "journalPrompt": "Can you hear the clarity the Wall was built for — the separation between instruments?"
+      },
+      {
+        "title": "Day Two: The Forty-Six Minute Question",
+        "showDate": "1974-05-21",
+        "essay": "Two nights later in Seattle the band played the most famous single jam of the year: a Playin' in the Band that ran roughly three-quarters of an hour, wandering through free jazz, ambient space, and back. It's the 1974 aesthetic in one performance — no hurry, no destination, total trust in the group mind. Don't background-listen to this one; it rewards the full commitment.",
+        "focusTracks": ["Playin' in the Band"],
+        "journalPrompt": "At what minute did you surrender — and what kept you there?"
+      },
+      {
+        "title": "Day Three: Kentucky Silk",
+        "showDate": "1974-06-18",
+        "essay": "The summer 1974 shows are collectors' favorites for their silky, effortless invention, and this Louisville night is a prime specimen. The Eyes of the World here is a masterclass in the era's uptempo jazz feel, Garcia spinning endless variations while Phil and the drummers keep the floor moving underneath. This is the sound of a band with nothing left to prove, playing purely for the music.",
+        "focusTracks": ["Eyes of the World", "Scarlet Begonias"],
+        "journalPrompt": "What distinguishes 'effortless' from 'lazy' in improvised music? Where's tonight's proof?"
+      },
+      {
+        "title": "Day Four: Boston Garden",
+        "showDate": "1974-06-28",
+        "essay": "This Boston Garden show, released as Dick's Picks 12, catches the Wall of Sound band indoors, where the system's clarity turned an old hockey barn into a listening room. The jamming runs long and abstract, drifting through passages that anticipate ambient music by a decade. It's also the sound of a band quietly exhausting itself — the beauty here is inseparable from the burnout that was coming.",
+        "focusTracks": ["Weather Report Suite", "Sugar Magnolia"],
+        "journalPrompt": "The Wall cost more than the band earned. What do you make of art economics that irrational?"
+      },
+      {
+        "title": "Day Five: Jersey Twilight",
+        "showDate": "1974-08-06",
+        "essay": "Roosevelt Stadium in Jersey City was a crumbling old ballpark that the Dead made a summer home, and this August night — later released on Dick's Picks 31 — has the deep, humid glow of the era's twilight. The tour grind and the Wall's impossible logistics were breaking the organization, and within weeks the band would announce a farewell run. Listen for how the fatigue reads not as sloppiness but as depth.",
+        "focusTracks": ["Truckin'", "Eyes of the World"],
+        "journalPrompt": "Do you hear an ending approaching in this music, or is that hindsight talking?"
+      },
+      {
+        "title": "Day Six: Farewell at Winterland",
+        "showDate": "1974-10-18",
+        "essay": "In October 1974 the band played five 'final' shows at Winterland before retiring from the road, filming everything for what became The Grateful Dead Movie. This night from the middle of the run carries the whole week's charged atmosphere: a band saying goodbye to its audience, its sound system, and an era, without knowing the retirement would last only twenty months. The Wall of Sound was dismantled after the run and never rebuilt — but for one last week, it sang.",
+        "focusTracks": ["Uncle John's Band", "Stella Blue"],
+        "journalPrompt": "The band came back, but this version of the band never did. What was worth saying goodbye to?"
+      }
+    ]
+  }
+]

@@ -1,0 +1,682 @@
+[
+  {
+    "key": "dark star",
+    "title": "Dark Star",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1967-12-13",
+    "lastPlayed": "1994-10-09",
+    "timesPlayed": 232,
+    "evolution": "Dark Star began life as a compact psychedelic single and grew into the band's great open question, the vehicle for their deepest improvisation. By 1969 it stretched past twenty minutes, and in 1972-74 it became pure exploration, sometimes abandoning the song's form entirely for atonal deep space. It vanished after the mid-seventies except for rare sightings, then returned to a stadium-shaking roar at Hampton in October 1989. No two versions are alike, which is exactly the point.",
+    "famousVersions": [
+      {"date": "1969-02-27", "note": "The Live/Dead version, the single most celebrated recording of the song and the reason many people became Deadheads.", "label": "The benchmark"},
+      {"date": "1972-08-27", "note": "The Veneta, Oregon version from the Field Trip benefit, played in brutal heat and somehow both melting and crystalline.", "label": "Most psychedelic"},
+      {"date": "1972-05-11", "note": "The Rotterdam monster, part of an enormous continuous jam that shows the Europe '72 band at its most fearless.", "label": "Best jam"},
+      {"date": "1989-10-09", "note": "The Hampton revival, the song's first appearance in years, met with a crowd roar you can hear on tape.", "label": "The revival"}
+    ],
+    "seguePartners": ["st stephen", "the other one", "morning dew"],
+    "tags": ["psychedelic", "exploratory", "epic-jams"]
+  },
+  {
+    "key": "st stephen",
+    "title": "St. Stephen",
+    "writtenBy": "Garcia, Lesh, Hunter",
+    "debut": null,
+    "lastPlayed": "1983-10-31",
+    "timesPlayed": null,
+    "evolution": "St. Stephen was the anthem of the primal Dead, a crashing, joyous piece of psychedelic mythology that anchored the late-sixties suites alongside Dark Star and The Eleven. It was shelved in late 1971, returned triumphantly in 1976-77 with a more polished arrangement, and made scattered appearances into the early eighties. Every return was an event; crowds treated the opening riff like a homecoming. Its final performance came on Halloween 1983.",
+    "famousVersions": [
+      {"date": "1969-02-27", "note": "The Live/Dead reading, welded to Dark Star and The Eleven, is the definitive primal-era statement.", "label": "The benchmark"},
+      {"date": "1977-05-08", "note": "At Cornell it wrapped around Not Fade Away in a famous sandwich, the late-seventies arrangement at its peak.", "label": "Best jam"}
+    ],
+    "seguePartners": ["dark star", "not fade away", "the other one"],
+    "tags": ["psychedelic", "anthem", "primal"]
+  },
+  {
+    "key": "the other one",
+    "title": "The Other One",
+    "writtenBy": "Weir, Kreutzmann",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Born as the centerpiece of the That's It for the Other One suite on Anthem of the Sun, this became the band's thunderstorm: Phil's eight-note fanfare, then chaos. In the primal years it was pure aggression; by 1972-74 it could sprawl past thirty minutes of quicksilver jamming. It stayed in the book to the very end, one of the few sixties warhorses that never left, and even in the nineties a good Other One could still turn an arena inside out.",
+    "famousVersions": [
+      {"date": "1970-02-13", "note": "The Fillmore East version released on Dick's Picks 4, embedded in one of the greatest sequences the band ever played.", "label": "The benchmark"},
+      {"date": "1972-05-11", "note": "In Rotterdam it emerged from a colossal Dark Star jam, the Europe '72 band at full boil.", "label": "Most psychedelic"}
+    ],
+    "seguePartners": ["dark star", "wharf rat", "morning dew"],
+    "tags": ["primal", "dark", "psychedelic", "epic-jams"]
+  },
+  {
+    "key": "playin' in the band",
+    "title": "Playin' in the Band",
+    "writtenBy": "Weir, Hart, Hunter",
+    "debut": "1971-02-18",
+    "lastPlayed": null,
+    "timesPlayed": 581,
+    "evolution": "Playin' started as a punchy four-minute rocker in 1971 and within a year had blown open into the band's premier jamming vehicle in 10/4 time. The 1972-74 versions are some of the most adventurous music the Dead ever made, dissolving into free jazz and reassembling on a dime. From the mid-seventies on it was often split in half, with the reprise landing a set (or even a show) later. Few songs better trace the band's whole improvisational arc.",
+    "famousVersions": [
+      {"date": "1972-08-27", "note": "The Veneta version is many heads' pick for the single greatest Playin', ferocious and telepathic.", "label": "The benchmark"},
+      {"date": "1974-05-21", "note": "The Seattle marathon, roughly three-quarters of an hour of continuous exploration, the outer limit of the song.", "label": "Best jam"}
+    ],
+    "seguePartners": ["uncle john's band", "wharf rat", "china doll"],
+    "tags": ["exploratory", "jazzy", "psychedelic", "epic-jams"]
+  },
+  {
+    "key": "scarlet begonias",
+    "title": "Scarlet Begonias",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1974-03-23",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Scarlet Begonias arrived in 1974 as a bouncy, calypso-tinged standalone with one of Hunter's most quotable lyrics. In early 1977 it found its soulmate when the band began pairing it with Fire on the Mountain, and the transition jam between them became one of the most beloved stretches of music in the repertoire. Scarlet>Fire remained a second-set cornerstone for the rest of the band's life, and the moment the outro jam starts melting toward Fire is pure Deadhead catnip.",
+    "famousVersions": [
+      {"date": "1974-03-23", "note": "The Cow Palace debut, already fully formed and dancing.", "label": "Hidden gem"},
+      {"date": "1977-05-08", "note": "The Cornell Scarlet>Fire, probably the most listened-to sequence in the entire live catalog.", "label": "The benchmark"}
+    ],
+    "seguePartners": ["fire on the mountain"],
+    "tags": ["joyful", "jazzy", "high-energy"]
+  },
+  {
+    "key": "fire on the mountain",
+    "title": "Fire on the Mountain",
+    "writtenBy": "Hart, Hunter",
+    "debut": "1977-03-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Built on a hypnotic two-chord vamp Mickey Hart had been carrying around for years, Fire on the Mountain entered the repertoire in March 1977 already joined at the hip to Scarlet Begonias. The groove invited Garcia's most lyrical extended soloing, and great versions build wave after wave without ever breaking the trance. It stayed a second-set staple through the end, equally at home in a tight 1977 reading or a loping late-eighties stadium version.",
+    "famousVersions": [
+      {"date": "1977-05-08", "note": "The Cornell version, Garcia's solos climbing forever, the standard against which all others are measured.", "label": "The benchmark"},
+      {"date": "1978-07-08", "note": "The Red Rocks Scarlet>Fire from the July 1978 run, wild and ragged where Cornell is pristine.", "label": "Best jam"}
+    ],
+    "seguePartners": ["scarlet begonias"],
+    "tags": ["psychedelic", "jazzy", "epic-jams"]
+  },
+  {
+    "key": "eyes of the world",
+    "title": "Eyes of the World",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1973-02-09",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Eyes of the World is the Dead at their sunniest and most jazz-inflected, and its evolution runs fast-to-slow. The 1973-74 versions are uptempo and long, often capped with a knotty 7/8 coda that later disappeared. After the hiatus it settled into a relaxed midtempo lope, and in the late eighties it slowed further into a silky groove that fit Brent's shimmer and, famously, a guest saxophone. Whatever the tempo, it was always Garcia's playground.",
+    "famousVersions": [
+      {"date": "1973-02-09", "note": "The debut at Stanford's Maples Pavilion, part of a night that introduced a whole batch of Wake of the Flood material.", "label": "Best intro"},
+      {"date": "1974-06-18", "note": "The Louisville version, a favorite of collectors for its endless, effortless invention.", "label": "Best jam"},
+      {"date": "1990-03-29", "note": "The Nassau version with Branford Marsalis sitting in, released as Wake Up to Find Out; the interplay is jaw-dropping.", "label": "Most emotional"}
+    ],
+    "seguePartners": ["estimated prophet", "china doll", "stella blue"],
+    "tags": ["jazzy", "joyful", "exploratory"]
+  },
+  {
+    "key": "morning dew",
+    "title": "Morning Dew",
+    "writtenBy": "Dobson, Rose",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Bonnie Dobson's post-apocalyptic folk song was in the Dead's book from 1967, but they turned it into something entirely their own: a slow-building catharsis that closed many of their greatest sets. Early versions are raw and garage-psychedelic; by the seventies it had become a stately epic whose final 'I guess it doesn't matter anyway' could level a building. The band saved it for special nights, and hearing the opening chords meant you were at one.",
+    "famousVersions": [
+      {"date": "1977-05-08", "note": "The Cornell Dew, with its shattering final crescendo, is routinely called one of the greatest single performances of the band's career.", "label": "The benchmark"},
+      {"date": "1970-02-13", "note": "An early powerhouse from the legendary Fillmore East stand captured on Dick's Picks 4.", "label": "Hidden gem"}
+    ],
+    "seguePartners": ["dark star", "the other one"],
+    "tags": ["ballad", "dark", "epic-jams"]
+  },
+  {
+    "key": "sugaree",
+    "title": "Sugaree",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-07-31",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Sugaree debuted in 1971 as a modest, shuffling number from Garcia's first solo record, and for a few years it stayed short and sweet. Then the late seventies happened: the tempo relaxed, the spaces opened up, and Garcia began using its simple changes as a canvas for multi-part solos that could stretch the song past twenty minutes. The spring 1977 versions are the gold standard, but a patient Sugaree remained a first-set treat in every later era.",
+    "famousVersions": [
+      {"date": "1977-05-19", "note": "The Atlanta Fox Theatre version from Dick's Picks 29, a twenty-plus-minute masterclass in Garcia solo architecture.", "label": "The benchmark"},
+      {"date": "1971-07-31", "note": "The Yale Bowl debut, short and country-sweet, a world away from what the song would become.", "label": "Hidden gem"}
+    ],
+    "seguePartners": [],
+    "tags": ["mellow", "blues"]
+  },
+  {
+    "key": "ripple",
+    "title": "Ripple",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1970-08-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Ripple is the beating heart of American Beauty, and Hunter's lyric may be the closest thing Deadheads have to a shared prayer. Live, it was surprisingly rare: a fixture of the 1970 acoustic sets, it mostly disappeared afterward, resurfacing in the beloved 1980 acoustic shows and only a handful of times after that. Its scarcity made every appearance precious, and the singalong on the final verse never failed.",
+    "famousVersions": [
+      {"date": "1970-08-18", "note": "Unveiled at the Fillmore West alongside Brokedown Palace and Truckin', one of the great songwriting debuts in the band's history.", "label": "Best intro"},
+      {"date": "1980-10-31", "note": "From the fall 1980 acoustic sets at Radio City that produced Reckoning, tender and note-perfect.", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["acoustic", "mellow", "joyful"]
+  },
+  {
+    "key": "truckin'",
+    "title": "Truckin'",
+    "writtenBy": "Garcia, Lesh, Weir, Hunter",
+    "debut": "1970-08-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The band's autobiographical road anthem started as a fairly straight boogie in 1970 and toughened into a launching pad: by 1972-73 the outro jam routinely exploded into extended improvisation, often landing in The Other One or Nobody's Fault But Mine territory. 'What a long strange trip it's been' became the band's unofficial motto. It stayed a crowd-igniting staple for twenty-five years, and a big Truckin' jam remained one of the surest signs a show was about to lift off.",
+    "famousVersions": [
+      {"date": "1972-05-26", "note": "A tour-hardened monster from the final night of Europe '72 at the Lyceum, the jam rolling far past the song.", "label": "Best jam"},
+      {"date": "1977-09-03", "note": "The Englishtown version from Dick's Picks 15, roared out in front of one of the biggest crowds the band ever drew.", "label": "High-energy classic"}
+    ],
+    "seguePartners": ["the other one", "not fade away"],
+    "tags": ["anthem", "blues", "high-energy"]
+  },
+  {
+    "key": "casey jones",
+    "title": "Casey Jones",
+    "writtenBy": "Garcia, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Casey Jones was Workingman's Dead's cheerful cautionary tale, and live it did one job perfectly: detonate a room. Through the early seventies it was a constant set-closer and encore, the 'driving that train' chorus building to a runaway finish. It faded from the rotation in the mid-eighties after years of heavy service, making later appearances feel like reunions with an old friend. It never needed to evolve much; it arrived fully combustible.",
+    "famousVersions": [
+      {"date": "1970-05-02", "note": "From the fabled Harpur College show released as Dick's Picks 8, the song brand new and gleaming.", "label": "Hidden gem"},
+      {"date": "1971-04-29", "note": "A charging version from the band's farewell run at the Fillmore East.", "label": "High-energy classic"}
+    ],
+    "seguePartners": [],
+    "tags": ["high-energy", "joyful", "anthem"]
+  },
+  {
+    "key": "uncle john's band",
+    "title": "Uncle John's Band",
+    "writtenBy": "Garcia, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Uncle John's Band announced the Dead's 1969 turn toward American roots music, all campfire harmonies and open-hearted invitation. Live it proved sneakily flexible: the gentle folk song contains a 7/4 jam section that the mid-seventies band stretched into real improvisation, often weaving it inside Playin' in the Band. It served as opener, closer, and encore across every era, and 'come hear Uncle John's Band' remained the friendliest words in the songbook.",
+    "famousVersions": [
+      {"date": "1970-05-02", "note": "From the Harpur College show, when the Workingman's material was fresh and the harmonies were tight.", "label": "Hidden gem"},
+      {"date": "1980-10-31", "note": "From the fall 1980 acoustic sets, the song returned to its folk roots in front of a reverent room.", "label": "Most emotional"}
+    ],
+    "seguePartners": ["playin' in the band"],
+    "tags": ["joyful", "acoustic", "anthem", "mellow"]
+  },
+  {
+    "key": "friend of the devil",
+    "title": "Friend of the Devil",
+    "writtenBy": "Garcia, Dawson, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Friend of the Devil began as a sprightly bluegrass-flavored runaway in 1970, taken at a gallop in the acoustic sets. After the hiatus the band slowed it way down, transforming it into a stately, almost mournful ballad with room for delicate Garcia solos — two nearly different songs sharing one lyric. Both versions have partisans, and the slow arrangement gave the devil's bargain at the heart of the song a weight the original only hinted at.",
+    "famousVersions": [
+      {"date": "1970-05-02", "note": "The fast original at Harpur College, all bluegrass momentum.", "label": "Hidden gem"},
+      {"date": "1980-10-31", "note": "From the fall 1980 acoustic revival captured on Reckoning, the slow arrangement at its most intimate.", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["acoustic", "mellow", "ballad"]
+  },
+  {
+    "key": "china cat sunflower",
+    "title": "China Cat Sunflower",
+    "writtenBy": "Garcia, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": 554,
+    "evolution": "Hunter's most gloriously nonsensical lyric rides one of Garcia's most instantly recognizable riffs, and from 1969 on it was almost never played without I Know You Rider attached. The transition jam between the two songs is one of the band's signature creations, peaking in the ferocious 1972-74 versions where the bridge became a full-blown improvisational episode. China>Rider opened or anchored sets in every era, the dependable joy machine of the repertoire.",
+    "famousVersions": [
+      {"date": "1972-08-27", "note": "The Veneta China>Rider, with a transition jam of pure liquid sunshine, is the pairing's high-water mark.", "label": "The benchmark"},
+      {"date": "1971-04-29", "note": "A crackling version from the Fillmore East farewell run, the arrangement lean and fast.", "label": "High-energy classic"}
+    ],
+    "seguePartners": ["i know you rider"],
+    "tags": ["joyful", "psychedelic", "tight", "high-energy"]
+  },
+  {
+    "key": "i know you rider",
+    "title": "I Know You Rider",
+    "writtenBy": "Traditional, arr. Grateful Dead",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": 550,
+    "evolution": "A traditional blues the band played from their earliest days, I Know You Rider found its permanent home as the back half of China>Rider. The 'I wish I was a headlight' verse became one of the great communal moments in Dead shows, with Garcia leaning into the line and the crowd roaring back. The song barely changed across thirty years, which is its own kind of achievement: it was already perfect, a locomotive of pure release after China Cat's twists.",
+    "famousVersions": [
+      {"date": "1972-08-27", "note": "The Veneta version arrives out of the greatest China Cat transition ever played and doesn't waste it.", "label": "The benchmark"},
+      {"date": "1971-04-29", "note": "From the Fillmore East farewell run, the 'headlight' verse landing like a thunderclap.", "label": "High-energy classic"}
+    ],
+    "seguePartners": ["china cat sunflower"],
+    "tags": ["anthem", "joyful", "high-energy"]
+  },
+  {
+    "key": "terrapin station",
+    "title": "Terrapin Station",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1977-02-26",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Hunter wrote the Terrapin lyric in a single storm-lit sitting, and Garcia set it as the band's grand suite: part ballad, part fanfare, part mystery. Live, the Dead performed the 'Lady with a Fan' and title sections, and from its 1977 debut it served as a second-set centerpiece, often rising out of a jam and delivering the show's most majestic moment. It changed less than most Dead songs across the years — its power was ceremonial, and the final instrumental climb never lost its ability to raise the hair on your arms.",
+    "famousVersions": [
+      {"date": "1977-02-26", "note": "The debut at San Bernardino's Swing Auditorium, unveiled the same night as Estimated Prophet.", "label": "Best intro"},
+      {"date": "1977-05-28", "note": "The Hartford version released as To Terrapin, from the tail end of the legendary spring '77 tour.", "label": "The benchmark"}
+    ],
+    "seguePartners": ["playin' in the band"],
+    "tags": ["epic-jams", "anthem", "psychedelic"]
+  },
+  {
+    "key": "estimated prophet",
+    "title": "Estimated Prophet",
+    "writtenBy": "Weir, Barlow",
+    "debut": "1977-02-26",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Weir's portrait of a California doomsday true-believer rides a slinky reggae-inflected 7/4 groove that immediately set it apart. From its 1977 debut it slotted into the second set, and its long outro jam became a reliable doorway — most often melting into Eyes of the World in one of the band's classic pairings. Weir's vocal grew more theatrical and unhinged over the years, and the song's queasy, prowling energy made it the perfect dark counterweight to the joy around it.",
+    "famousVersions": [
+      {"date": "1977-05-08", "note": "The Cornell version, the new song already sounding lived-in on the most famous night of the year.", "label": "The benchmark"},
+      {"date": "1990-03-29", "note": "At Nassau with Branford Marsalis aboard, the outro jam became something entirely other.", "label": "Best jam"}
+    ],
+    "seguePartners": ["eyes of the world"],
+    "tags": ["jazzy", "dark", "psychedelic"]
+  },
+  {
+    "key": "shakedown street",
+    "title": "Shakedown Street",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1978-08-31",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Mocked as 'disco Dead' when the album dropped, Shakedown Street had the last laugh: the title track became one of the band's great grooves and lent its name to every parking-lot vendor row for the rest of touring history. Live versions kept stretching, with a long funk jam in the middle that Brent-era bands rode particularly hard. By the late eighties a first-set (or set-opening) Shakedown was an event, ten-plus minutes of the Dead proving they could be a dance band whenever they felt like it.",
+    "famousVersions": [
+      {"date": "1978-08-31", "note": "The debut at Red Rocks, days before the band took the new material to Egypt.", "label": "Best intro"},
+      {"date": "1989-07-07", "note": "A fat late-eighties groove from the JFK Stadium show later released as Crimson, White & Indigo.", "label": "Best jam"}
+    ],
+    "seguePartners": [],
+    "tags": ["disco-era", "high-energy", "jazzy"]
+  },
+  {
+    "key": "franklin's tower",
+    "title": "Franklin's Tower",
+    "writtenBy": "Garcia, Kreutzmann, Hunter",
+    "debut": "1975-06-17",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The release valve at the end of the Help>Slip>Frank suite, Franklin's Tower turns three chords and 'roll away the dew' into pure celebration. Debuted during the 1975 hiatus at a rare one-off show, it became a fixture once touring resumed, and it also worked beautifully on its own as a set opener. Garcia loved soloing over its endless major-key cycle, and great versions feel like they could roll on forever without anyone minding.",
+    "famousVersions": [
+      {"date": "1975-08-13", "note": "The One From The Vault version from the Great American Music Hall, the suite's definitive early statement.", "label": "The benchmark"},
+      {"date": "1977-05-09", "note": "At Buffalo the full Help>Slip>Frank opened the show, an audacious move that paid off spectacularly.", "label": "Best jam"}
+    ],
+    "seguePartners": ["help on the way", "slipknot"],
+    "tags": ["joyful", "high-energy", "anthem"]
+  },
+  {
+    "key": "help on the way",
+    "title": "Help on the Way",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1975-06-17",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The opening panel of the band's great mid-seventies triptych, Help on the Way is the Dead at their most sophisticated: jazz chords, a coiled melody, and a lyric about love as survival. It debuted in 1975, thrived in 1976-77, then spent long stretches on the shelf, which made each revival — most famously at Hampton in 1989 — feel like a gift. It was rarely played without Slipknot! and Franklin's Tower completing the suite.",
+    "famousVersions": [
+      {"date": "1975-08-13", "note": "The One From The Vault performance, tight as a watch spring at the Great American Music Hall.", "label": "The benchmark"},
+      {"date": "1977-05-09", "note": "Opening the Buffalo show cold with the whole suite, one of spring '77's boldest first-set statements.", "label": "Best jam"},
+      {"date": "1989-10-08", "note": "The Hampton revival after years away, greeted with pandemonium.", "label": "The revival"}
+    ],
+    "seguePartners": ["slipknot", "franklin's tower"],
+    "tags": ["jazzy", "tight", "dark"]
+  },
+  {
+    "key": "slipknot",
+    "title": "Slipknot!",
+    "writtenBy": "Garcia, Godchaux, Kreutzmann, Lesh, Weir",
+    "debut": "1975-06-17",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The knotted instrumental bridge between Help on the Way and Franklin's Tower, Slipknot! is the closest the Dead came to writing pure fusion: a serpentine unison line that opens into free improvisation before snapping back for the descent into Franklin's. The 1976-77 versions balance composition and chaos perfectly, and later revivals tested how much of the intricate head the band could still nail. When they landed it clean, there was no more thrilling sixty seconds in the repertoire.",
+    "famousVersions": [
+      {"date": "1975-08-13", "note": "The One From The Vault version, precise and menacing, shows why the suite stunned listeners on release.", "label": "The benchmark"},
+      {"date": "1977-05-09", "note": "The Buffalo version stretches the middle jam into genuinely dark, exploratory territory.", "label": "Best jam"}
+    ],
+    "seguePartners": ["help on the way", "franklin's tower"],
+    "tags": ["jazzy", "exploratory", "dark", "tight"]
+  },
+  {
+    "key": "althea",
+    "title": "Althea",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1979-08-04",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Althea arrived in 1979 as Go to Heaven's slow-rolling gem and quietly became one of the most beloved first-set songs of the band's final fifteen years. Its half-time blues sway gave Garcia room for conversational, behind-the-beat singing and solos that could turn suddenly incandescent. Hunter's lyric — wry, wounded, self-aware — aged beautifully alongside Garcia's voice, and late-eighties versions have a lived-in gravity the early ones only sketched.",
+    "famousVersions": [
+      {"date": "1979-08-04", "note": "The debut at Oakland Auditorium, the groove already fully in the pocket.", "label": "Best intro"},
+      {"date": "1989-07-07", "note": "The JFK Stadium version from Crimson, White & Indigo, one of the most widely loved latter-day performances.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["mellow", "blues", "jazzy"]
+  },
+  {
+    "key": "sugar magnolia",
+    "title": "Sugar Magnolia",
+    "writtenBy": "Weir, Hunter",
+    "debut": "1970-06-07",
+    "lastPlayed": null,
+    "timesPlayed": 594,
+    "evolution": "Weir's sunniest song became one of the most-played numbers in the entire catalog, the default set-two closer for a quarter century. Early versions are compact country-rock; over time the band often split it, saving the double-time Sunshine Daydream coda as a separate detonation, sometimes an entire set later. It was the sound of a show reaching escape velocity — when Sugar Mag started, you knew the band intended to leave the building on a high.",
+    "famousVersions": [
+      {"date": "1972-08-27", "note": "The Veneta performance gave its coda's name to the Sunshine Daydream film of that legendary day.", "label": "The benchmark"},
+      {"date": "1978-12-31", "note": "At the Closing of Winterland it did celebratory duty on one of the most famous New Year's Eves in band history.", "label": "High-energy classic"}
+    ],
+    "seguePartners": [],
+    "tags": ["high-energy", "joyful", "anthem"]
+  },
+  {
+    "key": "stella blue",
+    "title": "Stella Blue",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1972-06-17",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Stella Blue is Hunter's meditation on broken dreams and Garcia's most fragile vehicle, usually emerging from deep space or a big jam as the show's emotional low tide. The seventies versions are hushed and precise; as Garcia aged, the song aged with him, and late performances carry an almost unbearable weight, his frayed voice becoming part of the meaning. The closing guitar coda, when Garcia took his time with it, produced some of the most beautiful minutes the band ever played.",
+    "famousVersions": [
+      {"date": "1972-06-17", "note": "Debuted at the Hollywood Bowl — a night made poignant in hindsight as Pigpen's final show with the band.", "label": "Hidden gem"},
+      {"date": "1974-10-18", "note": "From the Winterland farewell run filmed for The Grateful Dead Movie, delivered like a goodbye.", "label": "Most emotional"}
+    ],
+    "seguePartners": ["playin' in the band", "the other one"],
+    "tags": ["ballad", "mellow", "dark"]
+  },
+  {
+    "key": "wharf rat",
+    "title": "Wharf Rat",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-02-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The story of August West, told from a dockside gutter, is one of the great American song-portraits, and the Dead treated it with matching reverence. From 1971 on it typically surfaced after the second set's biggest jam, its hushed verses and soaring 'I'll get up and fly away' bridge providing the show's redemption arc. The arrangement stayed remarkably stable for twenty-five years; what deepened was Garcia's delivery, which turned the song from character study into confession.",
+    "famousVersions": [
+      {"date": "1971-02-18", "note": "Debuted at the Capitol Theatre the same night as Playin' in the Band and Bertha — some night of new material.", "label": "Best intro"},
+      {"date": "1978-12-31", "note": "At the Closing of Winterland it rose out of the night's massive jam sequence with total authority.", "label": "Most emotional"}
+    ],
+    "seguePartners": ["the other one", "playin' in the band", "not fade away"],
+    "tags": ["ballad", "dark", "mellow"]
+  },
+  {
+    "key": "brokedown palace",
+    "title": "Brokedown Palace",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1970-08-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Brokedown Palace is the band's benediction — 'fare you well, fare you well' — and they used it that way, most often as the final encore that sent everyone home in a warm hush. Born in the extraordinary 1970 songwriting burst that produced American Beauty, it changed little over the years because it didn't need to. Its three-part harmonies were fragile and human, and on nights of farewell (venues closing, eras ending) no other song would do.",
+    "famousVersions": [
+      {"date": "1970-08-18", "note": "Unveiled at the Fillmore West the same night as Ripple and Truckin', an almost absurd bounty of new songs.", "label": "Best intro"},
+      {"date": "1971-04-29", "note": "A tender goodnight from the band's final Fillmore East stand.", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["ballad", "mellow"]
+  },
+  {
+    "key": "box of rain",
+    "title": "Box of Rain",
+    "writtenBy": "Lesh, Hunter",
+    "debut": null,
+    "lastPlayed": "1995-07-09",
+    "timesPlayed": null,
+    "evolution": "Phil Lesh asked Hunter for a song he could sing to his dying father, and the result became one of the most cherished things the band ever recorded. It appeared live in the early seventies, then vanished for over a decade before a mid-eighties revival brought it roaring back as a fan favorite, greeted every time with one of the loudest ovations in the repertoire. Fittingly, it was the last song the Grateful Dead ever played, closing the final show at Soldier Field in July 1995.",
+    "famousVersions": [
+      {"date": "1986-03-20", "note": "The revival at Hampton after a dozen years away — the crowd's eruption at the opening chords says everything.", "label": "The revival"},
+      {"date": "1995-07-09", "note": "The final encore of the final show: 'such a long, long time to be gone, and a short time to be there.'", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["mellow", "joyful", "ballad"]
+  },
+  {
+    "key": "bertha",
+    "title": "Bertha",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-02-18",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Bertha burst out of the February 1971 Capitol Theatre run and almost immediately became the band's quintessential show-opener, a shot of adrenaline built on Garcia's tumbling riff. The version on Skull & Roses made it a fan anthem before the studio ever got a crack at it. It stayed in heavy rotation for twenty-five years with its spirit intact — when the band wanted to announce that tonight was going to cook, they opened with Bertha.",
+    "famousVersions": [
+      {"date": "1971-02-18", "note": "The debut, opening the famous Capitol Theatre run that introduced half a new songbook.", "label": "Best intro"},
+      {"date": "1972-05-03", "note": "The Europe '72 tour kept Bertha hot; the Paris versions crackle with road-tested confidence.", "label": "High-energy classic"}
+    ],
+    "seguePartners": ["good lovin'"],
+    "tags": ["high-energy", "joyful"]
+  },
+  {
+    "key": "deal",
+    "title": "Deal",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-02-19",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Deal is Hunter's gambler wisdom set to a barrelhouse shuffle, and for most of its life it did honorable service as a first-set rave-up. The interesting evolution came late: in the eighties the band began tacking on an extended, double-timed outro jam, and what had been a three-minute romp became a set-closing steamroller with Garcia shredding over the top. Few songs show the late-era band's raw power better than a Deal with the hammer down.",
+    "famousVersions": [
+      {"date": "1971-02-19", "note": "Debuted during the Capitol Theatre run, part of the astonishing wave of new Garcia/Hunter songs that week.", "label": "Best intro"},
+      {"date": "1977-05-08", "note": "The Cornell version closes the first set with spring-'77 snap and polish.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["blues", "high-energy"]
+  },
+  {
+    "key": "jack straw",
+    "title": "Jack Straw",
+    "writtenBy": "Weir, Hunter",
+    "debut": "1971-10-19",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Jack Straw's outlaw tale debuted in October 1971, the same night Keith Godchaux joined the band on piano. Originally Weir sang it alone; during Europe '72 he and Garcia began splitting the vocals by character, which sharpened the song's murder-ballad drama enormously. Over the years the mid-song jam grew from a brief swell into a genuine peak, and by the eighties a 'Jack Straw' opener with its roaring climax was one of the most reliable ignition switches the band had.",
+    "famousVersions": [
+      {"date": "1971-10-19", "note": "Debuted in Minneapolis at Keith Godchaux's first show, alongside Tennessee Jed and other new songs.", "label": "Best intro"},
+      {"date": "1977-05-08", "note": "The Cornell version, taut and gleaming, from the night everything worked.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["cowboy", "anthem", "tight"]
+  },
+  {
+    "key": "tennessee jed",
+    "title": "Tennessee Jed",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-10-19",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Tennessee Jed is Hunter's shaggy-dog homesick blues, debuted the night Keith Godchaux joined and refined nightly across Europe '72, where its loping bounce found its permanent shape. It settled into the first set as a dependable crowd-pleaser, its 'drink all day and rock all night' refrain built for singing along. Garcia's solos on Jed stayed playful to the end — it was never the deepest song in the book, but on the right night it was one of the most purely fun.",
+    "famousVersions": [
+      {"date": "1971-10-19", "note": "The Minneapolis debut, from the same remarkable night as Jack Straw.", "label": "Best intro"},
+      {"date": "1972-05-26", "note": "By the last night of Europe '72 the song had been polished into the shape it would keep for decades.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["mellow", "cowboy", "blues"]
+  },
+  {
+    "key": "bird song",
+    "title": "Bird Song",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1971-02-19",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Written in memory of Janis Joplin, Bird Song began as a gentle elegy and grew into one of the band's finest first-set jamming vehicles. Early-seventies versions float; the song then sat out most of the decade before returning in 1980, both acoustic and electric, with its dreamy modal jam expanded into real exploration. Late-era Bird Songs could run fifteen minutes and reach genuinely transcendent places — a quiet masterpiece that kept deepening for twenty-five years.",
+    "famousVersions": [
+      {"date": "1972-08-27", "note": "The Veneta Bird Song, shimmering in the heat, is widely considered the early era's finest.", "label": "The benchmark"},
+      {"date": "1980-10-31", "note": "From the fall 1980 acoustic sets captured on Reckoning, delicate and haunted.", "label": "Hidden gem"},
+      {"date": "1990-03-29", "note": "At Nassau with Branford Marsalis, the jam turned weightless — a late-era peak.", "label": "Best jam"}
+    ],
+    "seguePartners": [],
+    "tags": ["mellow", "exploratory", "jazzy", "psychedelic"]
+  },
+  {
+    "key": "not fade away",
+    "title": "Not Fade Away",
+    "writtenBy": "Holly, Petty",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": 531,
+    "evolution": "The Dead took Buddy Holly's Bo Diddley beat and turned it into a tribal ritual that closed hundreds of shows. In the early seventies it was welded to Goin' Down the Road Feeling Bad in a beloved medley; in 1977 it famously sandwiched inside St. Stephen; and by the eighties it had become the ultimate crowd-participation closer, the audience clapping the beat and chanting 'you know our love will not fade away' long after the band left the stage. No song blurred the line between band and audience more completely.",
+    "famousVersions": [
+      {"date": "1971-04-29", "note": "From the Fillmore East run behind Skull & Roses, paired with Goin' Down the Road in the classic medley.", "label": "The benchmark"},
+      {"date": "1977-05-08", "note": "The Cornell St. Stephen>NFA>St. Stephen sandwich, one of the most famous sequences of the decade.", "label": "Best jam"}
+    ],
+    "seguePartners": ["st stephen"],
+    "tags": ["primal", "high-energy", "anthem"]
+  },
+  {
+    "key": "turn on your love light",
+    "title": "Turn On Your Love Light",
+    "writtenBy": "Scott, Malone",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Bobby Bland's R&B hit became Pigpen's kingdom: a relentless groove over which he preached, rapped, and exhorted crowds to get their hands out of their pockets, sometimes for half an hour or more. It closed many of the greatest shows of the primal era. After Pigpen's death the song rested for nearly a decade until Weir revived it in the eighties as a compact, celebratory closer — fun, but the Pigpen versions remain the definitive article and some of the wildest music the band ever made.",
+    "famousVersions": [
+      {"date": "1969-02-27", "note": "The Live/Dead version, Pigpen in full command of the Fillmore West.", "label": "The benchmark"},
+      {"date": "1970-02-13", "note": "The Fillmore East version capping the fabled Dark Star>Other One sequence on Dick's Picks 4.", "label": "Best jam"}
+    ],
+    "seguePartners": ["dark star", "the other one"],
+    "tags": ["primal", "high-energy", "blues", "raw"]
+  },
+  {
+    "key": "good lovin'",
+    "title": "Good Lovin'",
+    "writtenBy": "Resnick, Clark",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "The Rascals' hit lived two lives in the Dead's hands. In the Pigpen era it was a vehicle for extended jams and his freewheeling raps, often blown open into ten-plus minutes of garage-soul mayhem. After his death it rested until Weir reclaimed it in the late seventies as a bouncing, Bo Diddley-fied second-set party number, a role it kept to the end. Same three chords, two completely different bands.",
+    "famousVersions": [
+      {"date": "1972-04-17", "note": "A Europe '72 Copenhagen romp with Pigpen rapping at length — his era's Good Lovin' at full strength.", "label": "The benchmark"},
+      {"date": "1971-04-29", "note": "A raucous version from the Fillmore East farewell run, the band and Pigpen egging each other on.", "label": "High-energy classic"}
+    ],
+    "seguePartners": ["bertha"],
+    "tags": ["primal", "raw", "high-energy"]
+  },
+  {
+    "key": "viola lee blues",
+    "title": "Viola Lee Blues",
+    "writtenBy": "Lewis",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Noah Lewis's jug-band blues was the first great Dead jamming vehicle: the anchor of the debut album and the song where the 1966-70 band learned to build a single accelerating crescendo until the room came apart. Versions routinely passed fifteen minutes, climbing to a shrieking peak before snapping back to the verse like nothing happened. It left the repertoire in 1970, making it the rare cornerstone that later fans never got to see — and giving the surviving tapes an almost mythic status.",
+    "famousVersions": [
+      {"date": "1967-09-03", "note": "The Rio Nido version, a legendary early peak whose feedback-drenched climax hints at everything to come.", "label": "Most psychedelic"},
+      {"date": "1970-05-02", "note": "The Harpur College monster from Dick's Picks 8, one of the last and greatest, ending in glorious wreckage.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["primal", "raw", "psychedelic", "epic-jams"]
+  },
+  {
+    "key": "cumberland blues",
+    "title": "Cumberland Blues",
+    "writtenBy": "Garcia, Lesh, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Cumberland Blues fuses bluegrass drive, coal-mine storytelling, and a jam that swings harder than the Dead had any right to. A Workingman's Dead standout, it was a fixture of the early seventies — the Europe '72 versions are ferocious — then drifted in and out of the rotation for the rest of the band's life. Hunter loved that a real miner reportedly wondered what the song's author would think of the Dead's version; no compliment ever pleased him more.",
+    "famousVersions": [
+      {"date": "1972-04-08", "note": "From the tour-opening Wembley stand that helped fill the Europe '72 album — the song at peak velocity.", "label": "The benchmark"},
+      {"date": "1970-05-02", "note": "A joyous early version from the Harpur College show, the new Workingman's material in full bloom.", "label": "Hidden gem"}
+    ],
+    "seguePartners": [],
+    "tags": ["cowboy", "high-energy", "tight", "blues"]
+  },
+  {
+    "key": "he's gone",
+    "title": "He's Gone",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1972-04-17",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Written on the road — it debuted mid-tour during Europe '72 — He's Gone started as a wry kiss-off and gathered emotional weight it never lost. After Pigpen's death in 1973 the song became an elegy in practice, and the band leaned into its long 'nothing's gonna bring him back' outro, which developed gorgeous stacked harmonies and often dissolved into the night's big jam. It became the song the Dead reached for when the family lost someone.",
+    "famousVersions": [
+      {"date": "1972-04-17", "note": "Unveiled at the Tivoli in Copenhagen, brand new and already sturdy.", "label": "Best intro"},
+      {"date": "1972-09-21", "note": "By the fall of '72 the outro had blossomed, sliding into the era's huge second-set jams.", "label": "Best jam"}
+    ],
+    "seguePartners": ["truckin'", "the other one"],
+    "tags": ["mellow", "ballad", "blues"]
+  },
+  {
+    "key": "black peter",
+    "title": "Black Peter",
+    "writtenBy": "Garcia, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "A deathbed blues from Workingman's Dead, Black Peter is one of Hunter's starkest lyrics and one of Garcia's most patient vehicles. Live, it crawled — deliberately — with the band hanging behind the beat while Garcia wrung out every line, and the 'see here how everything lead up to this day' bridge built to a genuinely cathartic release. It stayed in rotation across all eras as the second set's dark night of the soul, the shadow that made the closing rave-ups shine brighter.",
+    "famousVersions": [
+      {"date": "1970-02-13", "note": "An early, aching version from the Fillmore East stand released on Dick's Picks 4.", "label": "The benchmark"},
+      {"date": "1970-05-02", "note": "From the Harpur College show, the Workingman's material at its freshest.", "label": "Hidden gem"}
+    ],
+    "seguePartners": [],
+    "tags": ["ballad", "blues", "dark", "mellow"]
+  },
+  {
+    "key": "china doll",
+    "title": "China Doll",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1974-02-22",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Hunter called it 'the suicide song,' and China Doll is as fragile as music gets: a whispered conversation with the departed over a spare, chiming arrangement. It surfaced sparingly, usually drifting out of space or a big jam when the band wanted absolute stillness. The 1980 acoustic performances revealed its bones, and later electric versions, with Brent's synth glass-harmonica textures, could silence twenty thousand people. A rarity by design — it only worked when the night had earned it.",
+    "famousVersions": [
+      {"date": "1974-02-22", "note": "Debuted at Winterland alongside Ship of Fools, two dark new Garcia/Hunter ballads in one night.", "label": "Best intro"},
+      {"date": "1980-10-31", "note": "From the fall 1980 acoustic sets captured on Reckoning, almost unbearably intimate.", "label": "Most emotional"}
+    ],
+    "seguePartners": ["playin' in the band"],
+    "tags": ["ballad", "dark", "mellow"]
+  },
+  {
+    "key": "ship of fools",
+    "title": "Ship of Fools",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1974-02-22",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Ship of Fools is Hunter's weary indictment of corrupted leadership, set by Garcia as a slow gospel-tinged ballad from the Mars Hotel. It debuted in early 1974 and held a place in the book for two decades, usually mid-second-set, where its stately build gave shows a moment of gravity. The song barely changed structurally, but Garcia's delivery deepened year over year — late versions sound less like protest and more like grief.",
+    "famousVersions": [
+      {"date": "1974-02-22", "note": "The Winterland debut, unveiled the same night as China Doll.", "label": "Best intro"},
+      {"date": "1974-06-18", "note": "A stately mid-'74 reading from the Louisville show beloved by collectors.", "label": "Hidden gem"}
+    ],
+    "seguePartners": [],
+    "tags": ["ballad", "mellow", "dark"]
+  },
+  {
+    "key": "the wheel",
+    "title": "The Wheel",
+    "writtenBy": "Garcia, Kreutzmann, Hunter",
+    "debut": "1976-06-03",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Born from a studio jam on Garcia's 1972 solo album, The Wheel didn't reach the stage until the band returned from hiatus in June 1976. It quickly found its enduring home as the sunrise after the storm: the song that most often rolled out of drums and space, its circular figure and gospel lift guiding shows back from the abyss. Simple, radiant, and never overplayed, it became one of the most quietly loved songs in the book.",
+    "famousVersions": [
+      {"date": "1976-06-03", "note": "The live debut at the Paramount in Portland as the band came off hiatus with a rebuilt repertoire.", "label": "Best intro"},
+      {"date": "1976-06-14", "note": "All over the comeback tour that month, the song settled into the gentle glide it would keep for twenty years.", "label": "Hidden gem"}
+    ],
+    "seguePartners": ["the other one"],
+    "tags": ["mellow", "joyful", "exploratory"]
+  },
+  {
+    "key": "touch of grey",
+    "title": "Touch of Grey",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1982-09-15",
+    "lastPlayed": "1995-07-09",
+    "timesPlayed": null,
+    "evolution": "Touch of Grey spent five years as a live favorite before In the Dark made it the band's only top-ten hit in 1987, triggering the 'Touchhead' boom that changed the scene forever. Onstage it was a beloved opener whose 'we will get by, we will survive' chorus became a genuine credo, especially after Garcia's 1986 coma and comeback. The band opened their final show with it in July 1995, which in hindsight reads like a last message to the tribe.",
+    "famousVersions": [
+      {"date": "1982-09-15", "note": "The debut — fans instantly seized on the chorus, five years before the radio did.", "label": "Best intro"},
+      {"date": "1995-07-09", "note": "Opening the final show at Soldier Field: 'we will survive' as farewell.", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["anthem", "joyful", "high-energy"]
+  },
+  {
+    "key": "standing on the moon",
+    "title": "Standing on the Moon",
+    "writtenBy": "Garcia, Hunter",
+    "debut": "1989-02-05",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "One of the last great Garcia/Hunter ballads, Standing on the Moon arrived in 1989 on Built to Last and immediately felt older and wiser than its years. Its narrator gazes down at a world of beauty and violence and just wants to be home 'with you' — a lyric that grew more devastating as Garcia's health declined. Live versions were direct and unadorned, the late-era band at its most sincere, and the closing refrain could stretch into a long, aching vamp.",
+    "famousVersions": [
+      {"date": "1989-02-05", "note": "The debut at the Henry J. Kaiser in Oakland, part of the strong Built to Last crop.", "label": "Best intro"},
+      {"date": "1990-03-29", "note": "A tender spring 1990 reading from the celebrated Nassau run — the song fully inhabited.", "label": "Most emotional"}
+    ],
+    "seguePartners": [],
+    "tags": ["ballad", "mellow"]
+  }
+]

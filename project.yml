@@ -1,0 +1,48 @@
+name: ShakedownAI
+options:
+  bundleIdPrefix: com.shakedown
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    # CI overrides CURRENT_PROJECT_VERSION per build; bump MARKETING_VERSION for releases.
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    # Automatic signing for device installs; simulator builds pass
+    # CODE_SIGNING_ALLOWED=NO on the command line instead.
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: R2C4T4N7US
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  ShakedownAI:
+    type: application
+    platform: iOS
+    sources:
+      - ShakedownAI
+    info:
+      path: ShakedownAI/App/Info.plist
+      properties:
+        CFBundleDisplayName: Deadheads.AI
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.deadheads.app
+        TARGETED_DEVICE_FAMILY: "1"
+    scheme:
+      testTargets: [ShakedownAITests]
+  ShakedownAITests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - ShakedownAITests
+    dependencies:
+      - target: ShakedownAI
