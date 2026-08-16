@@ -4,6 +4,7 @@ struct SettingsScreen: View {
     @Environment(AppEnvironment.self) private var env
     @State private var apiKeyField = ""
     @State private var hasKey = KeychainStore.hasAPIKey
+    private let hasBundledKey = KeychainStore.bundledAPIKey != nil
     @State private var showingKeySaved = false
     @State private var cacheSize = 0
     @State private var displayName = ""
@@ -35,15 +36,18 @@ struct SettingsScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Intelligence").sectionHeaderStyle()
             VStack(alignment: .leading, spacing: 12) {
+                let aiActive = hasKey || hasBundledKey
                 HStack {
-                    Image(systemName: hasKey ? "brain.filled.head.profile" : "brain.head.profile")
-                        .foregroundStyle(hasKey ? Theme.sage : Theme.accent)
+                    Image(systemName: aiActive ? "brain.filled.head.profile" : "brain.head.profile")
+                        .foregroundStyle(aiActive ? Theme.sage : Theme.accent)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(hasKey ? "OpenAI connected" : "Offline brain active")
+                        Text(aiActive ? "OpenAI connected" : "Offline brain active")
                             .font(Theme.headline)
                             .foregroundStyle(Theme.textPrimary)
                         Text(hasKey
                              ? "Recommendations and chat use your OpenAI key, grounded in real archive data."
+                             : hasBundledKey
+                             ? "Recommendations and chat use this build's included OpenAI key, grounded in real archive data. Paste your own key below to use it instead."
                              : "Everything works offline from the curated knowledge base. Add an OpenAI key to upgrade the prose and free-form chat.")
                             .font(Theme.caption)
                             .foregroundStyle(Theme.textSecondary)

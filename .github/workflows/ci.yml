@@ -91,6 +91,17 @@ jobs:
           mkdir -p ~/private_keys
           printf '%s' "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey.p8
 
+      - name: Write bundled OpenAI key
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [[ -n "$OPENAI_API_KEY" ]]; then
+            printf 'OPENAI_API_KEY = %s\n' "$OPENAI_API_KEY" > Config/Secrets.xcconfig
+          else
+            echo "::warning::OPENAI_API_KEY secret not set — build ships without a bundled key (offline brain / user-supplied key only)."
+          fi
+
       - name: Archive
         if: steps.secrets.outputs.configured == 'true'
         run: |

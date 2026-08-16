@@ -23,6 +23,9 @@ targets:
     platform: iOS
     sources:
       - ShakedownAI
+    configFiles:
+      Debug: Config/Shared.xcconfig
+      Release: Config/Shared.xcconfig
     info:
       path: ShakedownAI/App/Info.plist
       properties:
@@ -33,6 +36,7 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
+        OpenAIAPIKey: $(OPENAI_API_KEY)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ai.deadheads.app

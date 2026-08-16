@@ -25,3 +25,6 @@ xcuserdata/
 *.p8
 *.p12
 *.mobileprovision
+
+# Machine-local secrets (API keys) — never commit
+Config/Secrets.xcconfig

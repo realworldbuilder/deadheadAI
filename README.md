@@ -28,11 +28,15 @@ xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
 
 All project configuration lives in `project.yml` — never edit the `.xcodeproj` by hand; rerun `xcodegen generate` after adding files.
 
+### Bundling an OpenAI key (optional)
+
+The app works without any key (offline brain), and users can paste their own in Settings. To bake a key into your own builds, copy [Config/Secrets.example.xcconfig](Config/Secrets.example.xcconfig) to `Config/Secrets.xcconfig` (gitignored — never commit a real key) and fill in your key. A user's Settings key always takes priority over the bundled one.
+
 ## Architecture
 
 - **Swift 6** strict concurrency with `SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor` (approachable concurrency). Networking/parsing code opts out with `nonisolated`.
 - **Provider protocols** (`ShakedownAI/Core/Providers/Providers.swift`): `LiveRecordingProvider`, `MetadataProvider`, `StreamingProvider`, `AIProvider`, `AuthProvider`, `SocialProvider`. Live implementations hit archive.org; mocks power previews, tests, and the demo social layer. Swap providers without touching UI.
-- **AI**: `CompositeAIProvider` uses the OpenAI Responses API when a key is saved (Settings → Keychain), and falls back to `LocalKnowledgeAI` — a deterministic offline brain built on the bundled knowledge base (`Resources/knowledge_base/*.json`: 67 curated shows, 45 song histories, 7 eras, 6 journeys, quotes). Prompts are grounded: the model only ever chooses among real archive candidates and real setlists.
+- **AI**: `CompositeAIProvider` uses the OpenAI Responses API when a key is available (Settings → Keychain, or a build-time bundled key — see "Bundling an OpenAI key"), and falls back to `LocalKnowledgeAI` — a deterministic offline brain built on the bundled knowledge base (`Resources/knowledge_base/*.json`: 67 curated shows, 45 song histories, 7 eras, 6 journeys, quotes). Prompts are grounded: the model only ever chooses among real archive candidates and real setlists.
 - **Smart collections** (`Core/AI/SmartCollections.swift`, `SmartCollectionEngine.swift`): four shelves the app builds for itself and rebuilds whenever the day or the daypart turns over. A pure planner (`SmartCollectionPlanner`) reads the clock, the calendar (show anniversaries, song debuts, tour seasons), and listening trends (`TrendEngine`) into grounded briefs; the AI provider names each shelf and orders its picks, constrained to shows it was offered. Results cache in SwiftData per slot, and any shelf can be pinned into a real, editable collection.
 - **Persistence**: SwiftData (`Core/Persistence/`) for metadata caches, journal, collections, listening history, taste profile, journey progress, and chat. Cache tables store opaque encoded domain structs; models never cross actor boundaries.
 - **Audio**: `PlayerEngine` wraps one AVPlayer with an explicit queue; background audio, lock-screen Now Playing info and remote commands, interruption handling. Listening events feed the taste engine.
@@ -65,6 +69,12 @@ gh secret set ASC_PRIVATE_KEY --repo realworldbuilder/deadheadAI < ~/Downloads/A
 ```
 
 Until the secrets exist, the upload job skips itself with a warning; tests still run.
+
+Optionally, add an `OPENAI_API_KEY` secret to bundle an OpenAI key into TestFlight builds (see "Bundling an OpenAI key" above — anyone can extract a key from a distributed .ipa, so treat it as semi-public and set spending limits):
+
+```bash
+gh secret set OPENAI_API_KEY --repo realworldbuilder/deadheadAI
+```
 
 ## Debug hooks
 

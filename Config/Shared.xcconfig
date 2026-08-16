@@ -1,0 +1,6 @@
+// Committed defaults. Machine-local secrets live in Config/Secrets.xcconfig
+// (gitignored, see Config/Secrets.example.xcconfig) — the optional include
+// below silently no-ops when that file is absent, e.g. on CI.
+OPENAI_API_KEY =
+
+#include? "Secrets.xcconfig"

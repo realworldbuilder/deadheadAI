@@ -45,4 +45,17 @@ nonisolated enum KeychainStore {
     }
 
     static var hasAPIKey: Bool { loadAPIKey() != nil }
+
+    /// Build-time key injected from Config/Secrets.xcconfig via Info.plist;
+    /// nil in clean checkouts and CI builds.
+    static var bundledAPIKey: String? {
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "OpenAIAPIKey") as? String,
+              !key.isEmpty else { return nil }
+        return key
+    }
+
+    /// The key AI calls should use: the user's keychain key wins, then the bundled one.
+    static func resolveAPIKey() -> String? { loadAPIKey() ?? bundledAPIKey }
+
+    static var hasUsableKey: Bool { resolveAPIKey() != nil }
 }

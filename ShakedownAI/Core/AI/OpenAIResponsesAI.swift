@@ -101,7 +101,7 @@ final class OpenAIResponsesAI: AIProvider {
     }
 
     private func requireKey() throws -> String {
-        guard let key = KeychainStore.loadAPIKey() else { throw AIError.missingKey }
+        guard let key = KeychainStore.resolveAPIKey() else { throw AIError.missingKey }
         return key
     }
 
@@ -557,32 +557,32 @@ final class CompositeAIProvider: AIProvider {
         self.remote = OpenAIResponsesAI(knowledgeBase: knowledgeBase)
     }
 
-    var name: String { KeychainStore.hasAPIKey ? remote.name : local.name }
-    var isUsingRemote: Bool { KeychainStore.hasAPIKey }
+    var name: String { KeychainStore.hasUsableKey ? remote.name : local.name }
+    var isUsingRemote: Bool { KeychainStore.hasUsableKey }
 
     func recommend(query: String?, profile: TasteSnapshot, candidates: [Show]) async throws -> Recommendation {
-        if KeychainStore.hasAPIKey, let result = try? await remote.recommend(query: query, profile: profile, candidates: candidates) {
+        if KeychainStore.hasUsableKey, let result = try? await remote.recommend(query: query, profile: profile, candidates: candidates) {
             return result
         }
         return try await local.recommend(query: query, profile: profile, candidates: candidates)
     }
 
     func showGuide(for detail: RecordingDetail, show: Show?) async throws -> ShowGuide {
-        if KeychainStore.hasAPIKey, let result = try? await remote.showGuide(for: detail, show: show) {
+        if KeychainStore.hasUsableKey, let result = try? await remote.showGuide(for: detail, show: show) {
             return result
         }
         return try await local.showGuide(for: detail, show: show)
     }
 
     func parseSearchIntent(_ text: String) async throws -> SearchFilters {
-        if KeychainStore.hasAPIKey, let result = try? await remote.parseSearchIntent(text) {
+        if KeychainStore.hasUsableKey, let result = try? await remote.parseSearchIntent(text) {
             return result
         }
         return try await local.parseSearchIntent(text)
     }
 
     func curateCollection(brief: CollectionBrief, candidates: [CollectionCandidate]) async throws -> CuratedCollection {
-        if KeychainStore.hasAPIKey,
+        if KeychainStore.hasUsableKey,
            let result = try? await remote.curateCollection(brief: brief, candidates: candidates) {
             return result
         }
@@ -590,7 +590,7 @@ final class CompositeAIProvider: AIProvider {
     }
 
     func chatReply(messages: [ChatTurn], grounding: GroundingContext) async throws -> AsyncThrowingStream<String, any Error> {
-        if KeychainStore.hasAPIKey {
+        if KeychainStore.hasUsableKey {
             do {
                 return try await remote.chatReply(messages: messages, grounding: grounding)
             } catch {
