@@ -26,6 +26,10 @@ targets:
     configFiles:
       Debug: Config/Shared.xcconfig
       Release: Config/Shared.xcconfig
+    entitlements:
+      path: ShakedownAI/App/ShakedownAI.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
     info:
       path: ShakedownAI/App/Info.plist
       properties:

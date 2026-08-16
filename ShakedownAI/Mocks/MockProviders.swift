@@ -148,6 +148,12 @@ final class MockAuthProvider: AuthProvider {
         return account
     }
 
+    func signInWithApple(userID: String, displayName: String) async throws -> UserAccount {
+        let account = UserAccount(displayName: displayName, appleUserID: userID)
+        currentAccount = account
+        return account
+    }
+
     func signOut() async { currentAccount = nil }
 }
 

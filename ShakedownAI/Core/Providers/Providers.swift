@@ -43,6 +43,7 @@ nonisolated struct UserAccount: Sendable, Equatable {
 protocol AuthProvider: AnyObject {
     var currentAccount: UserAccount? { get }
     func signInLocally(displayName: String) async throws -> UserAccount
+    func signInWithApple(userID: String, displayName: String) async throws -> UserAccount
     func signOut() async
 }
 

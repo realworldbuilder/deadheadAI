@@ -1,8 +1,9 @@
+import AuthenticationServices
 import SwiftUI
 
 struct SettingsScreen: View {
     @Environment(AppEnvironment.self) private var env
-    private let aiActive = KeychainStore.hasUsableKey
+    @State private var aiActive = KeychainStore.hasUsableKey
     @State private var cacheSize = 0
     @State private var displayName = ""
 
@@ -24,7 +25,10 @@ struct SettingsScreen: View {
             .navigationTitle("Settings")
         }
         .tint(Theme.accent)
-        .onAppear { cacheSize = env.cache.approximateSizeBytes }
+        .onAppear {
+            cacheSize = env.cache.approximateSizeBytes
+            aiActive = KeychainStore.hasUsableKey
+        }
     }
 
     // MARK: - AI
@@ -32,23 +36,63 @@ struct SettingsScreen: View {
     private var aiSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Intelligence").sectionHeaderStyle()
-            HStack {
-                Image(systemName: aiActive ? "brain.filled.head.profile" : "brain.head.profile")
-                    .foregroundStyle(aiActive ? Theme.sage : Theme.accent)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(aiActive ? "Deadhead AI connected" : "Offline brain active")
-                        .font(Theme.headline)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(aiActive
-                         ? "AI is on the house. Recommendations and chat are grounded in real archive data, with the offline brain as backup."
-                         : "Everything works offline from the curated knowledge base. This build shipped without an AI key, so free-form chat runs locally.")
-                        .font(Theme.caption)
-                        .foregroundStyle(Theme.textSecondary)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: aiActive ? "brain.filled.head.profile" : "brain.head.profile")
+                        .foregroundStyle(aiActive ? Theme.sage : Theme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(aiStatusTitle)
+                            .font(Theme.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(aiStatusDetail)
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                if KeychainStore.keyAwaitingUnlock {
+                    SignInWithAppleButton(.signIn) { request in
+                        request.requestedScopes = [.fullName]
+                    } onCompletion: { result in
+                        if case .success(let auth) = result,
+                           let credential = auth.credential as? ASAuthorizationAppleIDCredential {
+                            unlockAI(credential: credential)
+                        }
+                    }
+                    .signInWithAppleButtonStyle(.white)
+                    .frame(height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
             .padding(Theme.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .cardStyle()
+        }
+    }
+
+    private var aiStatusTitle: String {
+        if aiActive { return "Deadhead AI connected" }
+        if KeychainStore.keyAwaitingUnlock { return "Full AI brain locked" }
+        return "Offline brain active"
+    }
+
+    private var aiStatusDetail: String {
+        if aiActive {
+            return "AI is on the house. Recommendations and chat are grounded in real archive data, with the offline brain as backup."
+        }
+        if KeychainStore.keyAwaitingUnlock {
+            return "Sign in with Apple to unlock free AI recommendations and chat. Until then, everything runs on the offline brain."
+        }
+        return "Everything works offline from the curated knowledge base. This build shipped without an AI key, so free-form chat runs locally."
+    }
+
+    private func unlockAI(credential: ASAuthorizationAppleIDCredential) {
+        KeychainStore.unlockAI()
+        aiActive = KeychainStore.hasUsableKey
+        let fallbackName = displayName.isEmpty ? "Deadhead" : displayName
+        Task {
+            _ = try? await env.authProvider.signInWithApple(
+                userID: credential.user,
+                displayName: credential.fullName?.givenName ?? fallbackName)
         }
     }
 

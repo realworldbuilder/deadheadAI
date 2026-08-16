@@ -56,20 +56,33 @@ struct OnboardingSheet: View {
                         .background(RoundedRectangle(cornerRadius: 14).fill(Theme.accentGradient))
                 }
 
-                SignInWithAppleButton(.signIn) { _ in
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName]
                 } onCompletion: { result in
-                    // Unsigned simulator builds can't complete the Apple flow;
-                    // fall through to the local account either way.
-                    finish(with: name.isEmpty ? "Deadhead" : name)
+                    switch result {
+                    case .success(let auth):
+                        guard let credential = auth.credential as? ASAuthorizationAppleIDCredential else {
+                            finish(with: name.isEmpty ? "Deadhead" : name)
+                            return
+                        }
+                        finishWithApple(credential: credential)
+                    case .failure:
+                        // Unsigned simulator builds can't complete the Apple
+                        // flow; fall back to the local account (offline brain).
+                        finish(with: name.isEmpty ? "Deadhead" : name)
+                    }
                 }
                 .signInWithAppleButtonStyle(.white)
                 .frame(height: 44)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .opacity(0.9)
 
-                Text("No account required. Everything lives on this device.")
+                Text(KeychainStore.keyAwaitingUnlock
+                     ? "Sign in with Apple to unlock the full AI brain — free, on the house. Or hop on without an account; everything still lives on this device."
+                     : "No account required. Everything lives on this device.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
+                    .multilineTextAlignment(.center)
             }
             .padding(28)
         }
@@ -91,6 +104,19 @@ struct OnboardingSheet: View {
         storedName = chosenName
         Task {
             _ = try? await env.authProvider.signInLocally(displayName: chosenName)
+            dismiss()
+        }
+    }
+
+    private func finishWithApple(credential: ASAuthorizationAppleIDCredential) {
+        let chosenName = name.isEmpty
+            ? (credential.fullName?.givenName ?? "Deadhead")
+            : name
+        storedName = chosenName
+        KeychainStore.unlockAI()
+        Task {
+            _ = try? await env.authProvider.signInWithApple(userID: credential.user,
+                                                           displayName: chosenName)
             dismiss()
         }
     }

@@ -30,7 +30,7 @@ All project configuration lives in `project.yml` — never edit the `.xcodeproj`
 
 ### Bundling an OpenAI key (optional)
 
-The app works without any key (offline brain), and users can paste their own in Settings. To bake a key into your own builds, copy [Config/Secrets.example.xcconfig](Config/Secrets.example.xcconfig) to `Config/Secrets.xcconfig` (gitignored — never commit a real key) and fill in your key. A user's Settings key always takes priority over the bundled one.
+The app works without any key (offline brain). To bake a key into your own builds, copy [Config/Secrets.example.xcconfig](Config/Secrets.example.xcconfig) to `Config/Secrets.xcconfig` (gitignored — never commit a real key) and fill in your key. The bundled key stays dormant until the user signs in with Apple (onboarding or Settings) — a soft gate on spend while AI is free; the key still ships in the binary, so treat it as semi-public and set spending limits.
 
 ## Architecture
 
@@ -84,5 +84,5 @@ gh secret set OPENAI_API_KEY --repo realworldbuilder/deadheadAI
 ## Notes
 
 - Works fully offline-of-OpenAI; an API key only upgrades prose and free-form chat.
-- Sign in with Apple renders behind the `AuthProvider` seam but requires a signed build; the local on-device account is the default path.
+- Sign in with Apple unlocks the bundled AI key (free access, for now). It needs a signed build with the `com.apple.developer.applesignin` entitlement; on unsigned simulator builds the flow fails and falls back to the local on-device account with the offline brain.
 - Friends & Listening Sessions are backed by `MockSocialProvider` — the protocol seam is where a real backend plugs in.
