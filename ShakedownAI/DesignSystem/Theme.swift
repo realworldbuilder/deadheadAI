@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shakedown.AI design language: a temple ceiling painted with the night sky.
+/// Deadhead AI design language: a temple ceiling painted with the night sky.
 /// Deep indigo space behind everything, aged-gold accents like gilding on
 /// stone, terracotta and lapis where the old palette ran red and blue, and
 /// parchment-toned type. Egyptian funerary art by way of the space age —

@@ -235,7 +235,7 @@ struct ExploreTabView: View {
         VStack(spacing: 6) {
             SpiralMandala(size: 116)
                 .shadow(color: Theme.denim.opacity(0.5), radius: 26)
-            Text("deadheads.ai")
+            Text("Deadhead AI")
                 .font(Theme.display(21))
                 .chromeText()
         }

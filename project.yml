@@ -29,7 +29,7 @@ targets:
     info:
       path: ShakedownAI/App/Info.plist
       properties:
-        CFBundleDisplayName: Deadheads.AI
+        CFBundleDisplayName: Deadhead AI
         UILaunchScreen: {}
         UIBackgroundModes: [audio]
         CFBundleShortVersionString: $(MARKETING_VERSION)

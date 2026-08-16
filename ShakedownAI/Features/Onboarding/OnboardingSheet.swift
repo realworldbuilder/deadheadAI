@@ -19,7 +19,7 @@ struct OnboardingSheet: View {
                 SpiralMandala(size: 110)
 
                 VStack(spacing: 8) {
-                    Text("DEADHEADS.AI")
+                    Text("DEADHEAD AI")
                         .font(Theme.display(34))
                         .kerning(1.5)
                         .chromeText()

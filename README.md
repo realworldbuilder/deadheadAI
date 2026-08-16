@@ -1,4 +1,4 @@
-# Deadheads.AI
+# Deadhead AI
 
 [![CI](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml/badge.svg)](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml)
 

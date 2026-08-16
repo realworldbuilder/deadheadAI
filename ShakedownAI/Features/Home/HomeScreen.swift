@@ -140,7 +140,7 @@ struct HomeScreen: View {
                 .font(Theme.mono(11, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
             HStack(spacing: 10) {
-                Text("DEADHEADS.AI")
+                Text("DEADHEAD AI")
                     .font(Theme.display(32))
                     .kerning(1.5)
                     .chromeText()
