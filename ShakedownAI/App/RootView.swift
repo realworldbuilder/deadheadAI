@@ -96,7 +96,7 @@ struct ExploreTabView: View {
     @Environment(AppEnvironment.self) private var env
 
     private enum Destination: Hashable {
-        case search, topShelf, eras, songs, journeys
+        case search, topShelf, eras, songs, journeys, darkStar, onThisDay, friends
     }
 
     /// One labelled body in the map. `position` is where the *body* sits in
@@ -120,20 +120,24 @@ struct ExploreTabView: View {
 
     /// The system, laid out like a diagram of our own: the emblem is the sun,
     /// three nested orbits ring it, and the destinations sit on the rings in
-    /// mirrored pairs — top pair, middle pair, and one world alone at the
-    /// bottom. Orbit fractions are of width (rx) and height (ry); each planet
-    /// sits exactly on its ring.
+    /// mirrored arcs — a crown of three across the top, a pair at the waist,
+    /// and an arc of three along the foot. Orbit fractions are of width (rx)
+    /// and height (ry); each planet sits exactly on its ring.
     private let orbits: [(rx: CGFloat, ry: CGFloat)] = [
         (0.22, 0.32),   // inner — Top Shelf, at its foot
-        (0.28, 0.37),   // middle — the mid pair rides its waist
-        (0.34, 0.44),   // outer — the top pair
+        (0.28, 0.37),   // middle — the mid pair rides its waist; Dark Star crowns it
+        (0.34, 0.44),   // outer — the top pair and the bottom pair
     ]
 
     private let stars: [Star] = [
-        // Outer orbit, mirrored across the meridian.
+        // The crown: outer pair with the mystery body at the middle orbit's
+        // north pole between them.
         Star(id: "search", destination: .search, title: "Ask the\nArchive",
              style: .sun, bodySize: 50, position: UnitPoint(x: 0.28, y: 0.16),
              side: .trailing, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
+        Star(id: "darkStar", destination: .darkStar, title: "Dark Star",
+             style: .galaxy, bodySize: 44, position: UnitPoint(x: 0.50, y: 0.115),
+             side: .top, tint: Color(red: 0.64, green: 0.74, blue: 1.0)),
         Star(id: "eras", destination: .eras, title: "Eras",
              style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
              side: .leading),
@@ -145,21 +149,28 @@ struct ExploreTabView: View {
         Star(id: "songs", destination: .songs, title: "Songs",
              style: .spiral, bodySize: 52, position: UnitPoint(x: 0.76, y: 0.63),
              side: .bottom),
-        // Inner orbit, due south.
+        // The foot: Top Shelf due south on the inner ring, flanked by the
+        // outer ring's bottom pair.
+        Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
+             style: .marbled, bodySize: 44, position: UnitPoint(x: 0.28, y: 0.84),
+             side: .bottom),
         Star(id: "topShelf", destination: .topShelf, title: "Top Shelf",
              style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.50, y: 0.82),
              side: .bottom, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
+        Star(id: "friends", destination: .friends, title: "Fellow\nTravelers",
+             style: .nebula, bodySize: 60, position: UnitPoint(x: 0.72, y: 0.84),
+             side: .bottom),
     ]
 
-    /// Scenery. Unlabelled and untappable — balanced into the corners the
-    /// orbits leave empty, one body per region.
+    /// Scenery. Unlabelled and untappable — tucked into the corners and edges
+    /// the fuller sky leaves empty, styles disjoint from the labelled worlds.
     private let scenery: [(PlanetView.Style, CGFloat, UnitPoint)] = [
         (.redGiant, 26, UnitPoint(x: 0.13, y: 0.05)),
-        (.galaxy, 34, UnitPoint(x: 0.87, y: 0.05)),
-        (.marbled, 20, UnitPoint(x: 0.06, y: 0.30)),
+        (.redGiant, 18, UnitPoint(x: 0.89, y: 0.05)),
+        (.wireGlobe, 24, UnitPoint(x: 0.06, y: 0.32)),
         (.starburst, 38, UnitPoint(x: 0.94, y: 0.30)),
-        (.nebula, 54, UnitPoint(x: 0.10, y: 0.93)),
-        (.wireGlobe, 30, UnitPoint(x: 0.90, y: 0.93)),
+        (.starburst, 20, UnitPoint(x: 0.08, y: 0.94)),
+        (.wireGlobe, 30, UnitPoint(x: 0.92, y: 0.94)),
     ]
 
     var body: some View {
@@ -218,6 +229,16 @@ struct ExploreTabView: View {
                         subtitle: "The community's highest-rated tapes across three decades.",
                         loader: { try await env.recordingProvider.topRated(yearRange: nil, limit: 40) }
                     )
+                case .onThisDay:
+                    ShowListScreen(
+                        title: "On This Day",
+                        subtitle: "Every year the band played this date, best tape of each night first.",
+                        loader: { try await env.recordingProvider.onThisDay(monthDay: HomeModel.monthDayString(.now)) }
+                    )
+                case .darkStar:
+                    DarkStarScreen()
+                case .friends:
+                    FriendsScreen()
                 }
             }
             .navigationDestination(for: Show.self) { show in
@@ -293,6 +314,43 @@ struct ExploreTabView: View {
         case .bottom: return CGSize(width: 0, height: dy)
         case .top: return CGSize(width: 0, height: -dy)
         }
+    }
+}
+
+// MARK: - Dark Star
+
+/// The mystery destination: one great tape, chosen by the void. Draws from
+/// the community's top shelf so the surprise is never a dud.
+struct DarkStarScreen: View {
+    @Environment(AppEnvironment.self) private var env
+    @State private var show: Show?
+    @State private var failed = false
+
+    var body: some View {
+        ZStack {
+            SpaceBackground()
+            if let show {
+                ShowDetailScreen(show: show)
+            } else if failed {
+                ErrorCard(message: ArchiveHealth.shared.isOffline
+                          ? ArchiveHealth.outageMessage
+                          : "The Dark Star wouldn't resolve. Give it another spin.") {
+                    failed = false
+                    Task { await resolve() }
+                }
+                .padding(Theme.screenPadding)
+            } else {
+                LoadingLampView(text: "Following the Dark Star…")
+            }
+        }
+        .task { await resolve() }
+    }
+
+    private func resolve() async {
+        guard show == nil else { return }
+        let candidates = (try? await env.recordingProvider.topRated(yearRange: nil, limit: 60)) ?? []
+        show = candidates.randomElement()
+        failed = show == nil
     }
 }
 
