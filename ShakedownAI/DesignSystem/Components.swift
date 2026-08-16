@@ -225,6 +225,36 @@ struct LoadingLampView: View {
     }
 }
 
+/// App-wide pill shown while archive.org itself is down. Driven by
+/// `ArchiveHealth`; appears over every tab and clears itself when the
+/// archive answers again.
+struct ArchiveOfflineBanner: View {
+    private let health = ArchiveHealth.shared
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            if health.isOffline {
+                HStack(spacing: 8) {
+                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                        .foregroundStyle(Theme.rose)
+                    Text("The Internet Archive is temporarily offline — the tapes will be back.")
+                        .font(Theme.caption)
+                        .foregroundStyle(Theme.textPrimary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(Capsule().fill(Theme.surface))
+                .overlay(Capsule().strokeBorder(Theme.rose.opacity(0.5)))
+                .shadow(color: .black.opacity(0.4), radius: 8, y: 2)
+                .padding(.horizontal, Theme.screenPadding)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.snappy, value: health.isOffline)
+        .allowsHitTesting(false)
+    }
+}
+
 struct ErrorCard: View {
     var message: String
     var retry: (() -> Void)?

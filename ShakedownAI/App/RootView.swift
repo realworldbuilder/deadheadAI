@@ -40,6 +40,7 @@ struct RootView: View {
             }
         }
         .background(Theme.background)
+        .overlay(alignment: .top) { ArchiveOfflineBanner() }
         .environment(env.playerEngine)
         .sheet(isPresented: $engine.isPresentingFullPlayer) {
             PlayerScreen()

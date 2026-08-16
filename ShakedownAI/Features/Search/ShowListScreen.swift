@@ -56,6 +56,8 @@ struct ShowListScreen: View {
         errorMessage = nil
         do {
             shows = try await loader()
+        } catch HTTPError.serviceUnavailable {
+            errorMessage = ArchiveHealth.outageMessage
         } catch {
             errorMessage = "The archive didn't answer. It happens — give it another try."
         }

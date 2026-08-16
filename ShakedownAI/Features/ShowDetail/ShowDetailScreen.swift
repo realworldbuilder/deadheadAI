@@ -39,6 +39,8 @@ final class ShowDetailModel {
                 let all = try await recordings.recordings(forDate: day)
                 otherRecordings = all.filter { $0.identifier != show.identifier }
             }
+        } catch HTTPError.serviceUnavailable {
+            errorMessage = ArchiveHealth.outageMessage
         } catch {
             errorMessage = "Couldn't reach the archive. Check your connection and try again."
         }

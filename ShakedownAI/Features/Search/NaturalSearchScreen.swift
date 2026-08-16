@@ -66,6 +66,10 @@ final class NaturalSearchModel {
             if results.isEmpty && kbSuggestions.isEmpty {
                 errorMessage = "Nothing surfaced for that. Try a mood, a year, a song, or a venue."
             }
+        } catch HTTPError.serviceUnavailable {
+            if kbSuggestions.isEmpty {
+                errorMessage = ArchiveHealth.outageMessage
+            }
         } catch {
             if kbSuggestions.isEmpty {
                 errorMessage = "The archive didn't answer — but the offline brain still works. Try a mood or era."

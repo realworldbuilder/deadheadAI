@@ -7,6 +7,9 @@ nonisolated protocol HTTPClient: Sendable {
 nonisolated enum HTTPError: Error, Equatable {
     case badStatus(Int)
     case invalidResponse
+    /// 429/503 that survived every retry — the service is down or overloaded,
+    /// as opposed to the device being offline.
+    case serviceUnavailable
 }
 
 /// URLSession-backed client with polite retry on 429/503 (archive.org 503s under load).
@@ -31,9 +34,13 @@ nonisolated final class URLSessionHTTPClient: HTTPClient {
                 guard let http = response as? HTTPURLResponse else { throw HTTPError.invalidResponse }
                 switch http.statusCode {
                 case 200...299:
+                    reportArchiveHealth(url: url, healthy: true)
                     return data
                 case 429, 503:
-                    guard attempt < retryDelays.count else { throw HTTPError.badStatus(http.statusCode) }
+                    guard attempt < retryDelays.count else {
+                        reportArchiveHealth(url: url, healthy: false)
+                        throw HTTPError.serviceUnavailable
+                    }
                     try await Task.sleep(for: retryDelays[attempt])
                     attempt += 1
                 default:
@@ -46,6 +53,14 @@ nonisolated final class URLSessionHTTPClient: HTTPClient {
                 try await Task.sleep(for: retryDelays[attempt])
                 attempt += 1
             }
+        }
+    }
+
+    /// Server-side outages flip the app-wide banner; only archive.org counts.
+    private func reportArchiveHealth(url: URL, healthy: Bool) {
+        guard url.host()?.hasSuffix("archive.org") == true else { return }
+        Task { @MainActor in
+            healthy ? ArchiveHealth.shared.reportSuccess() : ArchiveHealth.shared.reportOutage()
         }
     }
 }
