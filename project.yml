@@ -34,6 +34,7 @@ targets:
         UIBackgroundModes: [audio]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleIconName: AppIcon
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
         OpenAIAPIKey: $(OPENAI_API_KEY)
@@ -41,6 +42,7 @@ targets:
       base:
         # Must match the App Store Connect app record ("Deadhead AI").
         PRODUCT_BUNDLE_IDENTIFIER: com.deadhead.ai
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"
     scheme:
       testTargets: [ShakedownAITests]
