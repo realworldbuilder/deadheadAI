@@ -40,7 +40,7 @@ echo "→ Installing on iPhone…"
 xcrun devicectl device install app --device "$DEVICE_ID" "$APP"
 
 echo "→ Launching…"
-xcrun devicectl device process launch --device "$DEVICE_ID" ai.deadheads.app || true
+xcrun devicectl device process launch --device "$DEVICE_ID" com.deadhead.ai || true
 
 echo "✓ Deadheads.AI is on your phone."
 echo "  Free Apple ID note: the install expires after 7 days — rerun this script to refresh."
