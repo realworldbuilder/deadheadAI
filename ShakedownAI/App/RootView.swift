@@ -141,25 +141,24 @@ struct ExploreTabView: View {
         Star(id: "eras", destination: .eras, title: "Eras",
              style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
              side: .leading),
-        // Middle orbit, just past the waist so their labels clear the
-        // wordmark hanging under the sun.
+        // Middle orbit, mirrored pairs above and below the emblem's equator —
+        // labels face outward vertically so both clear the wordmark.
+        Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
+             style: .marbled, bodySize: 44, position: UnitPoint(x: 0.235, y: 0.38),
+             side: .top),
+        Star(id: "friends", destination: .friends, title: "Fellow\nTravelers",
+             style: .nebula, bodySize: 60, position: UnitPoint(x: 0.765, y: 0.38),
+             side: .top),
         Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
              style: .comet, bodySize: 44, position: UnitPoint(x: 0.24, y: 0.63),
              side: .bottom),
         Star(id: "songs", destination: .songs, title: "Songs",
              style: .spiral, bodySize: 52, position: UnitPoint(x: 0.76, y: 0.63),
              side: .bottom),
-        // The foot: Top Shelf due south on the inner ring, flanked by the
-        // outer ring's bottom pair.
-        Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
-             style: .marbled, bodySize: 44, position: UnitPoint(x: 0.28, y: 0.84),
-             side: .bottom),
+        // Inner orbit, due south.
         Star(id: "topShelf", destination: .topShelf, title: "Top Shelf",
              style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.50, y: 0.82),
              side: .bottom, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
-        Star(id: "friends", destination: .friends, title: "Fellow\nTravelers",
-             style: .nebula, bodySize: 60, position: UnitPoint(x: 0.72, y: 0.84),
-             side: .bottom),
     ]
 
     /// Scenery. Unlabelled and untappable — tucked into the corners and edges
@@ -167,8 +166,10 @@ struct ExploreTabView: View {
     private let scenery: [(PlanetView.Style, CGFloat, UnitPoint)] = [
         (.redGiant, 26, UnitPoint(x: 0.13, y: 0.05)),
         (.redGiant, 18, UnitPoint(x: 0.89, y: 0.05)),
-        (.wireGlobe, 24, UnitPoint(x: 0.06, y: 0.32)),
-        (.starburst, 38, UnitPoint(x: 0.94, y: 0.30)),
+        (.wireGlobe, 24, UnitPoint(x: 0.06, y: 0.24)),
+        (.starburst, 38, UnitPoint(x: 0.94, y: 0.23)),
+        (.starburst, 22, UnitPoint(x: 0.07, y: 0.72)),
+        (.wireGlobe, 26, UnitPoint(x: 0.93, y: 0.74)),
         (.starburst, 20, UnitPoint(x: 0.08, y: 0.94)),
         (.wireGlobe, 30, UnitPoint(x: 0.92, y: 0.94)),
     ]
