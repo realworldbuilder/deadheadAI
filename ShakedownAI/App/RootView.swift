@@ -96,7 +96,8 @@ struct ExploreTabView: View {
     @Environment(AppEnvironment.self) private var env
 
     private enum Destination: Hashable {
-        case search, topShelf, eras, songs, journeys, darkStar, onThisDay, friends
+        case search, topShelf, eras, songs, journeys, darkStar, onThisDay, friends,
+             journal, taste
     }
 
     /// One labelled body in the map. `position` is where the *body* sits in
@@ -141,6 +142,13 @@ struct ExploreTabView: View {
         Star(id: "eras", destination: .eras, title: "Eras",
              style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
              side: .leading),
+        // Outer orbit's waist: level with the emblem at the far edges.
+        Star(id: "journal", destination: .journal, title: "Journal",
+             style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.16, y: 0.50),
+             side: .bottom),
+        Star(id: "taste", destination: .taste, title: "Your\nTaste",
+             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.84, y: 0.50),
+             side: .bottom),
         // Middle orbit, mirrored pairs above and below the emblem's equator —
         // labels face outward vertically so both clear the wordmark.
         Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
@@ -161,17 +169,13 @@ struct ExploreTabView: View {
              side: .bottom, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
     ]
 
-    /// Scenery. Unlabelled and untappable — tucked into the corners and edges
-    /// the fuller sky leaves empty, styles disjoint from the labelled worlds.
+    /// Scenery, kept to a minimum: four faint red giants in the corners.
+    /// Everything else in the sky is a real destination.
     private let scenery: [(PlanetView.Style, CGFloat, UnitPoint)] = [
         (.redGiant, 26, UnitPoint(x: 0.13, y: 0.05)),
         (.redGiant, 18, UnitPoint(x: 0.89, y: 0.05)),
-        (.wireGlobe, 24, UnitPoint(x: 0.06, y: 0.24)),
-        (.starburst, 38, UnitPoint(x: 0.94, y: 0.23)),
-        (.starburst, 22, UnitPoint(x: 0.07, y: 0.72)),
-        (.wireGlobe, 26, UnitPoint(x: 0.93, y: 0.74)),
-        (.starburst, 20, UnitPoint(x: 0.08, y: 0.94)),
-        (.wireGlobe, 30, UnitPoint(x: 0.92, y: 0.94)),
+        (.redGiant, 20, UnitPoint(x: 0.08, y: 0.94)),
+        (.redGiant, 24, UnitPoint(x: 0.92, y: 0.94)),
     ]
 
     var body: some View {
@@ -240,6 +244,10 @@ struct ExploreTabView: View {
                     DarkStarScreen()
                 case .friends:
                     FriendsScreen()
+                case .journal:
+                    JournalListScreen()
+                case .taste:
+                    TasteProfileScreen()
                 }
             }
             .navigationDestination(for: Show.self) { show in
