@@ -134,50 +134,38 @@ struct ExploreTabView: View {
     private static let labelHeight: CGFloat = 40
     private static let labelGap: CGFloat = 10
 
-    /// The system: the emblem is the sun, three nested orbits ring it. A
-    /// crown of three across the top, two mirrored pairs on the flanks, and
-    /// a southern spine (Journal, Top Shelf) balancing Dark Star at the
-    /// north pole. Orbit fractions are of width (rx) and height (ry).
-    private let orbits: [(rx: CGFloat, ry: CGFloat)] = [
-        (0.22, 0.32),   // inner — Top Shelf, at its foot
-        (0.28, 0.37),   // middle — the mid pair rides its waist; Dark Star crowns it
-        (0.34, 0.44),   // outer — the top pair and the bottom pair
-    ]
-
+    /// A scatter, not a system. No rings, no mirrored pairs — every body
+    /// hangs at its own height and drift, the way stars actually fall across
+    /// a sky. Positions are hand-jittered: nothing shares a row or column
+    /// with its neighbour, and everything steers clear of the emblem and
+    /// wordmark in the middle.
     private let stars: [Star] = [
-        // The crown: outer pair with the mystery body at the middle orbit's
-        // north pole between them.
-        Star(id: "search", destination: .search, title: "Ask the\nArchive",
-             style: .sun, bodySize: 50, position: UnitPoint(x: 0.28, y: 0.16),
-             side: .trailing, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
         Star(id: "darkStar", destination: .darkStar, title: "Dark Star",
-             style: .galaxy, bodySize: 44, position: UnitPoint(x: 0.50, y: 0.115),
+             style: .galaxy, bodySize: 44, position: UnitPoint(x: 0.62, y: 0.10),
              side: .top, tint: Color(red: 0.64, green: 0.74, blue: 1.0)),
+        Star(id: "search", destination: .search, title: "Ask the\nArchive",
+             style: .sun, bodySize: 50, position: UnitPoint(x: 0.18, y: 0.19),
+             side: .trailing, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
         Star(id: "eras", destination: .eras, title: "Eras",
-             style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
-             side: .leading),
-        // Upper pair, mirrored across the emblem — labels face up and away
-        // from the wordmark.
+             style: .ringed, bodySize: 52, position: UnitPoint(x: 0.83, y: 0.22),
+             side: .bottom),
         Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
-             style: .marbled, bodySize: 44, position: UnitPoint(x: 0.235, y: 0.38),
-             side: .top),
+             style: .marbled, bodySize: 44, position: UnitPoint(x: 0.17, y: 0.38),
+             side: .bottom),
         Star(id: "taste", destination: .taste, title: "Your\nTaste",
-             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.765, y: 0.38),
+             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.84, y: 0.45),
              side: .top),
-        // Lower pair, mirrored.
-        Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
-             style: .comet, bodySize: 44, position: UnitPoint(x: 0.24, y: 0.63),
-             side: .bottom),
         Star(id: "songs", destination: .songs, title: "Songs",
-             style: .spiral, bodySize: 52, position: UnitPoint(x: 0.76, y: 0.63),
+             style: .spiral, bodySize: 52, position: UnitPoint(x: 0.78, y: 0.60),
              side: .bottom),
-        // The southern spine below the emblem: Journal, then Top Shelf at
-        // the foot — mirroring Dark Star at the crown's north pole.
+        Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
+             style: .comet, bodySize: 44, position: UnitPoint(x: 0.21, y: 0.66),
+             side: .bottom),
         Star(id: "journal", destination: .journal, title: "Journal",
-             style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.50, y: 0.66),
+             style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.42, y: 0.74),
              side: .bottom),
         Star(id: "topShelf", destination: .topShelf, title: "Top Shelf",
-             style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.50, y: 0.84),
+             style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.68, y: 0.84),
              side: .bottom, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
     ]
 
@@ -198,16 +186,6 @@ struct ExploreTabView: View {
                     let w = proxy.size.width
                     let h = proxy.size.height
                     ZStack {
-                        // The orbits themselves: faint starlight ellipses.
-                        ForEach(orbits.indices, id: \.self) { i in
-                            Ellipse()
-                                .strokeBorder(Theme.stroke.opacity(0.8), lineWidth: 1)
-                                .frame(width: orbits[i].rx * 2 * w,
-                                       height: orbits[i].ry * 2 * h)
-                                .position(x: 0.5 * w, y: 0.5 * h)
-                                .allowsHitTesting(false)
-                        }
-
                         ForEach(scenery.indices, id: \.self) { i in
                             let (style, size, point) = scenery[i]
                             PlanetView(style: style, size: size)
