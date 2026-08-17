@@ -134,10 +134,10 @@ struct ExploreTabView: View {
     private static let labelHeight: CGFloat = 40
     private static let labelGap: CGFloat = 10
 
-    /// The system: the emblem is the sun, three nested orbits ring it, and
-    /// the destinations scatter loosely around the rings — a crown across the
-    /// top, bodies drifting at the waist, an arc along the foot. Orbit
-    /// fractions are of width (rx) and height (ry).
+    /// The system: the emblem is the sun, three nested orbits ring it. A
+    /// crown of three across the top, two mirrored pairs on the flanks, and
+    /// a southern spine (Journal, Top Shelf) balancing Dark Star at the
+    /// north pole. Orbit fractions are of width (rx) and height (ry).
     private let orbits: [(rx: CGFloat, ry: CGFloat)] = [
         (0.22, 0.32),   // inner — Top Shelf, at its foot
         (0.28, 0.37),   // middle — the mid pair rides its waist; Dark Star crowns it
@@ -156,29 +156,28 @@ struct ExploreTabView: View {
         Star(id: "eras", destination: .eras, title: "Eras",
              style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
              side: .leading),
-        // The waist: Journal rides the far left edge; Your Taste drifts a
-        // little higher on the right where the nebula used to hang.
-        Star(id: "journal", destination: .journal, title: "Journal",
-             style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.16, y: 0.50),
-             side: .bottom),
-        Star(id: "taste", destination: .taste, title: "Your\nTaste",
-             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.80, y: 0.42),
-             side: .bottom),
-        // Middle orbit — loosely scattered rather than mirrored, so the sky
-        // reads as a night sky and not a diagram. Labels face outward
-        // vertically so they clear the wordmark.
+        // Upper pair, mirrored across the emblem — labels face up and away
+        // from the wordmark.
         Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
              style: .marbled, bodySize: 44, position: UnitPoint(x: 0.235, y: 0.38),
              side: .top),
+        Star(id: "taste", destination: .taste, title: "Your\nTaste",
+             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.765, y: 0.38),
+             side: .top),
+        // Lower pair, mirrored.
         Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
              style: .comet, bodySize: 44, position: UnitPoint(x: 0.24, y: 0.63),
              side: .bottom),
         Star(id: "songs", destination: .songs, title: "Songs",
              style: .spiral, bodySize: 52, position: UnitPoint(x: 0.76, y: 0.63),
              side: .bottom),
-        // Inner orbit, due south.
+        // The southern spine below the emblem: Journal, then Top Shelf at
+        // the foot — mirroring Dark Star at the crown's north pole.
+        Star(id: "journal", destination: .journal, title: "Journal",
+             style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.50, y: 0.66),
+             side: .bottom),
         Star(id: "topShelf", destination: .topShelf, title: "Top Shelf",
-             style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.50, y: 0.82),
+             style: .earthlike, bodySize: 46, position: UnitPoint(x: 0.50, y: 0.84),
              side: .bottom, tint: Color(red: 1.0, green: 0.86, blue: 0.42)),
     ]
 
