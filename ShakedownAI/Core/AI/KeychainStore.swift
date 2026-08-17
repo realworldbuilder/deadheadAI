@@ -1,10 +1,9 @@
 import Foundation
 
 /// Resolves the OpenAI API key bundled into this build. The key ships in the
-/// app so AI features are free for users, but it stays dormant until the user
-/// signs in with Apple — that's the (soft) gate on our spend. The previous
-/// user-supplied keychain flow was removed (see git history if it needs to
-/// come back).
+/// app so AI features are free for users and is active whenever present —
+/// the earlier Sign-in-with-Apple soft gate is disabled (see git history to
+/// restore it). The previous user-supplied keychain flow was also removed.
 nonisolated enum KeychainStore {
     private static let unlockDefaultsKey = "aiAccessUnlocked"
 
@@ -29,11 +28,12 @@ nonisolated enum KeychainStore {
         UserDefaults.standard.removeObject(forKey: unlockDefaultsKey)
     }
 
-    /// The key AI calls should use; nil until Apple sign-in unlocks it.
-    static func resolveAPIKey() -> String? { aiUnlocked ? bundledAPIKey : nil }
+    /// The key AI calls should use; the bundled key, whenever one ships.
+    static func resolveAPIKey() -> String? { bundledAPIKey }
 
     static var hasUsableKey: Bool { resolveAPIKey() != nil }
 
-    /// A key ships in this build but the user hasn't signed in to unlock it.
-    static var keyAwaitingUnlock: Bool { bundledAPIKey != nil && !aiUnlocked }
+    /// Always false while the sign-in gate is disabled — keeps the
+    /// "sign in to unlock" UI hidden without touching its call sites.
+    static var keyAwaitingUnlock: Bool { false }
 }
