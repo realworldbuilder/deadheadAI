@@ -14,15 +14,15 @@ The `.xcodeproj` is **generated** — all project config lives in [project.yml](
 xcodegen generate
 ```
 
-Build and test (simulator builds skip signing):
+Build and test (simulator builds skip signing). The `OS=` pin matters: without it xcodebuild resolves `OS:latest`, and on hosts whose newest runtime has no iPhone 16 Pro device the build fails with "Unable to find a device". If 18.6 isn't installed, pick any installed pairing from `xcrun simctl list devices available`:
 
 ```bash
 xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' \
   CODE_SIGNING_ALLOWED=NO build
 
 xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' \
   CODE_SIGNING_ALLOWED=NO test
 ```
 
@@ -30,7 +30,7 @@ Run a single test (Swift Testing framework, not XCTest):
 
 ```bash
 xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' \
   CODE_SIGNING_ALLOWED=NO \
   -only-testing:ShakedownAITests/SmartCollectionTests test
 ```
