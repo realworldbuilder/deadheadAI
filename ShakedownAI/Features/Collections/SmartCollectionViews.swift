@@ -20,6 +20,7 @@ struct SmartShelfSection: View {
                         .foregroundStyle(Theme.accent)
                 }
                 .disabled(engine?.isRefreshing ?? true)
+                .accessibilityLabel("Refresh shelves")
             }
 
             Text(subtitle)

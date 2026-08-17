@@ -90,11 +90,13 @@ struct ShowDetailScreen: View {
                 } label: {
                     Image(systemName: "book.closed")
                 }
+                .accessibilityLabel("Write a journal entry")
                 Button {
                     showingCollectionPicker = true
                 } label: {
                     Image(systemName: "plus.square.on.square")
                 }
+                .accessibilityLabel("Save to collection")
             }
         }
         .sheet(isPresented: $showingJournal) {

@@ -191,6 +191,7 @@ struct ChatScreen: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("Conversation options")
             }
             .confirmationDialog(
                 "Clear this conversation?",
@@ -348,6 +349,7 @@ struct ChatScreen: View {
                         .foregroundStyle(model.draft.isEmpty || model.isReplying ? Theme.textTertiary : Theme.accent)
                 }
                 .disabled(model.draft.isEmpty || model.isReplying)
+                .accessibilityLabel("Send")
             }
             .padding(.horizontal, Theme.screenPadding)
             .padding(.vertical, 10)

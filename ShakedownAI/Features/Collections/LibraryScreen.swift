@@ -68,6 +68,7 @@ struct LibraryScreen: View {
                         .font(.title3)
                         .foregroundStyle(Theme.accent)
                 }
+                .accessibilityLabel("New collection")
             }
             let collections = env.library.collections
             let _ = refreshToken   // re-read after sheet dismissals
@@ -218,6 +219,7 @@ struct CollectionDetailScreen: View {
                                             .foregroundStyle(Theme.rose)
                                     }
                                     .buttonStyle(.plain)
+                                    .accessibilityLabel("Remove \(item.displayName) from collection")
                                 }
                                 .padding(12)
                                 .cardStyle()
@@ -243,6 +245,7 @@ struct CollectionDetailScreen: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("Collection options")
             }
         }
         .confirmationDialog(
@@ -328,6 +331,8 @@ private struct NewCollectionSheet: View {
                                             .fill(icon == candidate ? Theme.accent.opacity(0.15) : Theme.surface)
                                     )
                             }
+                            .accessibilityLabel(candidate.replacingOccurrences(of: ".", with: " "))
+                            .accessibilityAddTraits(icon == candidate ? .isSelected : [])
                         }
                     }
                     Spacer()

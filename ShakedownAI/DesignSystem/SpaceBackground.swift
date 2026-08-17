@@ -461,6 +461,7 @@ struct SpiralMandala: View {
                 .shadow(color: .black.opacity(0.7), radius: 2)
         }
         .frame(width: size, height: size)
+        .accessibilityHidden(true)
         // The animation is started inside `withAnimation` rather than declared
         // as `.animation(_:value:)`, which would also capture this view's first
         // placement and send it drifting across the screen for 24 seconds.

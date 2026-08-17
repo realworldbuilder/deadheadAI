@@ -60,6 +60,7 @@ struct CollectionPickerSheet: View {
                                     .foregroundStyle(Theme.accent)
                             }
                             .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
+                            .accessibilityLabel("Create collection and save")
                         }
                         .padding(.top, 6)
                     }

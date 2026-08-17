@@ -132,6 +132,7 @@ struct NaturalSearchScreen: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Theme.textTertiary)
                 }
+                .accessibilityLabel("Clear search")
             }
         }
         .padding(14)

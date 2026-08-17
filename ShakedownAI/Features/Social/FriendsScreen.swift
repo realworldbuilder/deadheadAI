@@ -164,6 +164,7 @@ struct ListeningSessionScreen: View {
                         } label: {
                             Text(emoji).font(.title3)
                         }
+                        .accessibilityLabel("React with \(emoji)")
                     }
                     TextField("Say something…", text: $draft)
                         .font(Theme.body)
@@ -180,6 +181,7 @@ struct ListeningSessionScreen: View {
                             .foregroundStyle(draft.isEmpty ? Theme.textTertiary : Theme.accent)
                     }
                     .disabled(draft.isEmpty)
+                    .accessibilityLabel("Send")
                 }
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.vertical, 10)

@@ -124,6 +124,8 @@ struct RatingDots: View {
                     .foregroundStyle(Theme.textSecondary)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Rated \(String(format: "%.1f", rating)) out of 5")
     }
 }
 
@@ -190,6 +192,7 @@ struct ShowRow: View {
         }
         .padding(10)
         .cardStyle()
+        .accessibilityElement(children: .combine)
     }
 
     private var monthDay: String {

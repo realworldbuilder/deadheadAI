@@ -40,6 +40,7 @@ struct MiniPlayerBar: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel(engine.isPlaying ? "Pause" : "Play")
                     }
                 }
                 .padding(.horizontal, 12)
@@ -152,6 +153,7 @@ struct PlayerScreen: View {
                     } label: {
                         Image(systemName: "backward.fill").font(.title)
                     }
+                    .accessibilityLabel("Previous track")
                     Button { engine.togglePlayPause() } label: {
                         ZStack {
                             Circle()
@@ -166,12 +168,14 @@ struct PlayerScreen: View {
                             }
                         }
                     }
+                    .accessibilityLabel(engine.isPlaying ? "Pause" : "Play")
                     Button {
                         engine.next()
                         skipCount += 1
                     } label: {
                         Image(systemName: "forward.fill").font(.title)
                     }
+                    .accessibilityLabel("Next track")
                 }
                 .foregroundStyle(Theme.textPrimary)
 
@@ -211,6 +215,7 @@ struct PlayerScreen: View {
                                         )
                                     }
                                     .buttonStyle(.plain)
+                                    .accessibilityLabel("Play \(track.title)")
                                     .id(index)
                                 }
                             }

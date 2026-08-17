@@ -48,6 +48,7 @@ struct JournalListScreen: View {
                           preview: SharePreview("Shakedown Journal")) {
                     Image(systemName: "square.and.arrow.up")
                 }
+                .accessibilityLabel("Export journal")
             }
         }
     }
@@ -86,6 +87,7 @@ struct JournalEntryCard: View {
                             .foregroundStyle(Theme.textTertiary)
                             .padding(6)
                     }
+                    .accessibilityLabel("Entry options")
                 }
             }
             Text(entry.body)
