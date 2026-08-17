@@ -97,6 +97,34 @@ struct IADecodingTests {
         #expect(detail.notes == "line one\nline two")
     }
 
+    @Test func fallsBackToLowerBitrateMP3WhenNoVBR() throws {
+        let json = """
+        {"files": [
+            {"name": "t1.mp3", "format": "64Kbps MP3", "title": "Loser", "track": "1", "length": "100"},
+            {"name": "t2.mp3", "format": "64Kbps MP3", "title": "El Paso", "track": "2", "length": "100"},
+            {"name": "t1.flac", "format": "Flac", "title": "Loser", "track": "1", "length": "100"}
+        ], "metadata": {"title": "x"}}
+        """
+        let decoded = try JSONDecoder().decode(IAMetadataResponse.self, from: Data(json.utf8))
+        let detail = ArchiveAPIClient.detail(identifier: "test", from: decoded)
+        #expect(detail.tracks.count == 2)
+        #expect(detail.tracks.map(\.fileName) == ["t1.mp3", "t2.mp3"])
+    }
+
+    @Test func prefersVBROverLowerBitratesWithoutDuplicates() throws {
+        let json = """
+        {"files": [
+            {"name": "t1-vbr.mp3", "format": "VBR MP3", "title": "Loser", "track": "1", "length": "100"},
+            {"name": "t1-64.mp3", "format": "64Kbps MP3", "title": "Loser", "track": "1", "length": "100"},
+            {"name": "t1-128.mp3", "format": "128Kbps MP3", "title": "Loser", "track": "1", "length": "100"}
+        ], "metadata": {"title": "x"}}
+        """
+        let decoded = try JSONDecoder().decode(IAMetadataResponse.self, from: Data(json.utf8))
+        let detail = ArchiveAPIClient.detail(identifier: "test", from: decoded)
+        #expect(detail.tracks.count == 1)
+        #expect(detail.tracks.first?.fileName == "t1-vbr.mp3")
+    }
+
     @Test func streamURLEncodesAwkwardFileNames() throws {
         let url = try #require(ArchiveAPIClient.streamURL(
             identifier: "gd1977-05-08.test",
@@ -145,6 +173,91 @@ struct RecordingScoringTests {
         let b = makeShow(id: "bbb", rating: 4.0, downloads: 500)
         #expect(RecordingRanker.rank([b, a]).map(\.identifier) == ["aaa", "bbb"])
         #expect(RecordingRanker.rank([a, b]).map(\.identifier) == ["aaa", "bbb"])
+    }
+}
+
+struct LuceneEscapingTests {
+
+    @Test func escapesLuceneSpecialCharacters() {
+        #expect(ArchiveAPIClient.luceneEscaped("Winterland (SF)") == #"Winterland \(SF\)"#)
+        #expect(ArchiveAPIClient.luceneEscaped(#"5/8/77: "Cornell""#) == #"5\/8\/77\: \"Cornell\""#)
+        #expect(ArchiveAPIClient.luceneEscaped("AND && OR ||") == #"AND \&\& OR \|\|"#)
+        #expect(ArchiveAPIClient.luceneEscaped("plain barton hall") == "plain barton hall")
+    }
+
+    @Test func venueAndFreeTextAreEscapedInBuiltQuery() {
+        let filters = SearchFilters(
+            venueText: "barton) OR collection:(etree",
+            freeText: "scarlet: fire"
+        )
+        let query = ArchiveAPIClient.searchQuery(filters: filters)
+        #expect(query.contains(#"barton\) OR collection\:\(etree"#))
+        #expect(query.contains(#"(scarlet\: fire)"#))
+        // The hostile close-paren never appears unescaped.
+        #expect(!query.contains("barton)"))
+    }
+
+    @Test func numericClausesStayUnescaped() {
+        let filters = SearchFilters(yearRange: 1972...1974, minRating: 4.0)
+        let query = ArchiveAPIClient.searchQuery(filters: filters)
+        #expect(query.contains("year:[1972 TO 1974]"))
+        #expect(query.contains("avg_rating:[4.0 TO 5]"))
+    }
+}
+
+/// Deterministic HTTP stub for provider-level tests: fails everything, or
+/// succeeds only for the URL containing a marker string.
+nonisolated final class ScriptedHTTPClient: HTTPClient {
+    enum Mode: Sendable {
+        case alwaysFail
+        case succeedWhenURLContains(String)
+    }
+    private let mode: Mode
+
+    init(mode: Mode) { self.mode = mode }
+
+    func get(_ url: URL) async throws -> Data {
+        switch mode {
+        case .alwaysFail:
+            throw HTTPError.serviceUnavailable
+        case .succeedWhenURLContains(let marker):
+            guard url.absoluteString.contains(marker) else { throw HTTPError.serviceUnavailable }
+            let json = """
+            {"response": {"numFound": 1, "docs": [
+                {"identifier": "gd1968-05-08.sbd.test", "title": "GD 1968-05-08", "date": "1968-05-08"}
+            ]}}
+            """
+            return Data(json.utf8)
+        }
+    }
+}
+
+struct OnThisDayCachingTests {
+
+    @Test func failedSweepIsNotCached() async {
+        // Keep the container alive — CacheStore only holds its mainContext.
+        let container = ModelContainerFactory.make(inMemory: true)
+        let store = CacheStore(container: container)
+        let provider = ArchiveShowProvider(
+            client: ArchiveAPIClient(http: ScriptedHTTPClient(mode: .alwaysFail)),
+            cache: store
+        )
+        await #expect(throws: (any Error).self) {
+            try await provider.onThisDay(monthDay: "05-08")
+        }
+        #expect(store.cachedSearch(key: "otd:05-08", maxAge: 3600) == nil)
+    }
+
+    @Test func partialSuccessIsCached() async throws {
+        let container = ModelContainerFactory.make(inMemory: true)
+        let store = CacheStore(container: container)
+        let provider = ArchiveShowProvider(
+            client: ArchiveAPIClient(http: ScriptedHTTPClient(mode: .succeedWhenURLContains("1965"))),
+            cache: store
+        )
+        let shows = try await provider.onThisDay(monthDay: "05-08")
+        #expect(shows.count == 1)
+        #expect(store.cachedSearch(key: "otd:05-08", maxAge: 3600)?.count == 1)
     }
 }
 

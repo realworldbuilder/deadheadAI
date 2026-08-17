@@ -10,6 +10,8 @@ final class HomeModel {
     var recentShows: [(identifier: String, displayName: String, lastPlayed: Date)] = []
     var quote: BandQuote?
     var isLoadingHero = false
+    var isStartingHero = false
+    var heroPlayError: String?
 
     private let env: AppEnvironment
     private var loadedForDay: Int?
@@ -49,6 +51,26 @@ final class HomeModel {
         )
     }
 
+    func playHero() async {
+        guard let heroRecording, !isStartingHero else { return }
+        isStartingHero = true
+        heroPlayError = nil
+        do {
+            let detail = try await env.metadataProvider.detail(for: heroRecording.identifier)
+            if detail.tracks.isEmpty {
+                heroPlayError = "This tape has no streamable tracks — open the show page to pick another source."
+            } else {
+                env.playerEngine.play(show: heroRecording, tracks: detail.tracks)
+                env.playerEngine.isPresentingFullPlayer = true
+            }
+        } catch HTTPError.serviceUnavailable {
+            heroPlayError = ArchiveHealth.outageMessage
+        } catch {
+            heroPlayError = "Couldn't reach the archive. Check your connection and try again."
+        }
+        isStartingHero = false
+    }
+
     func loadHeroNarrative() async {
         guard heroNarrative == nil, let heroRecording else { return }
         heroNarrative = try? await env.aiProvider.recommend(
@@ -85,6 +107,9 @@ struct HomeScreen: View {
                                     notable: hero,
                                     recording: model.heroRecording,
                                     isLoading: model.isLoadingHero,
+                                    isStarting: model.isStartingHero,
+                                    playError: model.heroPlayError,
+                                    onPlay: { Task { await model.playHero() } },
                                     onWhy: {
                                         showingWhy = true
                                         Task { await model.loadHeroNarrative() }
@@ -219,12 +244,12 @@ struct HomeScreen: View {
 // MARK: - Hero card
 
 private struct HeroCard: View {
-    @Environment(AppEnvironment.self) private var env
-    @Environment(PlayerEngine.self) private var engine
-
     let notable: NotableShow
     let recording: Show?
     let isLoading: Bool
+    let isStarting: Bool
+    let playError: String?
+    let onPlay: () -> Void
     let onWhy: () -> Void
 
     var body: some View {
@@ -253,11 +278,9 @@ private struct HeroCard: View {
             }
 
             HStack(spacing: 10) {
-                Button {
-                    playHero()
-                } label: {
+                Button(action: onPlay) {
                     HStack {
-                        if isLoading && recording == nil {
+                        if isStarting || (isLoading && recording == nil) {
                             ProgressView().tint(.black)
                         } else {
                             Image(systemName: "play.fill")
@@ -270,7 +293,7 @@ private struct HeroCard: View {
                     .padding(.vertical, 11)
                     .background(Capsule().fill(Theme.accentGradient))
                 }
-                .disabled(recording == nil)
+                .disabled(recording == nil || isStarting)
 
                 Button(action: onWhy) {
                     Text("Why?")
@@ -291,6 +314,12 @@ private struct HeroCard: View {
                             .background(Capsule().strokeBorder(Theme.stroke))
                     }
                 }
+            }
+
+            if let playError {
+                Text(playError)
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.rose)
             }
         }
         .padding(20)
@@ -314,16 +343,6 @@ private struct HeroCard: View {
                         )
                 )
         )
-    }
-
-    private func playHero() {
-        guard let recording else { return }
-        Task {
-            if let detail = try? await env.metadataProvider.detail(for: recording.identifier) {
-                env.playerEngine.play(show: recording, tracks: detail.tracks)
-                env.playerEngine.isPresentingFullPlayer = true
-            }
-        }
     }
 }
 

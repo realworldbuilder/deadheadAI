@@ -125,11 +125,21 @@ final class ArchiveShowProvider: LiveRecordingProvider, MetadataProvider {
         // one range query per decade chunk and filter client-side.
         let client = self.client
         var results: [Show] = []
+        var anySucceeded = false
+        var lastError: (any Error)?
         for chunk in [(1965, 1974), (1975, 1984), (1985, 1995)] {
             let query = "year:[\(chunk.0) TO \(chunk.1)] AND avg_rating:[3.5 TO 5]"
-            let shows = (try? await client.searchShows(query: query, rows: 400, sort: "downloads desc")) ?? []
-            results.append(contentsOf: shows.filter { ($0.dateString ?? "").hasSuffix("-" + monthDay) })
+            do {
+                let shows = try await client.searchShows(query: query, rows: 400, sort: "downloads desc")
+                anySucceeded = true
+                results.append(contentsOf: shows.filter { ($0.dateString ?? "").hasSuffix("-" + monthDay) })
+            } catch {
+                lastError = error
+            }
         }
+        // A completely failed sweep must not be cached — it would pin an empty
+        // "On This Day" for the full TTL. Partial results are still worth keeping.
+        guard anySucceeded else { throw lastError ?? HTTPError.serviceUnavailable }
         // Collapse to one best recording per date.
         var byDate: [String: [Show]] = [:]
         for show in results { byDate[show.dateString ?? "", default: []].append(show) }

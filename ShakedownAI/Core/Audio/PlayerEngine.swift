@@ -12,6 +12,8 @@ final class PlayerEngine {
         case loading
         case playing
         case paused
+        /// The last track of the queue played to its end; play restarts the show.
+        case finished
         case failed(String)
     }
 
@@ -59,6 +61,7 @@ final class PlayerEngine {
         self.nowPlaying = NowPlayingCoordinator(engine: self)
         session.onInterruptionBegan = { [weak self] in self?.pause() }
         session.onInterruptionEndedShouldResume = { [weak self] in self?.resume() }
+        session.onRouteDisconnected = { [weak self] in self?.pause() }
         addPeriodicTimeObserver()
     }
 
@@ -81,7 +84,7 @@ final class PlayerEngine {
     func togglePlayPause() {
         switch state {
         case .playing: pause()
-        case .paused: resume()
+        case .paused, .finished: resume()
         case .idle, .loading, .failed: break
         }
     }
@@ -94,6 +97,13 @@ final class PlayerEngine {
     }
 
     func resume() {
+        if state == .finished {
+            // Show's over — spin the tape back to the top and play it again.
+            session.activate()
+            currentIndex = 0
+            loadCurrentTrack(autoplay: true)
+            return
+        }
         guard state == .paused else { return }
         session.activate()
         player.play()
@@ -224,13 +234,15 @@ final class PlayerEngine {
         statusObservation = nil
     }
 
-    private func trackDidFinish() {
+    // Internal (not private) so tests can drive end-of-track transitions
+    // without a real stream playing to its end.
+    func trackDidFinish() {
         flushListeningEvent(completed: true)
         if currentIndex + 1 < queue.count {
             currentIndex += 1
             loadCurrentTrack(autoplay: true)
         } else {
-            state = .paused
+            state = .finished
             nowPlaying?.refresh()
         }
     }

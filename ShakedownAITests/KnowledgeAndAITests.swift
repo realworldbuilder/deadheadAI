@@ -218,6 +218,35 @@ struct PlayerQueueTests {
         #expect(engine.currentShow == nil)
         #expect(engine.state == .idle)
     }
+
+    @Test func finishingLastTrackEntersFinishedState() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        let last = MockData.cornellTracks.count - 1
+        engine.play(show: MockData.cornell, tracks: MockData.cornellTracks, startAt: last)
+        engine.trackDidFinish()
+        #expect(engine.state == .finished)
+        #expect(engine.currentIndex == last)
+    }
+
+    @Test func resumeAfterFinishRestartsFromTrackZero() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(show: MockData.cornell, tracks: MockData.cornellTracks,
+                    startAt: MockData.cornellTracks.count - 1)
+        engine.trackDidFinish()
+        engine.resume()
+        #expect(engine.currentIndex == 0)
+        #expect(engine.state == .playing)
+    }
+
+    @Test func togglePlayPauseAfterFinishRestarts() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(show: MockData.cornell, tracks: MockData.cornellTracks,
+                    startAt: MockData.cornellTracks.count - 1)
+        engine.trackDidFinish()
+        engine.togglePlayPause()
+        #expect(engine.currentIndex == 0)
+        #expect(engine.state == .playing)
+    }
 }
 
 // MARK: - Journeys

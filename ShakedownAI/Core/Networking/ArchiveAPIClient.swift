@@ -51,24 +51,39 @@ nonisolated struct ArchiveAPIClient: Sendable {
         try await searchShows(query: "date:\(day)", rows: 50, sort: "downloads desc")
     }
 
-    /// Query built from parsed natural-language filters.
-    func search(filters: SearchFilters, rows: Int = 60) async throws -> [Show] {
+    /// Backslash-escapes Lucene query syntax so user-derived text can't break
+    /// (or steer) the archive query. Spaces stay intact for phrase matching.
+    nonisolated static func luceneEscaped(_ text: String) -> String {
+        let specials: Set<Character> = ["+", "-", "!", "(", ")", "{", "}", "[", "]",
+                                        "^", "\"", "~", "*", "?", ":", "\\", "/", "&", "|"]
+        return String(text.flatMap { specials.contains($0) ? ["\\", $0] : [$0] })
+    }
+
+    /// Builds the Lucene query for parsed natural-language filters.
+    /// Year/rating bounds are app-generated numbers; only free text is escaped.
+    nonisolated static func searchQuery(filters: SearchFilters) -> String {
         var clauses: [String] = []
         if let range = filters.yearRange {
             clauses.append("year:[\(range.lowerBound) TO \(range.upperBound)]")
         }
         if let venue = filters.venueText, !venue.isEmpty {
+            let venue = luceneEscaped(venue)
             clauses.append("(venue:(\(venue)) OR coverage:(\(venue)) OR title:(\(venue)))")
         }
         if let text = filters.freeText, !text.isEmpty {
-            clauses.append("(\(text))")
+            clauses.append("(\(luceneEscaped(text)))")
         }
         if let rating = filters.minRating {
             clauses.append("avg_rating:[\(rating) TO 5]")
         }
         if clauses.isEmpty { clauses.append("avg_rating:[4.5 TO 5]") }
+        return clauses.joined(separator: " AND ")
+    }
+
+    /// Query built from parsed natural-language filters.
+    func search(filters: SearchFilters, rows: Int = 60) async throws -> [Show] {
         let sort = (filters.sortByRating ?? true) ? "avg_rating desc" : "date asc"
-        var shows = try await searchShows(query: clauses.joined(separator: " AND "), rows: rows, sort: sort)
+        var shows = try await searchShows(query: Self.searchQuery(filters: filters), rows: rows, sort: sort)
         if let monthDay = filters.monthDay {
             shows = shows.filter { ($0.dateString ?? "").hasSuffix(monthDay) }
         }
@@ -122,10 +137,25 @@ nonisolated struct ArchiveAPIClient: Sendable {
         )
     }
 
+    /// Best available MP3s, one format only so tracks never duplicate.
+    /// Most Dead items carry VBR MP3, but some older transfers offer only
+    /// fixed-bitrate MP3s — those are still perfectly streamable.
+    nonisolated static let mp3FormatPreference = ["vbr mp3", "128kbps mp3", "64kbps mp3"]
+
+    nonisolated static func playableFiles(in files: [IAFile]) -> [IAFile] {
+        for format in mp3FormatPreference {
+            let matches = files.filter { ($0.format ?? "").lowercased() == format }
+            if !matches.isEmpty { return matches }
+        }
+        // Last resort: anything the archive calls an MP3 with an .mp3 extension.
+        return files.filter {
+            ($0.format ?? "").lowercased().contains("mp3") && $0.name.lowercased().hasSuffix(".mp3")
+        }
+    }
+
     nonisolated static func detail(identifier: String, from response: IAMetadataResponse) -> RecordingDetail {
         let files = response.files ?? []
-        var tracks: [Track] = files
-            .filter { ($0.format ?? "").caseInsensitiveCompare("VBR MP3") == .orderedSame }
+        var tracks: [Track] = playableFiles(in: files)
             .map { file in
                 Track(
                     fileName: file.name,
