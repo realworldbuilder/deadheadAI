@@ -306,7 +306,7 @@ struct ShowDetailScreen: View {
             }
             if model.otherRecordings.count > 3 {
                 Button(showingSources ? "Show fewer" : "Show all \(model.otherRecordings.count) sources") {
-                    showingSources.toggle()
+                    withAnimation(.snappy) { showingSources.toggle() }
                 }
                 .font(Theme.mono(12, weight: .semibold))
                 .foregroundStyle(Theme.accent)

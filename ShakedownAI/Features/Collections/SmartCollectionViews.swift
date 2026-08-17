@@ -196,6 +196,7 @@ struct SmartCollectionDetailScreen: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
                     pinButton
+                        .animation(.snappy, value: pinState)
                     ForEach(collection.items) { item in
                         itemLink(item)
                     }
@@ -234,10 +235,12 @@ struct SmartCollectionDetailScreen: View {
         switch pinState {
         case .idle:
             Button {
-                pinState = .saving
+                withAnimation(.snappy) { pinState = .saving }
                 Task {
                     let saved = await engine?.pinToLibrary(collection)
-                    pinState = .saved(saved?.name ?? collection.title)
+                    withAnimation(.snappy) {
+                        pinState = .saved(saved?.name ?? collection.title)
+                    }
                 }
             } label: {
                 Label("Keep this shelf", systemImage: "tray.and.arrow.down.fill")

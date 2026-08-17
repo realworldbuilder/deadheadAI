@@ -165,6 +165,7 @@ struct ChatScreen: View {
     @Environment(AppEnvironment.self) private var env
     @State private var model: ChatModel?
     @State private var path = NavigationPath()
+    @State private var confirmingClear = false
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -183,7 +184,7 @@ struct ChatScreen: View {
             .toolbar {
                 Menu {
                     Button(role: .destructive) {
-                        model?.clearConversation()
+                        confirmingClear = true
                     } label: {
                         Label("Clear conversation", systemImage: "trash")
                     }
@@ -191,6 +192,17 @@ struct ChatScreen: View {
                     Image(systemName: "ellipsis.circle")
                 }
             }
+            .confirmationDialog(
+                "Clear this conversation?",
+                isPresented: $confirmingClear,
+                titleVisibility: .visible
+            ) {
+                Button("Clear Conversation", role: .destructive) {
+                    model?.clearConversation()
+                }
+            }
+            .sensoryFeedback(.warning, trigger: confirmingClear) { !$0 && $1 }
+            .sensoryFeedback(.impact(flexibility: .soft), trigger: model?.isReplying ?? false) { !$0 && $1 }
             .navigationDestination(for: ChatLink.Destination.self) { destination in
                 chatLinkScreen(for: destination)
             }
@@ -321,6 +333,8 @@ struct ChatScreen: View {
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1...4)
                 .focused($focused)
+                .submitLabel(.send)
+                .onSubmit { Task { await model.send() } }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(Capsule().fill(Theme.surfaceRaised))

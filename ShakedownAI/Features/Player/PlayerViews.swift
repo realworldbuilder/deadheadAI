@@ -88,17 +88,13 @@ struct PlayerScreen: View {
     @Environment(\.dismiss) private var dismiss
     @State private var scrubbing = false
     @State private var scrubValue: Double = 0
+    @State private var skipCount = 0
 
     var body: some View {
         ZStack {
             SpaceBackground()
 
             VStack(spacing: 24) {
-                Capsule()
-                    .fill(Theme.stroke)
-                    .frame(width: 42, height: 5)
-                    .padding(.top, 10)
-
                 if let show = engine.currentShow {
                     VStack(spacing: 4) {
                         Text(show.displayDate)
@@ -150,7 +146,10 @@ struct PlayerScreen: View {
                 .padding(.horizontal, Theme.screenPadding)
 
                 HStack(spacing: 44) {
-                    Button { engine.previous() } label: {
+                    Button {
+                        engine.previous()
+                        skipCount += 1
+                    } label: {
                         Image(systemName: "backward.fill").font(.title)
                     }
                     Button { engine.togglePlayPause() } label: {
@@ -167,7 +166,10 @@ struct PlayerScreen: View {
                             }
                         }
                     }
-                    Button { engine.next() } label: {
+                    Button {
+                        engine.next()
+                        skipCount += 1
+                    } label: {
                         Image(systemName: "forward.fill").font(.title)
                     }
                 }
@@ -219,7 +221,22 @@ struct PlayerScreen: View {
                 }
                 Spacer(minLength: 0)
             }
+            .padding(.top, 26)
         }
+        .overlay(alignment: .topLeading) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("Close player")
+            .padding(.leading, 8)
+        }
+        .sensoryFeedback(.selection, trigger: skipCount)
     }
 
     private func timeString(_ seconds: Double) -> String {

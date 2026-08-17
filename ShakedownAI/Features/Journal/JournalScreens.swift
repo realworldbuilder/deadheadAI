@@ -56,6 +56,7 @@ struct JournalListScreen: View {
 struct JournalEntryCard: View {
     let entry: JournalEntry
     var onDelete: (() -> Void)?
+    @State private var confirmingDelete = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -73,9 +74,11 @@ struct JournalEntryCard: View {
                 if let mood = entry.mood, !mood.isEmpty {
                     TagPill(text: mood, tint: Theme.rose)
                 }
-                if let onDelete {
+                if onDelete != nil {
                     Menu {
-                        Button(role: .destructive, action: onDelete) {
+                        Button(role: .destructive) {
+                            confirmingDelete = true
+                        } label: {
                             Label("Delete", systemImage: "trash")
                         }
                     } label: {
@@ -92,6 +95,18 @@ struct JournalEntryCard: View {
         .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
+        .confirmationDialog(
+            "Delete this entry?",
+            isPresented: $confirmingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Entry", role: .destructive) {
+                onDelete?()
+            }
+        } message: {
+            Text("There's no undo — the memory goes with it.")
+        }
+        .sensoryFeedback(.warning, trigger: confirmingDelete) { !$0 && $1 }
     }
 }
 
@@ -323,6 +338,7 @@ struct TasteProfileScreen: View {
                                     .fill(Theme.accentGradient)
                                     .frame(width: max(geo.size.width * weight, weight > 0 ? 6 : 0))
                             }
+                            .animation(.snappy, value: weight)
                         }
                         .frame(height: 10)
                         Text(weight > 0 ? "\(Int(weight * 100))%" : "—")

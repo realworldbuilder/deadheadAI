@@ -22,6 +22,27 @@ struct RootView: View {
     var body: some View {
         @Bindable var engine = env.playerEngine
 
+        tabs
+            .background(Theme.background)
+            .overlay(alignment: .top) { ArchiveOfflineBanner() }
+            .environment(env.playerEngine)
+            .sensoryFeedback(.impact(weight: .light), trigger: engine.state,
+                             condition: Self.playPauseToggled)
+            .sheet(isPresented: $engine.isPresentingFullPlayer) {
+                PlayerScreen()
+                    .environment(env.playerEngine)
+                    .presentationDragIndicator(.visible)
+            }
+            .onAppear {
+                if !didOnboard { showingOnboarding = true }
+            }
+            .sheet(isPresented: $showingOnboarding, onDismiss: { didOnboard = true }) {
+                OnboardingSheet()
+            }
+            .task { await runDemoAutoplayIfRequested() }
+    }
+
+    private var tabs: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "house.fill", value: .home) {
                 HomeScreen()
@@ -39,21 +60,15 @@ struct RootView: View {
                 SettingsScreen()
             }
         }
-        .background(Theme.background)
-        .overlay(alignment: .top) { ArchiveOfflineBanner() }
-        .environment(env.playerEngine)
-        .sheet(isPresented: $engine.isPresentingFullPlayer) {
-            PlayerScreen()
-                .environment(env.playerEngine)
-                .presentationDragIndicator(.hidden)
-        }
-        .onAppear {
-            if !didOnboard { showingOnboarding = true }
-        }
-        .sheet(isPresented: $showingOnboarding, onDismiss: { didOnboard = true }) {
-            OnboardingSheet()
-        }
-        .task { await runDemoAutoplayIfRequested() }
+    }
+
+    /// Haptic only on a deliberate pause/resume. Auto-advance passes through
+    /// .loading between tracks, and this must not buzz on every song of a
+    /// three-hour show.
+    private static func playPauseToggled(from old: PlayerEngine.PlaybackState,
+                                         to new: PlayerEngine.PlaybackState) -> Bool {
+        (old == .playing && new == .paused)
+            || ((old == .paused || old == .finished) && new == .playing)
     }
 
     /// Debug hook: `--demo-autoplay` streams the best Cornell '77 source on

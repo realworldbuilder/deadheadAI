@@ -20,9 +20,10 @@ struct CollectionPickerSheet: View {
 
                         ForEach(env.library.collections, id: \.persistentModelID) { collection in
                             let alreadyIn = collection.items.contains { $0.showIdentifier == show.identifier }
+                            let saved = alreadyIn || savedTo == collection.name
                             Button {
                                 env.library.add(show: show, to: collection)
-                                savedTo = collection.name
+                                withAnimation(.snappy) { savedTo = collection.name }
                             } label: {
                                 HStack {
                                     Image(systemName: collection.iconName)
@@ -32,13 +33,9 @@ struct CollectionPickerSheet: View {
                                         .font(Theme.body)
                                         .foregroundStyle(Theme.textPrimary)
                                     Spacer()
-                                    if alreadyIn || savedTo == collection.name {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(Theme.sage)
-                                    } else {
-                                        Image(systemName: "plus.circle")
-                                            .foregroundStyle(Theme.textTertiary)
-                                    }
+                                    Image(systemName: saved ? "checkmark.circle.fill" : "plus.circle")
+                                        .foregroundStyle(saved ? Theme.sage : Theme.textTertiary)
+                                        .contentTransition(.symbolEffect(.replace))
                                 }
                                 .padding(13)
                                 .cardStyle()
@@ -55,7 +52,7 @@ struct CollectionPickerSheet: View {
                             Button {
                                 let collection = env.library.createCollection(name: newName)
                                 env.library.add(show: show, to: collection)
-                                savedTo = collection.name
+                                withAnimation(.snappy) { savedTo = collection.name }
                                 newName = ""
                             } label: {
                                 Image(systemName: "plus.circle.fill")
@@ -78,5 +75,6 @@ struct CollectionPickerSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .sensoryFeedback(.success, trigger: savedTo)
     }
 }

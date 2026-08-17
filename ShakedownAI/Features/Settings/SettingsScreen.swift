@@ -6,6 +6,7 @@ struct SettingsScreen: View {
     @State private var aiActive = KeychainStore.hasUsableKey
     @State private var cacheSize = 0
     @State private var displayName = ""
+    @State private var confirmingClearCache = false
 
     var body: some View {
         NavigationStack {
@@ -23,6 +24,19 @@ struct SettingsScreen: View {
                 .withMiniPlayer()
             }
             .navigationTitle("Settings")
+            .confirmationDialog(
+                "Clear the metadata cache?",
+                isPresented: $confirmingClearCache,
+                titleVisibility: .visible
+            ) {
+                Button("Clear Cache", role: .destructive) {
+                    env.cache.clearAll()
+                    cacheSize = env.cache.approximateSizeBytes
+                }
+            } message: {
+                Text("Setlists and search results will re-download from the archive as you browse.")
+            }
+            .sensoryFeedback(.warning, trigger: confirmingClearCache) { !$0 && $1 }
         }
         .tint(Theme.accent)
         .onAppear {
@@ -146,8 +160,7 @@ struct SettingsScreen: View {
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Button("Clear Cache") {
-                        env.cache.clearAll()
-                        cacheSize = env.cache.approximateSizeBytes
+                        confirmingClearCache = true
                     }
                     .font(Theme.mono(13, weight: .semibold))
                     .foregroundStyle(Theme.rose)

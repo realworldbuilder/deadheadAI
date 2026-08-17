@@ -163,6 +163,9 @@ struct CollectionDetailScreen: View {
     @Environment(\.modelContext) private var modelContext
     let collectionID: PersistentIdentifier
     @State private var refreshToken = 0
+    @State private var confirmingDelete = false
+    @State private var itemPendingRemoval: CollectionItem?
+    @State private var confirmingRemoval = false
 
     private var collection: ShowCollection? {
         modelContext.model(for: collectionID) as? ShowCollection
@@ -208,8 +211,8 @@ struct CollectionDetailScreen: View {
                                     }
                                     Spacer()
                                     Button {
-                                        env.library.remove(item: item)
-                                        refreshToken += 1
+                                        itemPendingRemoval = item
+                                        confirmingRemoval = true
                                     } label: {
                                         Image(systemName: "minus.circle")
                                             .foregroundStyle(Theme.rose)
@@ -233,8 +236,7 @@ struct CollectionDetailScreen: View {
             if let collection {
                 Menu {
                     Button(role: .destructive) {
-                        env.library.deleteCollection(collection)
-                        dismiss()
+                        confirmingDelete = true
                     } label: {
                         Label("Delete Collection", systemImage: "trash")
                     }
@@ -243,6 +245,36 @@ struct CollectionDetailScreen: View {
                 }
             }
         }
+        .confirmationDialog(
+            "Delete \u{201C}\(collection?.name ?? "this collection")\u{201D}?",
+            isPresented: $confirmingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Collection", role: .destructive) {
+                if let collection {
+                    env.library.deleteCollection(collection)
+                    dismiss()
+                }
+            }
+        } message: {
+            let count = collection?.items.count ?? 0
+            Text("The shelf and its \(count) saved show\(count == 1 ? "" : "s") go with it. The recordings stay in the archive.")
+        }
+        .confirmationDialog(
+            "Remove from this shelf?",
+            isPresented: $confirmingRemoval,
+            titleVisibility: .visible,
+            presenting: itemPendingRemoval
+        ) { item in
+            Button("Remove Show", role: .destructive) {
+                env.library.remove(item: item)
+                refreshToken += 1
+            }
+        } message: { item in
+            Text(item.displayName)
+        }
+        .sensoryFeedback(.warning, trigger: confirmingDelete) { !$0 && $1 }
+        .sensoryFeedback(.warning, trigger: confirmingRemoval) { !$0 && $1 }
     }
 
     private func stubShow(for item: CollectionItem) -> Show {

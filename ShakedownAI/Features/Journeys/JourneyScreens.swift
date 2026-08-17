@@ -73,6 +73,7 @@ private struct JourneyCard: View {
                                    ? geo.size.width * CGFloat(progress.completed) / CGFloat(progress.total)
                                    : 0)
                     }
+                    .animation(.snappy, value: progress.completed)
                 }
                 .frame(height: 7)
                 Text(progress.isStarted ? "\(progress.completed)/\(progress.total)" : "\(progress.total) nights")
@@ -293,6 +294,7 @@ struct JourneyDayScreen: View {
             .withMiniPlayer()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sensoryFeedback(.success, trigger: refreshToken)
         .task {
             resolvedShow = (try? await env.recordingProvider.recordings(forDate: day.showDate))?.first
         }
