@@ -111,7 +111,7 @@ struct ExploreTabView: View {
     @Environment(AppEnvironment.self) private var env
 
     private enum Destination: Hashable {
-        case search, topShelf, eras, songs, journeys, darkStar, onThisDay, friends,
+        case search, topShelf, eras, songs, journeys, darkStar, onThisDay,
              journal, taste
     }
 
@@ -134,11 +134,10 @@ struct ExploreTabView: View {
     private static let labelHeight: CGFloat = 40
     private static let labelGap: CGFloat = 10
 
-    /// The system, laid out like a diagram of our own: the emblem is the sun,
-    /// three nested orbits ring it, and the destinations sit on the rings in
-    /// mirrored arcs — a crown of three across the top, a pair at the waist,
-    /// and an arc of three along the foot. Orbit fractions are of width (rx)
-    /// and height (ry); each planet sits exactly on its ring.
+    /// The system: the emblem is the sun, three nested orbits ring it, and
+    /// the destinations scatter loosely around the rings — a crown across the
+    /// top, bodies drifting at the waist, an arc along the foot. Orbit
+    /// fractions are of width (rx) and height (ry).
     private let orbits: [(rx: CGFloat, ry: CGFloat)] = [
         (0.22, 0.32),   // inner — Top Shelf, at its foot
         (0.28, 0.37),   // middle — the mid pair rides its waist; Dark Star crowns it
@@ -157,20 +156,19 @@ struct ExploreTabView: View {
         Star(id: "eras", destination: .eras, title: "Eras",
              style: .ringed, bodySize: 52, position: UnitPoint(x: 0.72, y: 0.16),
              side: .leading),
-        // Outer orbit's waist: level with the emblem at the far edges.
+        // The waist: Journal rides the far left edge; Your Taste drifts a
+        // little higher on the right where the nebula used to hang.
         Star(id: "journal", destination: .journal, title: "Journal",
              style: .wireGlobe, bodySize: 42, position: UnitPoint(x: 0.16, y: 0.50),
              side: .bottom),
         Star(id: "taste", destination: .taste, title: "Your\nTaste",
-             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.84, y: 0.50),
+             style: .starburst, bodySize: 42, position: UnitPoint(x: 0.80, y: 0.42),
              side: .bottom),
-        // Middle orbit, mirrored pairs above and below the emblem's equator —
-        // labels face outward vertically so both clear the wordmark.
+        // Middle orbit — loosely scattered rather than mirrored, so the sky
+        // reads as a night sky and not a diagram. Labels face outward
+        // vertically so they clear the wordmark.
         Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
              style: .marbled, bodySize: 44, position: UnitPoint(x: 0.235, y: 0.38),
-             side: .top),
-        Star(id: "friends", destination: .friends, title: "Fellow\nTravelers",
-             style: .nebula, bodySize: 60, position: UnitPoint(x: 0.765, y: 0.38),
              side: .top),
         Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
              style: .comet, bodySize: 44, position: UnitPoint(x: 0.24, y: 0.63),
@@ -257,8 +255,6 @@ struct ExploreTabView: View {
                     )
                 case .darkStar:
                     DarkStarScreen()
-                case .friends:
-                    FriendsScreen()
                 case .journal:
                     JournalListScreen()
                 case .taste:
