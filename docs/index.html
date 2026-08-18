@@ -155,6 +155,17 @@
     color: var(--gold); letter-spacing: 10px; font-size: 15px;
   }
 
+  /* ---- comment-section feature ---- */
+  .comments-feature .feature-body {
+    max-width: 640px; margin: 0 auto;
+    border: 1px solid var(--stroke); border-radius: 18px;
+    background: var(--card); backdrop-filter: blur(6px);
+    padding: 28px 32px; font-size: 17.5px;
+    box-shadow: 0 0 60px rgba(90, 70, 190, 0.15);
+  }
+  .comments-feature .feature-body p + p { margin-top: 14px; }
+  .comments-feature em { color: var(--gold-bright); font-style: normal; font-weight: bold; }
+
   /* ---- field reports ---- */
   section.reports { margin-top: 8px; }
   h2.section {
@@ -235,6 +246,17 @@
 
   <div class="divider">✦ ⚡ ✦</div>
 
+  <section class="comments-feature">
+    <h2 class="section">It Reads the Comment Section</h2>
+    <p class="section-sub">The real map to the archive was never a database. It was the heads.</p>
+    <div class="feature-body">
+      <p>For twenty years, picking a tape has meant scrolling the reviews under every show — tapers talking mic placement and gen counts, heads naming the exact minute the X-factor arrives, somebody who was on the floor that night settling the argument. Thousands of shows, hundreds of thousands of words of inherited wisdom.</p>
+      <p><em>Deadhead AI reads all of it.</em> Every rating, every source note, every review on every recording feeds the guide. When it tells you which Cornell source to trust or why 2/13/70 gets whispered about, it isn&rsquo;t guessing — it&rsquo;s channeling the tapers and heads who were there, and it shows you their actual words right on the show page.</p>
+    </div>
+  </section>
+
+  <div class="divider">✦</div>
+
   <section class="reports">
     <h2 class="section">The Rundown</h2>
     <p class="section-sub">Everything it does, no fluff.</p>
@@ -247,7 +269,7 @@
       <div class="review">
         <div class="head"><span class="r">✦</span><span>every show, storied</span></div>
         <h3>Liner notes for all of it</h3>
-        <p>Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in. Decades of listener reviews and ratings pick the best tape of the night — the way it&rsquo;s always been done, just faster.</p>
+        <p>Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in — with the real taper and head reviews right there under the setlist. Their ratings pick the best tape of the night, the way it&rsquo;s always been done, just faster.</p>
       </div>
       <div class="review">
         <div class="head"><span class="r">✦</span><span>shelves</span></div>

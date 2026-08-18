@@ -24,10 +24,10 @@ Everything needed to submit in [App Store Connect](https://appstoreconnect.apple
 AI guide to live Grateful Dead
 ```
 
-**Promotional text** (170 chars max, editable without review — this is ~139):
+**Promotional text** (170 chars max, editable without review — this is ~152, and it echoes the app's own chat greeting):
 
 ```
-The head on the rail who's heard every tape since '65. Ask for a show, get THE show. Free AI when you sign in with Apple — hop on the bus.
+It's heard every tape and read every review — decades of comment-section wisdom from real tapers and heads, in your pocket. Free AI with Apple sign-in.
 ```
 
 **Description** (4000 chars max):
@@ -39,11 +39,14 @@ You know how it goes. Somebody says "man, you GOTTA hear 5/8/77" and suddenly it
 
 Deadhead AI puts one of those heads in your pocket. The app hosts no music. It just knows the road.
 
+IT READS THE COMMENT SECTION
+For twenty years, picking a tape has meant scrolling the reviews under every show — tapers talking mic placement, heads naming the minute the X-factor arrives, somebody who was on the floor settling the argument. Deadhead AI reads all of it: every rating, every source note, every review on every recording feeds its answers, and the real reviews sit right on the show page. When it tells you which Cornell source to trust, it's channeling the people who were there.
+
 ASK LIKE YOU'D ASK THE RAIL
 "Mellow '73 for a rainy Sunday." "Hottest Scarlet>Fire of the eighties." "Five hour drive — build me a second set that never lands." Plain English in, real tapes out. Every answer is grounded in real recordings and real setlists. No hallucinated bootlegs, ever.
 
 A GUIDE FOR EVERY SHOW
-Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in, what the crowd knew before the rest of the world did. Decades of listener reviews and ratings help pick the best tape of the night — the way it's always been done, just faster.
+Open any night and get the story: why this one matters, which source to spin, what the crowd knew before the rest of the world did. The tapers' and heads' ratings pick the best tape of the night — the way it's always been done, just faster.
 
 SHELVES THAT BUILD THEMSELVES
 Anniversaries, tour seasons, songs rising out of your own listening. Smart shelves refresh through the day like a friend who keeps taping things for you. Pin one and it's yours to keep and edit.
