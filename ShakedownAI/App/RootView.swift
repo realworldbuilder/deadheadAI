@@ -10,6 +10,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("didOnboard") private var didOnboard = false
     @State private var showingOnboarding = false
+    @State private var stagedShow: Show?
     @State private var selectedTab: AppTab = {
         // Debug hook: `--tab explore` opens on a given tab (used by CLI verification).
         let args = ProcessInfo.processInfo.arguments
@@ -43,7 +44,12 @@ struct RootView: View {
             .task {
                 env.library.dedupAfterSync()
                 await validateAppleCredentialIfNeeded()
+                await stageForScreenshotsIfRequested()
                 await runDemoAutoplayIfRequested()
+            }
+            .fullScreenCover(item: $stagedShow) { show in
+                NavigationStack { ShowDetailScreen(show: show) }
+                    .environment(env.playerEngine)
             }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { env.library.dedupAfterSync() }
@@ -84,6 +90,24 @@ struct RootView: View {
                                          to new: PlayerEngine.PlaybackState) -> Bool {
         (old == .playing && new == .paused)
             || ((old == .paused || old == .finished) && new == .playing)
+    }
+
+    /// Debug hooks for CLI screenshot staging: `--stage-show` opens the best
+    /// Cornell '77 source's show page; `--stage-player` starts it streaming
+    /// and presents the full-screen player. Both drive the real UI so
+    /// captures show live data.
+    private func stageForScreenshotsIfRequested() async {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("--stage-show") || args.contains("--stage-player") else { return }
+        guard let best = (try? await env.recordingProvider.recordings(forDate: "1977-05-08"))?.first else { return }
+        if args.contains("--stage-show") {
+            stagedShow = best
+            return
+        }
+        guard let detail = try? await env.metadataProvider.detail(for: best.identifier) else { return }
+        env.playerEngine.play(show: best, tracks: detail.tracks)
+        try? await Task.sleep(for: .seconds(2))
+        env.playerEngine.isPresentingFullPlayer = true
     }
 
     /// Debug hook: `--demo-autoplay` streams the best Cornell '77 source on

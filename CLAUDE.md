@@ -37,7 +37,7 @@ xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
 
 Install on a physical iPhone: `./run-on-phone.sh` (plugged in, unlocked, trusted).
 
-Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--tab explore|chat|library|settings`.
+Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--tab explore|chat|library|settings`, `--stage-show` / `--stage-player` (open Cornell '77's show page / full-screen player for CLI screenshot capture), `--force-ai-gate` (exercise the locked AI gate in DEBUG builds).
 
 ## Releasing
 
