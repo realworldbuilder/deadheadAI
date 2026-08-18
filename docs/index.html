@@ -5,109 +5,290 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deadhead AI — the head on the rail who knows every tape</title>
 <meta name="description" content="An AI companion for the Internet Archive's Grateful Dead collection. Thirty years of tapes, one guide who's heard them all.">
+<meta property="og:title" content="Deadhead AI">
+<meta property="og:description" content="The head on the rail who's heard every tape since '65. Ask for a show, get THE show.">
+<meta property="og:image" content="https://realworldbuilder.github.io/deadheadAI/assets/icon.png">
+<meta property="og:url" content="https://realworldbuilder.github.io/deadheadAI/">
+<link rel="icon" type="image/png" href="assets/icon.png">
 <style>
   :root {
-    --midnight: #100e22;
-    --midnight-soft: #1a1733;
+    --midnight: #0d0b1d;
+    --midnight-soft: #16132b;
+    --card: rgba(26, 22, 48, 0.72);
     --parchment: #ece0c2;
-    --parchment-dim: #b9ac8d;
+    --parchment-dim: #b3a684;
     --gold: #d4af5f;
     --gold-bright: #f0cd7e;
-    --stroke: rgba(212, 175, 95, 0.25);
+    --gold-deep: #9c7c3c;
+    --stroke: rgba(212, 175, 95, 0.22);
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --mono: 'Courier New', ui-monospace, monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    background: radial-gradient(ellipse at 50% -10%, #221d45 0%, var(--midnight) 55%);
+    background: var(--midnight);
     color: var(--parchment);
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: var(--serif);
     line-height: 1.65;
-    min-height: 100vh;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px 80px; }
-  header { text-align: center; padding: 40px 0 8px; }
-  .mark {
-    font-size: 44px; letter-spacing: 3px; font-weight: bold;
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+
+  /* ---- sky ---- */
+  .sky {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(ellipse 90% 55% at 50% -8%, rgba(64, 52, 138, 0.55), transparent 70%),
+      radial-gradient(ellipse 45% 30% at 85% 8%, rgba(140, 60, 32, 0.18), transparent 70%),
+      radial-gradient(ellipse 40% 28% at 8% 85%, rgba(140, 60, 32, 0.14), transparent 70%),
+      var(--midnight);
+  }
+  .stars, .stars2, .stars3 {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-repeat: repeat;
+  }
+  .stars {
+    background-image:
+      radial-gradient(1px 1px at 22px 34px, rgba(255,255,255,0.9), transparent 1.5px),
+      radial-gradient(1px 1px at 118px 92px, rgba(255,255,255,0.55), transparent 1.5px),
+      radial-gradient(1px 1px at 199px 21px, rgba(240,205,126,0.8), transparent 1.5px),
+      radial-gradient(1px 1px at 61px 156px, rgba(255,255,255,0.65), transparent 1.5px),
+      radial-gradient(1px 1px at 165px 183px, rgba(178,196,255,0.7), transparent 1.5px);
+    background-size: 220px 210px;
+  }
+  .stars2 {
+    background-image:
+      radial-gradient(1.5px 1.5px at 45px 65px, rgba(255,255,255,0.95), transparent 2px),
+      radial-gradient(1.5px 1.5px at 280px 190px, rgba(240,205,126,0.9), transparent 2px),
+      radial-gradient(1px 1px at 330px 40px, rgba(255,255,255,0.5), transparent 1.5px),
+      radial-gradient(1.5px 1.5px at 150px 280px, rgba(178,196,255,0.85), transparent 2px);
+    background-size: 380px 330px;
+    animation: twinkle 5s ease-in-out infinite alternate;
+  }
+  .stars3 {
+    background-image:
+      radial-gradient(2px 2px at 90px 130px, rgba(255,255,255,1), transparent 2.5px),
+      radial-gradient(2px 2px at 410px 60px, rgba(240,205,126,0.95), transparent 2.5px),
+      radial-gradient(2px 2px at 260px 320px, rgba(255,255,255,0.85), transparent 2.5px);
+    background-size: 520px 420px;
+    animation: twinkle 7s ease-in-out 1.8s infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 1; } to { opacity: 0.35; } }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- hero ---- */
+  header { text-align: center; padding: 84px 0 30px; }
+  .icon {
+    width: 120px; height: 120px; border-radius: 27px;
+    box-shadow:
+      0 0 60px rgba(240, 205, 126, 0.35),
+      0 0 140px rgba(90, 70, 190, 0.45),
+      0 12px 40px rgba(0, 0, 0, 0.6);
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  h1.mark {
+    margin-top: 30px;
+    font-size: clamp(44px, 9vw, 76px);
+    letter-spacing: 0.06em;
+    font-weight: bold;
+    background: linear-gradient(180deg, #fdf4d7 8%, var(--gold-bright) 38%, var(--gold) 62%, var(--gold-deep) 95%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 50px rgba(240, 205, 126, 0.18);
     text-transform: uppercase;
   }
-  .tagline { font-style: italic; color: var(--parchment-dim); margin-top: 10px; font-size: 19px; }
-  .stars { color: var(--gold); letter-spacing: 4px; font-size: 15px; margin-top: 18px; }
-  h2 {
-    color: var(--gold-bright); font-size: 15px; letter-spacing: 2.5px;
-    text-transform: uppercase; margin: 44px 0 12px;
-    font-family: 'Courier New', monospace;
+  .tagline {
+    font-style: italic; color: var(--parchment-dim);
+    font-size: clamp(17px, 2.6vw, 21px); margin-top: 12px;
   }
-  p { margin-bottom: 14px; font-size: 17px; }
-  .review {
-    border: 1px solid var(--stroke); border-radius: 12px;
-    background: var(--midnight-soft); padding: 18px 20px; margin: 18px 0;
+  .stars-row { color: var(--gold); letter-spacing: 6px; font-size: 16px; margin-top: 20px; }
+  .stars-row small { display: block; letter-spacing: 1px; font-family: var(--mono); font-size: 12px; color: var(--parchment-dim); margin-top: 6px; }
+
+  .ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 34px; }
+  .btn {
+    display: inline-block; padding: 14px 30px; border-radius: 14px;
+    font-size: 17px; font-weight: bold; text-decoration: none; letter-spacing: 0.3px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .review .who { font-family: 'Courier New', monospace; font-size: 13px; color: var(--parchment-dim); margin-top: 8px; margin-bottom: 0; }
-  .review p:first-child { margin-bottom: 0; }
-  a { color: var(--gold-bright); }
-  .cta {
-    display: block; text-align: center; margin: 40px auto 0; max-width: 320px;
-    padding: 14px 28px; border-radius: 14px; text-decoration: none;
+  .btn:hover { transform: translateY(-2px); }
+  .btn-gold {
     background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-    color: #17130a; font-weight: bold; font-size: 17px; letter-spacing: 0.5px;
+    color: #17130a;
+    box-shadow: 0 6px 30px rgba(212, 175, 95, 0.35);
   }
+  .btn-gold:hover { box-shadow: 0 10px 40px rgba(212, 175, 95, 0.5); }
+  .btn-ghost {
+    border: 1px solid var(--stroke); color: var(--gold-bright);
+    background: rgba(240, 205, 126, 0.04);
+  }
+
+  /* ---- intro ---- */
+  .intro { max-width: 640px; margin: 40px auto 0; text-align: center; font-size: 18.5px; }
+  .intro p { margin-bottom: 16px; }
+  .intro em { color: var(--gold-bright); }
+
+  /* ---- phones ---- */
+  .phones {
+    display: flex; justify-content: center; align-items: center;
+    gap: clamp(8px, 3vw, 30px); margin: 70px 0 20px; perspective: 1200px;
+  }
+  .phone {
+    border: 1px solid var(--stroke); border-radius: clamp(22px, 4vw, 38px);
+    overflow: hidden; background: #000;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 50px rgba(90, 70, 190, 0.18);
+    transition: transform 0.25s ease;
+  }
+  .phone img { display: block; width: 100%; height: auto; }
+  .phone.side { width: clamp(140px, 24vw, 250px); }
+  .phone.center { width: clamp(170px, 29vw, 300px); z-index: 2; }
+  .phone.left  { transform: rotateY(16deg) translateY(10px); }
+  .phone.right { transform: rotateY(-16deg) translateY(10px); }
+  .phone.left:hover, .phone.right:hover, .phone.center:hover { transform: rotateY(0) translateY(-6px) scale(1.02); }
+  .phones-caption {
+    text-align: center; font-family: var(--mono); font-size: 12.5px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--parchment-dim);
+  }
+
+  /* ---- divider ---- */
+  .divider {
+    text-align: center; margin: 70px 0 10px;
+    color: var(--gold); letter-spacing: 10px; font-size: 15px;
+  }
+
+  /* ---- field reports ---- */
+  section.reports { margin-top: 8px; }
+  h2.section {
+    text-align: center; color: var(--gold-bright);
+    font-size: clamp(24px, 4.5vw, 34px); letter-spacing: 1px; margin: 40px 0 6px;
+  }
+  .section-sub {
+    text-align: center; font-style: italic; color: var(--parchment-dim);
+    margin-bottom: 34px; font-size: 16.5px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .review {
+    border: 1px solid var(--stroke); border-radius: 16px;
+    background: var(--card); padding: 22px 24px;
+    backdrop-filter: blur(6px);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .review:hover { transform: translateY(-4px); border-color: rgba(240, 205, 126, 0.5); }
+  .review .head {
+    font-family: var(--mono); font-size: 12.5px; color: var(--parchment-dim);
+    display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .review .head .r { color: var(--gold); letter-spacing: 2px; }
+  .review h3 { font-size: 19px; color: var(--gold-bright); margin-bottom: 8px; }
+  .review p { font-size: 16px; }
+  .review p + p { margin-top: 10px; }
+
+  /* ---- bottom cta ---- */
+  .outro { text-align: center; margin: 80px 0 0; }
+  .outro .icon { width: 76px; height: 76px; border-radius: 17px; animation: none; }
+  .outro p { max-width: 520px; margin: 22px auto 0; font-size: 18px; }
+
   footer {
-    margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--stroke);
+    margin-top: 80px; padding: 30px 24px 60px; border-top: 1px solid var(--stroke);
     font-size: 13.5px; color: var(--parchment-dim); text-align: center;
   }
-  footer nav { margin-bottom: 14px; }
-  footer nav a { margin: 0 12px; }
+  footer nav { margin-bottom: 16px; font-family: var(--mono); font-size: 13px; letter-spacing: 1px; }
+  footer nav a { margin: 0 14px; }
+  footer p { max-width: 620px; margin: 0 auto; }
+  a { color: var(--gold-bright); }
+
+  @media (max-width: 560px) {
+    .phones { flex-wrap: nowrap; }
+    header { padding-top: 56px; }
+  }
 </style>
 </head>
 <body>
+<div class="sky"></div>
+<div class="stars"></div>
+<div class="stars2"></div>
+<div class="stars3"></div>
+
 <div class="wrap">
   <header>
-    <div class="mark">Deadhead AI</div>
+    <img class="icon" src="assets/icon.png" alt="Deadhead AI icon — a rainbow spiral with a lightning bolt">
+    <h1 class="mark">Deadhead AI</h1>
     <p class="tagline">The music never stopped. Neither should discovering it.</p>
-    <div class="stars">★★★★★</div>
+    <div class="stars-row">★★★★★<small>— the comment section, 1995–forever</small></div>
+    <div class="ctas">
+      <a class="btn btn-gold" href="https://apps.apple.com/app/deadhead-ai">Get it on the App&nbsp;Store</a>
+      <a class="btn btn-ghost" href="https://archive.org/details/GratefulDead">Browse the Collection</a>
+    </div>
   </header>
 
-  <p style="margin-top:36px">You know how it goes. Somebody says &ldquo;man, you gotta hear 5/8/77&rdquo; and suddenly it&rsquo;s 3am, you&rsquo;re six shows deep, and Jerry is peeling the paint off some field house in 1974. There are <em>thousands</em> of tapes on the Internet Archive — audience tapes, soundboards, matrixes, thirty years of the boys cooking — and the only map has ever been the heads in the comment section.</p>
-
-  <p>Deadhead AI puts one of those heads in your pocket. It&rsquo;s an AI companion for the Archive&rsquo;s Grateful Dead collection: ask it anything the way you&rsquo;d ask the guy on the rail, and every answer points at a real tape with a real setlist. The app hosts no music. It just knows the road.</p>
-
-  <h2>Ask like a head</h2>
-  <div class="review">
-    <p>&ldquo;Mellow &rsquo;73 for a rainy Sunday.&rdquo; &ldquo;Hottest Scarlet&gt;Fire of the eighties.&rdquo; &ldquo;I&rsquo;ve got a five hour drive, build me a second set that never lands.&rdquo; Plain English in, real recordings out. No hallucinated bootlegs, ever.</p>
+  <div class="intro">
+    <p>You know how it goes. Somebody says <em>&ldquo;man, you gotta hear 5/8/77&rdquo;</em> and suddenly it&rsquo;s 3am, you&rsquo;re six shows deep, and Jerry is peeling the paint off some field house in 1974.</p>
+    <p>The Internet Archive holds <em>thousands</em> of tapes — auds, boards, matrixes, thirty years of the boys cooking — and the only map has ever been the heads in the comment section. Deadhead AI puts one of those heads in your pocket. The app hosts no music. It just knows the road.</p>
   </div>
 
-  <h2>A guide for every show</h2>
-  <div class="review">
-    <p>Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in. Decades of listener reviews and ratings help pick the best tape of the night — the way it&rsquo;s always been done, just faster.</p>
-    <p class="who">— every show page, basically</p>
+  <div class="phones">
+    <div class="phone side left"><img src="assets/shot-explore.png" alt="Explore tab — a constellation of destinations: Dark Star, Eras, Songs, Long Strange Trip" loading="lazy"></div>
+    <div class="phone center"><img src="assets/shot-home.png" alt="Home tab — Tonight's Show: 10/18/74 Winterland Arena, with smart shelves"></div>
+    <div class="phone side right"><img src="assets/shot-chat.png" alt="Chat tab — your lifelong Deadhead riding shotgun, ready for questions" loading="lazy"></div>
   </div>
+  <p class="phones-caption">tonight&rsquo;s show &nbsp;✦&nbsp; the constellation &nbsp;✦&nbsp; the head riding shotgun</p>
 
-  <h2>Shelves that build themselves</h2>
-  <div class="review">
-    <p>Anniversaries, tour seasons, songs rising out of your own listening. The shelves refresh through the day like a friend who keeps taping things for you. Pin one and it&rsquo;s yours to keep.</p>
+  <div class="divider">✦ ⚡ ✦</div>
+
+  <section class="reports">
+    <h2 class="section">Field Reports</h2>
+    <p class="section-sub">What it does, in the only voice that ever mattered.</p>
+    <div class="grid">
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>ask like a head</span></div>
+        <h3>&ldquo;Just ask it like you&rsquo;d ask the rail&rdquo;</h3>
+        <p>&ldquo;Mellow &rsquo;73 for a rainy Sunday.&rdquo; &ldquo;Hottest Scarlet&gt;Fire of the eighties.&rdquo; &ldquo;Five hour drive — build me a second set that never lands.&rdquo; Plain English in, real tapes out. Every answer points at a real recording with a real setlist. No hallucinated bootlegs, ever.</p>
+      </div>
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>every show, storied</span></div>
+        <h3>&ldquo;Finally, liner notes for all of it&rdquo;</h3>
+        <p>Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in. Decades of listener reviews and ratings pick the best tape of the night — the way it&rsquo;s always been done, just faster.</p>
+      </div>
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>shelves</span></div>
+        <h3>&ldquo;Like a friend who keeps taping things for you&rdquo;</h3>
+        <p>Anniversaries, tour seasons, songs rising out of your own listening — smart shelves refresh through the day. Pin one and it&rsquo;s yours to keep and edit.</p>
+      </div>
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>journeys</span></div>
+        <h3>&ldquo;Walked me from &rsquo;68 weirdness to the MIDI years&rdquo;</h3>
+        <p>Primal Dead. Europe &rsquo;72. The &rsquo;77 peak. Guided paths through the catalog, show by show, with the context the liner notes never gave you. (Respect the MIDI years.)</p>
+      </div>
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>built for listening</span></div>
+        <h3>&ldquo;Background audio, lock screen, gapless — it just plays&rdquo;</h3>
+        <p>Streams straight from archive.org with a real queue, lock-screen controls, and cached setlists so the app works offline. Audio is never stored. Chase one song — Dark Star, Eyes, Playing — as it stretches from three minutes to thirty across the decades.</p>
+      </div>
+      <div class="review">
+        <div class="head"><span class="r">★★★★★</span><span>free ai, on the house</span></div>
+        <h3>&ldquo;Signed in with Apple, whole brain woke up&rdquo;</h3>
+        <p>Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. Skip it and everything still works on a curated offline knowledge base. No ads, no trackers, nobody selling your trip diary.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="outro">
+    <img class="icon" src="assets/icon.png" alt="">
+    <p>Thirty years of tape is a long strange road. Bring a guide who&rsquo;s heard it all.</p>
+    <div class="ctas">
+      <a class="btn btn-gold" href="https://apps.apple.com/app/deadhead-ai">Hop on the Bus</a>
+    </div>
   </div>
-
-  <h2>Journeys through the catalog</h2>
-  <div class="review">
-    <p>Primal &rsquo;68 weirdness. Europe &rsquo;72. The &rsquo;77 peak. The MIDI years (respect the MIDI years). Guided paths that walk you show by show with the context the liner notes never gave you.</p>
-  </div>
-
-  <h2>Free AI, on the house</h2>
-  <div class="review">
-    <p>Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. Skip the sign-in and everything still works on a curated offline knowledge base. No ads, no trackers, nobody selling your trip diary.</p>
-  </div>
-
-  <a class="cta" href="https://apps.apple.com/app/deadhead-ai">Get it on the App Store</a>
-
-  <footer>
-    <nav>
-      <a href="support.html">Support</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="https://archive.org/details/GratefulDead">The Collection</a>
-    </nav>
-    <p>All audio streams from the Internet Archive&rsquo;s Grateful Dead collection, carrying on the band&rsquo;s long taping tradition. Deadhead AI is an independent project, not affiliated with the Grateful Dead, Rhino, or Warner Music.</p>
-  </footer>
 </div>
+
+<footer>
+  <nav>
+    <a href="support.html">Support</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="https://archive.org/details/GratefulDead">The Collection</a>
+  </nav>
+  <p>All audio streams from the Internet Archive&rsquo;s Grateful Dead collection, carrying on the band&rsquo;s long taping tradition. Deadhead AI is an independent project, not affiliated with the Grateful Dead, Rhino, or Warner Music.</p>
+</footer>
 </body>
 </html>
