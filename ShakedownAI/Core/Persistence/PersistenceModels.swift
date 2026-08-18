@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftData
 
 // MARK: - Cache
@@ -31,16 +32,20 @@ final class CachedRecordingMetadata {
 
 // MARK: - Journal
 
+// JournalEntry, ShowCollection, and CollectionItem live in the CloudKit-synced
+// store: no unique attributes, every property defaulted, relationships optional.
+// Duplicates that sync can introduce are collapsed by LibraryStore.dedupAfterSync().
+
 @Model
 final class JournalEntry {
-    @Attribute(.unique) var id: UUID
-    var showIdentifier: String
+    var id: UUID = UUID()
+    var showIdentifier: String = ""
     var showDate: Date?
-    var showDisplayName: String
-    var body: String
+    var showDisplayName: String = ""
+    var body: String = ""
     var mood: String?
-    var createdAt: Date
-    var updatedAt: Date
+    var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
 
     init(showIdentifier: String,
          showDate: Date?,
@@ -62,13 +67,13 @@ final class JournalEntry {
 
 @Model
 final class ShowCollection {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var blurb: String
-    var iconName: String
-    var createdAt: Date
+    var id: UUID = UUID()
+    var name: String = ""
+    var blurb: String = ""
+    var iconName: String = "sparkles"
+    var createdAt: Date = Date.now
     @Relationship(deleteRule: .cascade, inverse: \CollectionItem.collection)
-    var items: [CollectionItem]
+    var items: [CollectionItem]? = []
 
     init(name: String, blurb: String = "", iconName: String = "sparkles") {
         self.id = UUID()
@@ -82,11 +87,11 @@ final class ShowCollection {
 
 @Model
 final class CollectionItem {
-    var showIdentifier: String
+    var showIdentifier: String = ""
     var showDate: Date?
-    var displayName: String
-    var addedAt: Date
-    var sortIndex: Int
+    var displayName: String = ""
+    var addedAt: Date = Date.now
+    var sortIndex: Int = 0
     var collection: ShowCollection?
 
     init(showIdentifier: String, showDate: Date?, displayName: String, sortIndex: Int) {
@@ -247,12 +252,19 @@ final class LocalAccount {
 // MARK: - Container factory
 
 enum ModelContainerFactory {
-    static let allModels: [any PersistentModel.Type] = [
-        CachedShowSearch.self,
-        CachedRecordingMetadata.self,
+    /// User shelves & journal — the models eligible for CloudKit sync. They
+    /// live in their own store file so sync can flip on without moving data.
+    static let cloudModels: [any PersistentModel.Type] = [
         JournalEntry.self,
         ShowCollection.self,
         CollectionItem.self,
+    ]
+
+    /// Everything device-local: caches, history/taste, smart shelves,
+    /// journeys, chat, accounts.
+    static let localModels: [any PersistentModel.Type] = [
+        CachedShowSearch.self,
+        CachedRecordingMetadata.self,
         SmartCollectionRecord.self,
         ListeningEvent.self,
         TasteProfileRecord.self,
@@ -262,15 +274,65 @@ enum ModelContainerFactory {
         LocalAccount.self,
     ]
 
-    static func make(inMemory: Bool = false) -> ModelContainer {
+    static var allModels: [any PersistentModel.Type] { localModels + cloudModels }
+
+    static let cloudKitContainerID = "iCloud.com.deadhead.ai"
+
+    /// The legacy single-store path — must stay pinned here or existing
+    /// installs lose their caches, history, and journeys.
+    static var localStoreURL: URL {
+        URL.applicationSupportDirectory.appending(path: "default.store")
+    }
+
+    static var cloudStoreURL: URL {
+        URL.applicationSupportDirectory.appending(path: "shakedown-cloud.store")
+    }
+
+    static func make(inMemory: Bool = false, cloudSync: Bool = false) -> ModelContainer {
         let schema = Schema(allModels)
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
+        let log = Logger(subsystem: "ai.deadheads", category: "persistence")
+
+        func inMemoryContainer() -> ModelContainer {
+            let local = ModelConfiguration("local", schema: Schema(localModels),
+                                           isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            let cloud = ModelConfiguration("cloud", schema: Schema(cloudModels),
+                                           isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            return try! ModelContainer(for: schema, configurations: [local, cloud])
+        }
+        if inMemory { return inMemoryContainer() }
+
+        // Without the iCloud entitlement, CloudKit doesn't fail container
+        // creation — it traps later on a background queue, uncatchably. Our
+        // simulator builds are always unsigned (no entitlement at runtime), so
+        // never open .private there; device builds are signed with it or fail
+        // visibly at signing.
+        #if targetEnvironment(simulator)
+        let sync = false
+        if cloudSync { log.notice("Simulator build: iCloud sync stays off (no runtime entitlement)") }
+        #else
+        let sync = cloudSync
+        #endif
+
+        func diskConfigs(sync: Bool) -> [ModelConfiguration] {
+            let local = ModelConfiguration("local", schema: Schema(localModels),
+                                           url: localStoreURL, cloudKitDatabase: .none)
+            let cloud = ModelConfiguration("cloud", schema: Schema(cloudModels),
+                                           url: cloudStoreURL,
+                                           cloudKitDatabase: sync ? .private(cloudKitContainerID) : .none)
+            return [local, cloud]
+        }
         do {
-            return try ModelContainer(for: schema, configurations: [config])
+            return try ModelContainer(for: schema, configurations: diskConfigs(sync: sync))
         } catch {
+            if sync {
+                log.error("CloudKit container failed (\(String(describing: error), privacy: .public)); retrying without sync")
+                if let container = try? ModelContainer(for: schema, configurations: diskConfigs(sync: false)) {
+                    return container
+                }
+            }
             // A corrupt store should not brick the app: fall back to in-memory.
-            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-            return try! ModelContainer(for: schema, configurations: [fallback])
+            log.fault("Persistent container failed (\(String(describing: error), privacy: .public)); falling back to in-memory")
+            return inMemoryContainer()
         }
     }
 }

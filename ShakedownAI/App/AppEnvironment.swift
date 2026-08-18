@@ -51,7 +51,11 @@ final class AppEnvironment {
     }
 
     static func live() -> AppEnvironment {
-        let container = ModelContainerFactory.make()
+        CloudStoreMigrator.migrateIfNeeded()
+        // Apple sign-in is the key to iCloud sync; without it the cloud store
+        // opens local-only (same file, so nothing moves when sync flips on).
+        let cloudSync = PersistentAuthProvider.persistedAppleUserID() != nil
+        let container = ModelContainerFactory.make(cloudSync: cloudSync)
         let cache = CacheStore(container: container)
         let archive = ArchiveShowProvider(cache: cache)
         let kb = KnowledgeBase.loadFromBundle()
@@ -62,7 +66,7 @@ final class AppEnvironment {
             metadataProvider: archive,
             streamingProvider: ArchiveStreamingProvider(),
             aiProvider: CompositeAIProvider(knowledgeBase: kb),
-            authProvider: MockAuthProvider()
+            authProvider: PersistentAuthProvider()
         )
     }
 

@@ -150,12 +150,13 @@ xcrun simctl io booted screenshot shot1.png
 
 - **Export compliance**: already handled — `ITSAppUsesNonExemptEncryption: false` is in the Info.plist, so no prompt should appear.
 - **Advertising Identifier (IDFA)**: No.
-- **Sign in with Apple**: nothing extra to declare; the entitlement is in the build.
+- **Sign in with Apple**: nothing extra to declare; the entitlement is in the build. It now also enables iCloud sync of collections and journal entries (CloudKit private database, container `iCloud.com.deadhead.ai`).
 - **App Store Connect → App Information → License Agreement**: default Apple EULA is fine.
 - **Copyright field**: `2026 William Hussey` (or your entity name).
 
 ## 10. Pre-submit checklist
 
+- [ ] **CloudKit schema deployed to Production** (CloudKit Console → `iCloud.com.deadhead.ai` → Deploy Schema Changes). TestFlight/App Store builds use the Production environment; without this, sync silently fails. Redo after any synced-model change.
 - [ ] Latest TestFlight build finished processing and is selectable
 - [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm Settings shows "Deadhead AI connected"; also confirm "Hop on the Bus" alone leaves the offline brain active
 - [ ] OpenAI spending limit set (the bundled key ships in the binary — treat as semi-public)

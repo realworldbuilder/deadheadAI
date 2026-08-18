@@ -7,6 +7,7 @@ enum AppTab: String {
 
 struct RootView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("didOnboard") private var didOnboard = false
     @State private var showingOnboarding = false
     @State private var selectedTab: AppTab = {
@@ -39,7 +40,21 @@ struct RootView: View {
             .sheet(isPresented: $showingOnboarding, onDismiss: { didOnboard = true }) {
                 OnboardingSheet()
             }
-            .task { await runDemoAutoplayIfRequested() }
+            .task {
+                env.library.dedupAfterSync()
+                await validateAppleCredentialIfNeeded()
+                await runDemoAutoplayIfRequested()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { env.library.dedupAfterSync() }
+            }
+    }
+
+    /// A revoked Apple ID (user removed the app in Settings > Apple ID) signs
+    /// the account out and relocks AI + sync on next launch.
+    private func validateAppleCredentialIfNeeded() async {
+        guard let auth = env.authProvider as? PersistentAuthProvider else { return }
+        await auth.validateAppleCredentialAtLaunch()
     }
 
     private var tabs: some View {

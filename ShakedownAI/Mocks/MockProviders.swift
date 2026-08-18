@@ -154,7 +154,10 @@ final class MockAuthProvider: AuthProvider {
         return account
     }
 
-    func signOut() async { currentAccount = nil }
+    func signOut() async {
+        currentAccount = nil
+        KeychainStore.lockAI()
+    }
 }
 
 // MARK: - Helpers

@@ -84,5 +84,5 @@ gh secret set OPENAI_API_KEY --repo realworldbuilder/deadheadAI
 ## Notes
 
 - Works fully offline-of-OpenAI; an API key only upgrades prose and free-form chat.
-- Sign in with Apple unlocks the bundled AI key (free access, for now). It needs a signed build with the `com.apple.developer.applesignin` entitlement; on unsigned simulator builds the flow fails and falls back to the local on-device account with the offline brain.
+- Sign in with Apple unlocks the bundled AI key (free access, for now) and turns on iCloud sync of collections and journal entries (CloudKit private database). It needs a signed build with the `com.apple.developer.applesignin` and iCloud entitlements; on unsigned simulator builds the flow fails and falls back to the local on-device account with the offline brain and local-only saves. DEBUG builds skip the AI gate; pass `--force-ai-gate` to exercise the locked experience.
 - Friends & Listening Sessions are backed by `MockSocialProvider` — the protocol seam is where a real backend plugs in.

@@ -7,6 +7,7 @@ struct SettingsScreen: View {
     @State private var cacheSize = 0
     @State private var displayName = ""
     @State private var confirmingClearCache = false
+    @State private var confirmingSignOut = false
 
     var body: some View {
         NavigationStack {
@@ -14,6 +15,7 @@ struct SettingsScreen: View {
                 SpaceBackground()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
+                        accountSection
                         aiSection
                         providerSection
                         cacheSection
@@ -37,11 +39,81 @@ struct SettingsScreen: View {
                 Text("Setlists and search results will re-download from the archive as you browse.")
             }
             .sensoryFeedback(.warning, trigger: confirmingClearCache) { !$0 && $1 }
+            .confirmationDialog(
+                "Sign out?",
+                isPresented: $confirmingSignOut,
+                titleVisibility: .visible
+            ) {
+                Button("Sign Out", role: .destructive) {
+                    Task {
+                        await env.authProvider.signOut()
+                        NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+                    }
+                }
+            } message: {
+                Text("AI goes back to the offline brain and iCloud syncing stops. Your shelves and journal stay on this device, and the copies already in iCloud stay there too.")
+            }
         }
         .tint(Theme.accent)
         .onAppear {
             cacheSize = env.cache.approximateSizeBytes
             aiActive = KeychainStore.hasUsableKey
+        }
+    }
+
+    // MARK: - Account
+
+    private var signedInWithApple: Bool {
+        env.authProvider.currentAccount?.appleUserID != nil
+    }
+
+    private var accountSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Account").sectionHeaderStyle()
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: signedInWithApple
+                          ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
+                        .foregroundStyle(signedInWithApple ? Theme.sage : Theme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(env.authProvider.currentAccount?.displayName ?? "Not signed in")
+                            .font(Theme.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(signedInWithApple ? "Signed in with Apple" : "Local, this device only")
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Text(signedInWithApple
+                     ? "Your shelves and journal sync to iCloud."
+                     : "Sign in with Apple to keep your shelves and journal in iCloud.")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                if signedInWithApple {
+                    Button("Sign Out") {
+                        confirmingSignOut = true
+                    }
+                    .font(Theme.mono(13, weight: .semibold))
+                    .foregroundStyle(Theme.rose)
+                } else {
+                    // Independent of the AI-gate card below, which only
+                    // renders while a bundled key sits locked.
+                    SignInWithAppleButton(.signIn) { request in
+                        request.requestedScopes = [.fullName]
+                    } onCompletion: { result in
+                        if case .success(let auth) = result,
+                           let credential = auth.credential as? ASAuthorizationAppleIDCredential {
+                            unlockAI(credential: credential)
+                        }
+                    }
+                    .signInWithAppleButtonStyle(.white)
+                    .frame(height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .padding(Theme.cardPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .cardStyle()
         }
     }
 
@@ -94,7 +166,7 @@ struct SettingsScreen: View {
             return "AI is on the house. Recommendations and chat are grounded in real archive data, with the offline brain as backup."
         }
         if KeychainStore.keyAwaitingUnlock {
-            return "Sign in with Apple to unlock free AI recommendations and chat. Until then, everything runs on the offline brain."
+            return "Sign in with Apple to unlock free AI recommendations and chat, and to keep your shelves and journal in iCloud. Until then, everything runs on the offline brain."
         }
         return "Everything works offline from the curated knowledge base. This build shipped without an AI key, so free-form chat runs locally."
     }
@@ -107,6 +179,8 @@ struct SettingsScreen: View {
             _ = try? await env.authProvider.signInWithApple(
                 userID: credential.user,
                 displayName: credential.fullName?.givenName ?? fallbackName)
+            // Rebuild the environment so the cloud store reopens with sync on.
+            NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
         }
     }
 

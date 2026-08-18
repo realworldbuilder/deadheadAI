@@ -19,7 +19,7 @@ struct CollectionPickerSheet: View {
                             .foregroundStyle(Theme.accent)
 
                         ForEach(env.library.collections, id: \.persistentModelID) { collection in
-                            let alreadyIn = collection.items.contains { $0.showIdentifier == show.identifier }
+                            let alreadyIn = (collection.items ?? []).contains { $0.showIdentifier == show.identifier }
                             let saved = alreadyIn || savedTo == collection.name
                             Button {
                                 env.library.add(show: show, to: collection)

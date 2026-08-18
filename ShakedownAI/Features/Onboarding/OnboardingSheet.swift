@@ -78,7 +78,7 @@ struct OnboardingSheet: View {
                 .opacity(0.9)
 
                 Text(KeychainStore.keyAwaitingUnlock
-                     ? "Sign in with Apple to unlock the full AI brain — free, on the house. Or hop on without an account; everything still lives on this device."
+                     ? "Sign in with Apple to unlock the full AI brain and keep your shelves & journal in iCloud — free, on the house. Or hop on without an account; everything stays on this device."
                      : "No account required. Everything lives on this device.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
@@ -118,6 +118,8 @@ struct OnboardingSheet: View {
             _ = try? await env.authProvider.signInWithApple(userID: credential.user,
                                                            displayName: chosenName)
             dismiss()
+            // Rebuild the environment so the cloud store reopens with sync on.
+            NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
         }
     }
 }

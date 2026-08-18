@@ -143,7 +143,7 @@ private struct CollectionCard: View {
                 .font(Theme.headline)
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
-            Text("\(collection.items.count) show\(collection.items.count == 1 ? "" : "s")")
+            Text("\((collection.items ?? []).count) show\((collection.items ?? []).count == 1 ? "" : "s")")
                 .font(Theme.mono(11))
                 .foregroundStyle(Theme.textTertiary)
         }
@@ -179,7 +179,7 @@ struct CollectionDetailScreen: View {
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         let _ = refreshToken
-                        let items = collection.items.sorted { $0.sortIndex < $1.sortIndex }
+                        let items = (collection.items ?? []).sorted { $0.sortIndex < $1.sortIndex }
                         if items.isEmpty {
                             VStack(spacing: 10) {
                                 Image(systemName: "square.stack.3d.up.slash")
@@ -255,7 +255,7 @@ struct CollectionDetailScreen: View {
                 }
             }
         } message: {
-            let count = collection?.items.count ?? 0
+            let count = collection?.items?.count ?? 0
             Text("The shelf and its \(count) saved show\(count == 1 ? "" : "s") go with it. The recordings stay in the archive.")
         }
         .confirmationDialog(

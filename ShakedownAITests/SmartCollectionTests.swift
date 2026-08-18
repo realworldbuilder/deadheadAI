@@ -300,7 +300,7 @@ struct SmartCollectionEngineTests {
 
         let saved = await engine.pinToLibrary(shelf)
         #expect(saved.name == shelf.title)
-        #expect(!saved.items.isEmpty)
+        #expect(!(saved.items ?? []).isEmpty)
         #expect(env.library.collections.contains { $0.name == shelf.title })
     }
 }

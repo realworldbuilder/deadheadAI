@@ -1,9 +1,11 @@
 import Foundation
 
 /// Resolves the OpenAI API key bundled into this build. The key ships in the
-/// app so AI features are free for users and is active whenever present —
-/// the earlier Sign-in-with-Apple soft gate is disabled (see git history to
-/// restore it). The previous user-supplied keychain flow was also removed.
+/// app so AI features are free for users, but stays locked until the user
+/// signs in with Apple — until then every AI call falls back to the offline
+/// LocalKnowledgeAI brain. DEBUG builds skip the gate (Apple sign-in can't
+/// complete in unsigned simulator builds); pass `--force-ai-gate` to exercise
+/// the locked experience in development.
 nonisolated enum KeychainStore {
     private static let unlockDefaultsKey = "aiAccessUnlocked"
 
@@ -17,7 +19,10 @@ nonisolated enum KeychainStore {
 
     /// True once the user has completed Sign in with Apple on this device.
     static var aiUnlocked: Bool {
-        UserDefaults.standard.bool(forKey: unlockDefaultsKey)
+        #if DEBUG
+        if !ProcessInfo.processInfo.arguments.contains("--force-ai-gate") { return true }
+        #endif
+        return UserDefaults.standard.bool(forKey: unlockDefaultsKey)
     }
 
     static func unlockAI() {
@@ -28,12 +33,19 @@ nonisolated enum KeychainStore {
         UserDefaults.standard.removeObject(forKey: unlockDefaultsKey)
     }
 
-    /// The key AI calls should use; the bundled key, whenever one ships.
-    static func resolveAPIKey() -> String? { bundledAPIKey }
+    /// The gate's pure core, separated so tests can exercise the truth table
+    /// without touching UserDefaults or build configuration.
+    static func resolveAPIKey(bundled: String?, unlocked: Bool) -> String? {
+        unlocked ? bundled : nil
+    }
+
+    /// The key AI calls should use; nil until Apple sign-in unlocks it.
+    static func resolveAPIKey() -> String? {
+        resolveAPIKey(bundled: bundledAPIKey, unlocked: aiUnlocked)
+    }
 
     static var hasUsableKey: Bool { resolveAPIKey() != nil }
 
-    /// Always false while the sign-in gate is disabled — keeps the
-    /// "sign in to unlock" UI hidden without touching its call sites.
-    static var keyAwaitingUnlock: Bool { false }
+    /// A key ships in this build but the user hasn't signed in to unlock it.
+    static var keyAwaitingUnlock: Bool { bundledAPIKey != nil && !aiUnlocked }
 }
