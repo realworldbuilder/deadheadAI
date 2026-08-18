@@ -24,10 +24,10 @@ Everything needed to submit in [App Store Connect](https://appstoreconnect.apple
 AI guide to live Grateful Dead
 ```
 
-**Promotional text** (170 chars max, editable without review):
+**Promotional text** (170 chars max, editable without review — this is ~139):
 
 ```
-Thirty years of live Dead, one AI that knows every tape. Sign in with Apple for free AI access — for a limited time.
+The head on the rail who's heard every tape since '65. Ask for a show, get THE show. Free AI when you sign in with Apple — hop on the bus.
 ```
 
 **Description** (4000 chars max):
@@ -35,31 +35,33 @@ Thirty years of live Dead, one AI that knows every tape. Sign in with Apple for 
 ```
 The music never stopped. Neither should discovering it.
 
-Deadhead AI is an intelligent companion for the Internet Archive's Grateful Dead collection — thousands of live recordings spanning 1965 to 1995, preserved by tapers and archivists over six decades. The app hosts no music; it adds the brain on top.
+You know how it goes. Somebody says "man, you GOTTA hear 5/8/77" and suddenly it's 3am, you're six shows deep, and Jerry is peeling the paint off some field house in 1974. The Internet Archive holds thousands of tapes — auds, boards, matrixes, thirty years of the boys cooking — and the only map has ever been the heads in the comment section.
 
-ASK FOR ANYTHING
-Search in plain English: "mellow '73 for a rainy morning," "hottest Scarlet>Fire of the eighties," "what should I hear first?" The AI understands eras, venues, songs, and moods — and every answer is grounded in real recordings and real setlists.
+Deadhead AI puts one of those heads in your pocket. The app hosts no music. It just knows the road.
+
+ASK LIKE YOU'D ASK THE RAIL
+"Mellow '73 for a rainy Sunday." "Hottest Scarlet>Fire of the eighties." "Five hour drive — build me a second set that never lands." Plain English in, real tapes out. Every answer is grounded in real recordings and real setlists. No hallucinated bootlegs, ever.
 
 A GUIDE FOR EVERY SHOW
-Open any show and get a listening guide: what makes this night special, which songs to start with, how the tape sounds, what the crowd knew that night. Reviews and ratings from decades of listeners help pick the best source.
+Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in, what the crowd knew before the rest of the world did. Decades of listener reviews and ratings help pick the best tape of the night — the way it's always been done, just faster.
 
-SMART COLLECTIONS THAT BUILD THEMSELVES
-Shelves refresh through the day — show anniversaries, tour seasons, rising songs from your own listening, and picks tuned to your taste. Pin any shelf and it becomes a real collection you can edit.
+SHELVES THAT BUILD THEMSELVES
+Anniversaries, tour seasons, songs rising out of your own listening. Smart shelves refresh through the day like a friend who keeps taping things for you. Pin one and it's yours to keep and edit.
 
 JOURNEYS THROUGH THE CATALOG
-Guided listening paths: the primal Dead of the sixties, the Europe '72 tour, the '77 peak, the MIDI years. Each journey walks you show by show with context along the way.
+Primal '68 weirdness. Europe '72. The '77 peak. The MIDI years (respect the MIDI years). Guided paths walk you show by show with the context the liner notes never gave you.
 
 EXPLORE BY ERA AND SONG
-Fly through thirty years of history era by era, or follow a single song — Dark Star, Playing in the Band, Eyes of the World — as it stretches and evolves across decades.
+Fly through thirty years era by era, or chase one song — Dark Star, Playing in the Band, Eyes of the World — as it stretches from three minutes to thirty across the decades.
 
 A TASTE PROFILE THAT LEARNS YOUR EARS
-The more you listen, the better the recommendations get. Your history, journal, and profile live on your device.
+The more you spin, the better the recs get. Your history, journal, and profile live on your device — nobody's reading your trip diary.
 
 BUILT FOR LISTENING
-Background audio, lock screen controls, gapless queues, and streaming straight from archive.org. Setlists and metadata are cached so the app works offline; audio is never stored.
+Background audio, lock screen controls, gapless queues, streaming straight from archive.org. Setlists and metadata are cached so the app works offline; audio is never stored.
 
 FREE AI, ON THE HOUSE
-Sign in with Apple and the full AI brain is free for a limited time. No account? Everything still works — search, guides, journeys, and recommendations run on a curated offline knowledge base of essential shows, song histories, and eras.
+Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. No account? Everything still works on a curated offline knowledge base of essential shows, song histories, and eras. Hop on the bus either way.
 
 Deadhead AI streams from the Internet Archive's Grateful Dead collection, where the band's long-standing taping tradition lives on. This app is an independent project and is not affiliated with the Grateful Dead, Rhino, or Warner Music.
 ```
@@ -73,16 +75,18 @@ grateful dead,jerry garcia,live music,setlist,jam band,tapes,archive,cornell,dic
 **What's New** (first version):
 
 ```
-First release. Hop on the bus.
+First release. See you on the rail.
 ```
 
 ## 3. URLs
 
+All three live on GitHub Pages (`docs/` on main → https://realworldbuilder.github.io/deadheadAI/):
+
 | Field | Value |
 |---|---|
-| Support URL | **TODO** — simplest: `https://github.com/realworldbuilder/deadheadAI` (repo is public) or a GitHub Pages page with a contact email |
-| Marketing URL (optional) | **TODO** — skip for 1.0 unless you have a site |
-| Privacy Policy URL | **TODO — required.** A one-page policy hosted anywhere public (GitHub Pages works). It should state: everything (listening history, journal, taste profile, Apple sign-in name/ID) stays on the device; chat and search text is sent to OpenAI to generate responses and is not used to identify you; recordings stream from archive.org; no analytics, no ads, no tracking. |
+| Support URL | `https://realworldbuilder.github.io/deadheadAI/support.html` |
+| Marketing URL (optional) | `https://realworldbuilder.github.io/deadheadAI/` |
+| Privacy Policy URL | `https://realworldbuilder.github.io/deadheadAI/privacy.html` |
 
 ## 4. App Privacy (Data Collection questionnaire)
 

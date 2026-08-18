@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deadhead AI — Privacy Policy</title>
+<style>
+  :root {
+    --midnight: #100e22; --midnight-soft: #1a1733;
+    --parchment: #ece0c2; --parchment-dim: #b9ac8d;
+    --gold: #d4af5f; --gold-bright: #f0cd7e;
+    --stroke: rgba(212, 175, 95, 0.25);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #221d45 0%, var(--midnight) 55%);
+    color: var(--parchment); font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.65; min-height: 100vh;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 {
+    font-size: 32px; letter-spacing: 1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .crumb { font-family: 'Courier New', monospace; font-size: 13px; margin-bottom: 26px; }
+  .crumb a { color: var(--gold-bright); }
+  .updated { font-family: 'Courier New', monospace; font-size: 13px; color: var(--parchment-dim); margin-bottom: 24px; }
+  h2 {
+    color: var(--gold-bright); font-size: 14px; letter-spacing: 2.5px;
+    text-transform: uppercase; margin: 32px 0 10px;
+    font-family: 'Courier New', monospace;
+  }
+  p, li { margin-bottom: 12px; font-size: 16.5px; }
+  ul { padding-left: 22px; }
+  a { color: var(--gold-bright); }
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--stroke); font-size: 13.5px; color: var(--parchment-dim); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb"><a href="index.html">← Deadhead AI</a></p>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: August 18, 2026</p>
+
+  <p>The short version: your listening lives on your phone, your shelves can live in <em>your</em> iCloud, your questions go to OpenAI only to get answered, and nobody here is tracking, profiling, or selling anything. There are no ads, no analytics, and no third-party trackers in the app.</p>
+
+  <h2>What stays on your device</h2>
+  <ul>
+    <li>Listening history and the taste profile computed from it</li>
+    <li>Journey progress and AI chat transcripts</li>
+    <li>Your display name and, if you sign in with Apple, the Apple-provided user identifier</li>
+    <li>Cached setlists and search results (so the app works offline)</li>
+  </ul>
+  <p>None of this is transmitted to us. We have no servers and no ability to see it.</p>
+
+  <h2>What syncs to your iCloud (optional)</h2>
+  <p>If you sign in with Apple, your collections (saved shows) and journal entries sync to the <strong>private CloudKit database of your own iCloud account</strong>. Apple encrypts and stores this data under your Apple ID; we cannot read, access, or share it. Sign out and syncing stops; your data stays on the device and in your iCloud until you remove it (iOS Settings → your name → iCloud → Manage Account Storage → Deadhead AI).</p>
+
+  <h2>What gets sent to OpenAI</h2>
+  <p>When the AI brain is active, the text of your chats and searches — plus non-identifying context like era preferences and candidate show listings — is sent to OpenAI&rsquo;s API to generate responses. These requests carry no account identifier, name, or device identifier. Per <a href="https://openai.com/policies/api-data-usage-policies">OpenAI&rsquo;s API policy</a>, API data is not used to train their models. Without sign-in, an offline knowledge base answers instead and nothing is sent at all.</p>
+
+  <h2>What archive.org sees</h2>
+  <p>Recordings stream directly from the Internet Archive, so archive.org receives the standard information any web request carries (your IP address and the items you stream), governed by the <a href="https://archive.org/about/terms.php">Internet Archive&rsquo;s terms and privacy policy</a>. We are not a party to that traffic.</p>
+
+  <h2>Sign in with Apple</h2>
+  <p>Used solely to unlock the hosted AI mode and iCloud sync. We receive the name you choose to share and an anonymous Apple user identifier; both stay on your device. No account is created on any server of ours, because we don&rsquo;t have any.</p>
+
+  <h2>Children</h2>
+  <p>The app is rated 12+ and is not directed at children under 13. We do not knowingly collect personal information from anyone — including children — because we do not collect personal information.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the new version will be posted at this URL with an updated date. Material changes will be noted in the app&rsquo;s release notes.</p>
+
+  <h2>Contact</h2>
+  <p>Questions, deletion requests, or anything else: <a href="mailto:phishmiami@gmail.com">phishmiami@gmail.com</a>.</p>
+
+  <footer>
+    <p>Deadhead AI is an independent project, not affiliated with the Grateful Dead, Rhino, or Warner Music.</p>
+  </footer>
+</div>
+</body>
+</html>

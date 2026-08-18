@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deadhead AI — the head on the rail who knows every tape</title>
+<meta name="description" content="An AI companion for the Internet Archive's Grateful Dead collection. Thirty years of tapes, one guide who's heard them all.">
+<style>
+  :root {
+    --midnight: #100e22;
+    --midnight-soft: #1a1733;
+    --parchment: #ece0c2;
+    --parchment-dim: #b9ac8d;
+    --gold: #d4af5f;
+    --gold-bright: #f0cd7e;
+    --stroke: rgba(212, 175, 95, 0.25);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #221d45 0%, var(--midnight) 55%);
+    color: var(--parchment);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px 80px; }
+  header { text-align: center; padding: 40px 0 8px; }
+  .mark {
+    font-size: 44px; letter-spacing: 3px; font-weight: bold;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-transform: uppercase;
+  }
+  .tagline { font-style: italic; color: var(--parchment-dim); margin-top: 10px; font-size: 19px; }
+  .stars { color: var(--gold); letter-spacing: 4px; font-size: 15px; margin-top: 18px; }
+  h2 {
+    color: var(--gold-bright); font-size: 15px; letter-spacing: 2.5px;
+    text-transform: uppercase; margin: 44px 0 12px;
+    font-family: 'Courier New', monospace;
+  }
+  p { margin-bottom: 14px; font-size: 17px; }
+  .review {
+    border: 1px solid var(--stroke); border-radius: 12px;
+    background: var(--midnight-soft); padding: 18px 20px; margin: 18px 0;
+  }
+  .review .who { font-family: 'Courier New', monospace; font-size: 13px; color: var(--parchment-dim); margin-top: 8px; margin-bottom: 0; }
+  .review p:first-child { margin-bottom: 0; }
+  a { color: var(--gold-bright); }
+  .cta {
+    display: block; text-align: center; margin: 40px auto 0; max-width: 320px;
+    padding: 14px 28px; border-radius: 14px; text-decoration: none;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color: #17130a; font-weight: bold; font-size: 17px; letter-spacing: 0.5px;
+  }
+  footer {
+    margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--stroke);
+    font-size: 13.5px; color: var(--parchment-dim); text-align: center;
+  }
+  footer nav { margin-bottom: 14px; }
+  footer nav a { margin: 0 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">Deadhead AI</div>
+    <p class="tagline">The music never stopped. Neither should discovering it.</p>
+    <div class="stars">★★★★★</div>
+  </header>
+
+  <p style="margin-top:36px">You know how it goes. Somebody says &ldquo;man, you gotta hear 5/8/77&rdquo; and suddenly it&rsquo;s 3am, you&rsquo;re six shows deep, and Jerry is peeling the paint off some field house in 1974. There are <em>thousands</em> of tapes on the Internet Archive — audience tapes, soundboards, matrixes, thirty years of the boys cooking — and the only map has ever been the heads in the comment section.</p>
+
+  <p>Deadhead AI puts one of those heads in your pocket. It&rsquo;s an AI companion for the Archive&rsquo;s Grateful Dead collection: ask it anything the way you&rsquo;d ask the guy on the rail, and every answer points at a real tape with a real setlist. The app hosts no music. It just knows the road.</p>
+
+  <h2>Ask like a head</h2>
+  <div class="review">
+    <p>&ldquo;Mellow &rsquo;73 for a rainy Sunday.&rdquo; &ldquo;Hottest Scarlet&gt;Fire of the eighties.&rdquo; &ldquo;I&rsquo;ve got a five hour drive, build me a second set that never lands.&rdquo; Plain English in, real recordings out. No hallucinated bootlegs, ever.</p>
+  </div>
+
+  <h2>A guide for every show</h2>
+  <div class="review">
+    <p>Open any night and get the story: why this one matters, which source to spin, where the X-factor kicks in. Decades of listener reviews and ratings help pick the best tape of the night — the way it&rsquo;s always been done, just faster.</p>
+    <p class="who">— every show page, basically</p>
+  </div>
+
+  <h2>Shelves that build themselves</h2>
+  <div class="review">
+    <p>Anniversaries, tour seasons, songs rising out of your own listening. The shelves refresh through the day like a friend who keeps taping things for you. Pin one and it&rsquo;s yours to keep.</p>
+  </div>
+
+  <h2>Journeys through the catalog</h2>
+  <div class="review">
+    <p>Primal &rsquo;68 weirdness. Europe &rsquo;72. The &rsquo;77 peak. The MIDI years (respect the MIDI years). Guided paths that walk you show by show with the context the liner notes never gave you.</p>
+  </div>
+
+  <h2>Free AI, on the house</h2>
+  <div class="review">
+    <p>Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. Skip the sign-in and everything still works on a curated offline knowledge base. No ads, no trackers, nobody selling your trip diary.</p>
+  </div>
+
+  <a class="cta" href="https://apps.apple.com/app/deadhead-ai">Get it on the App Store</a>
+
+  <footer>
+    <nav>
+      <a href="support.html">Support</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="https://archive.org/details/GratefulDead">The Collection</a>
+    </nav>
+    <p>All audio streams from the Internet Archive&rsquo;s Grateful Dead collection, carrying on the band&rsquo;s long taping tradition. Deadhead AI is an independent project, not affiliated with the Grateful Dead, Rhino, or Warner Music.</p>
+  </footer>
+</div>
+</body>
+</html>

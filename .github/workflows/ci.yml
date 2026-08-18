@@ -3,7 +3,14 @@ name: CI
 on:
   push:
     branches: [main]
+    # Docs-site and markdown-only pushes shouldn't burn a TestFlight build.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
 
 env:
