@@ -79,12 +79,12 @@ final class NowPlayingCoordinator {
         return artwork
     }
 
-    private static func renderStubImage(dateText: String, venueText: String) -> UIImage {
+    static func renderStubImage(dateText: String, venueText: String) -> UIImage {
         let size = CGSize(width: 600, height: 600)
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { ctx in
             // Deep space with a scatter of stars, like the 1996 home page.
-            UIColor.black.setFill()
+            UIColor(red: 0.05, green: 0.04, blue: 0.11, alpha: 1).setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
             var seed: UInt64 = 0x5EED
             func rand() -> CGFloat {
@@ -100,28 +100,50 @@ final class NowPlayingCoordinator {
                                                      width: r, height: r))
             }
             let amber = UIColor(red: 0.90, green: 0.73, blue: 0.44, alpha: 1)
+
+            // The mask, glowing over the middle of the stub. Clipped to a
+            // circle so the icon tile's square corners never show.
+            if let mark = UIImage(named: "NowPlayingMark") {
+                let glow = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                      colors: [amber.withAlphaComponent(0.28).cgColor,
+                                               UIColor.clear.cgColor] as CFArray,
+                                      locations: [0, 1])
+                let markCenter = CGPoint(x: 300, y: 218)
+                if let glow {
+                    ctx.cgContext.drawRadialGradient(glow, startCenter: markCenter, startRadius: 0,
+                                                     endCenter: markCenter, endRadius: 240, options: [])
+                }
+                let markRect = CGRect(x: 300 - 160, y: 218 - 160, width: 320, height: 320)
+                ctx.cgContext.saveGState()
+                ctx.cgContext.addEllipse(in: markRect.insetBy(dx: 24, dy: 24))
+                ctx.cgContext.clip()
+                mark.draw(in: markRect)
+                ctx.cgContext.restoreGState()
+            }
+
             let paragraph = NSMutableParagraphStyle()
             paragraph.alignment = .center
 
             ("GRATEFUL DEAD" as NSString).draw(
-                in: CGRect(x: 20, y: 180, width: 560, height: 60),
+                in: CGRect(x: 20, y: 408, width: 560, height: 40),
                 withAttributes: [
-                    .font: UIFont.monospacedSystemFont(ofSize: 40, weight: .bold),
+                    .font: UIFont.monospacedSystemFont(ofSize: 26, weight: .bold),
                     .foregroundColor: amber,
                     .paragraphStyle: paragraph,
+                    .kern: 3,
                 ])
             (dateText as NSString).draw(
-                in: CGRect(x: 20, y: 280, width: 560, height: 50),
+                in: CGRect(x: 20, y: 456, width: 560, height: 46),
                 withAttributes: [
-                    .font: UIFont.monospacedSystemFont(ofSize: 30, weight: .medium),
-                    .foregroundColor: UIColor(white: 0.92, alpha: 1),
+                    .font: UIFont.monospacedSystemFont(ofSize: 32, weight: .medium),
+                    .foregroundColor: UIColor(white: 0.94, alpha: 1),
                     .paragraphStyle: paragraph,
                 ])
             (venueText as NSString).draw(
-                in: CGRect(x: 40, y: 350, width: 520, height: 80),
+                in: CGRect(x: 40, y: 512, width: 520, height: 60),
                 withAttributes: [
-                    .font: UIFont.systemFont(ofSize: 22, weight: .regular),
-                    .foregroundColor: UIColor(white: 0.7, alpha: 1),
+                    .font: UIFont.systemFont(ofSize: 21, weight: .regular),
+                    .foregroundColor: UIColor(white: 0.72, alpha: 1),
                     .paragraphStyle: paragraph,
                 ])
         }
