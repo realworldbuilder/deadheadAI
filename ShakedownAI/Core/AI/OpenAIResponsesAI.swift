@@ -546,22 +546,52 @@ final class OpenAIResponsesAI: AIProvider {
 
 // MARK: - Composite provider (OpenAI when keyed, local otherwise)
 
-/// Tries OpenAI when a key is present; falls back to the offline brain on any
-/// failure so AI features never break.
+/// Three tiers, best-available first: the keyed OpenAI path, then Apple's
+/// free on-device model, then the offline knowledge brain. Every tier falls
+/// through on failure, so AI features never break and never require a key.
 final class CompositeAIProvider: AIProvider {
     private let local: LocalKnowledgeAI
     private let remote: OpenAIResponsesAI
+    /// Apple's on-device model, when the SDK and the hardware both provide it.
+    /// Held as an existential so this class stays available back to iOS 18.
+    private let onDevice: (any AIProvider)?
 
     init(knowledgeBase: KnowledgeBase) {
         self.local = LocalKnowledgeAI(knowledgeBase: knowledgeBase)
         self.remote = OpenAIResponsesAI(knowledgeBase: knowledgeBase)
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            self.onDevice = AppleOnDeviceAI(knowledgeBase: knowledgeBase)
+        } else {
+            self.onDevice = nil
+        }
+        #else
+        self.onDevice = nil
+        #endif
     }
 
-    var name: String { KeychainStore.hasUsableKey ? remote.name : local.name }
+    /// The on-device model, but only when it can actually answer right now —
+    /// the user can switch Apple Intelligence off, or the weights may still be
+    /// downloading.
+    private var readyOnDevice: (any AIProvider)? {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *), AppleOnDeviceAI.isReady { return onDevice }
+        #endif
+        return nil
+    }
+
+    var name: String {
+        if KeychainStore.hasUsableKey { return remote.name }
+        return readyOnDevice?.name ?? local.name
+    }
     var isUsingRemote: Bool { KeychainStore.hasUsableKey }
 
     func recommend(query: String?, profile: TasteSnapshot, candidates: [Show]) async throws -> Recommendation {
         if KeychainStore.hasUsableKey, let result = try? await remote.recommend(query: query, profile: profile, candidates: candidates) {
+            return result
+        }
+        if let onDevice = readyOnDevice,
+           let result = try? await onDevice.recommend(query: query, profile: profile, candidates: candidates) {
             return result
         }
         return try await local.recommend(query: query, profile: profile, candidates: candidates)
@@ -571,11 +601,17 @@ final class CompositeAIProvider: AIProvider {
         if KeychainStore.hasUsableKey, let result = try? await remote.showGuide(for: detail, show: show) {
             return result
         }
+        if let onDevice = readyOnDevice, let result = try? await onDevice.showGuide(for: detail, show: show) {
+            return result
+        }
         return try await local.showGuide(for: detail, show: show)
     }
 
     func parseSearchIntent(_ text: String) async throws -> SearchFilters {
         if KeychainStore.hasUsableKey, let result = try? await remote.parseSearchIntent(text) {
+            return result
+        }
+        if let onDevice = readyOnDevice, let result = try? await onDevice.parseSearchIntent(text) {
             return result
         }
         return try await local.parseSearchIntent(text)
@@ -586,6 +622,10 @@ final class CompositeAIProvider: AIProvider {
            let result = try? await remote.curateCollection(brief: brief, candidates: candidates) {
             return result
         }
+        if let onDevice = readyOnDevice,
+           let result = try? await onDevice.curateCollection(brief: brief, candidates: candidates) {
+            return result
+        }
         return try await local.curateCollection(brief: brief, candidates: candidates)
     }
 
@@ -594,8 +634,12 @@ final class CompositeAIProvider: AIProvider {
             do {
                 return try await remote.chatReply(messages: messages, grounding: grounding)
             } catch {
-                // fall through to local
+                // fall through to the next tier
             }
+        }
+        if let onDevice = readyOnDevice,
+           let stream = try? await onDevice.chatReply(messages: messages, grounding: grounding) {
+            return stream
         }
         return try await local.chatReply(messages: messages, grounding: grounding)
     }
