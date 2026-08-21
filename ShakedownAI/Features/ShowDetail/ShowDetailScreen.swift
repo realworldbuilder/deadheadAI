@@ -13,13 +13,15 @@ final class ShowDetailModel {
     private let metadata: any MetadataProvider
     private let recordings: any LiveRecordingProvider
     private let ai: any AIProvider
+    private let downloads: DownloadManager?
 
     init(show: Show, metadata: any MetadataProvider, recordings: any LiveRecordingProvider,
-         ai: any AIProvider) {
+         ai: any AIProvider, downloads: DownloadManager? = nil) {
         self.show = show
         self.metadata = metadata
         self.recordings = recordings
         self.ai = ai
+        self.downloads = downloads
     }
 
     func loadGuide() async {
@@ -40,11 +42,21 @@ final class ShowDetailModel {
                 otherRecordings = all.filter { $0.identifier != show.identifier }
             }
         } catch HTTPError.serviceUnavailable {
-            errorMessage = ArchiveHealth.outageMessage
+            restoreDownloadedSnapshotIfNeeded()
+            if detail == nil { errorMessage = ArchiveHealth.outageMessage }
         } catch {
-            errorMessage = "Couldn't reach the archive. Check your connection and try again."
+            // A downloaded show should open and play with no network at all.
+            restoreDownloadedSnapshotIfNeeded()
+            if detail == nil {
+                errorMessage = "Couldn't reach the archive. Check your connection and try again."
+            }
         }
         isLoading = false
+    }
+
+    private func restoreDownloadedSnapshotIfNeeded() {
+        guard detail == nil else { return }
+        detail = downloads?.store.detailSnapshot(for: show.identifier)
     }
 
     func switchSource(to other: Show) async {
@@ -62,6 +74,8 @@ struct ShowDetailScreen: View {
     @State private var showingSources = false
     @State private var showingJournal = false
     @State private var showingCollectionPicker = false
+    @State private var confirmingCancelDownload = false
+    @State private var confirmingRemoveDownload = false
 
     let show: Show
 
@@ -77,7 +91,8 @@ struct ShowDetailScreen: View {
                 model = ShowDetailModel(show: show,
                                         metadata: env.metadataProvider,
                                         recordings: env.recordingProvider,
-                                        ai: env.aiProvider)
+                                        ai: env.aiProvider,
+                                        downloads: env.downloads)
             }
             await model?.load()
         }
@@ -121,6 +136,7 @@ struct ShowDetailScreen: View {
                     }
                 } else if let detail = model.detail {
                     playButton(model, detail: detail)
+                    downloadButton(model, detail: detail)
                     guideSection(model)
                     trackList(detail, model: model)
                     if !model.otherRecordings.isEmpty {
@@ -191,6 +207,90 @@ struct ShowDetailScreen: View {
             )
         }
         .disabled(detail.tracks.isEmpty)
+    }
+
+    @ViewBuilder
+    private func downloadButton(_ model: ShowDetailModel, detail: RecordingDetail) -> some View {
+        let identifier = model.show.identifier
+        let state = env.downloads.displayState(for: identifier)
+        Button {
+            switch state {
+            case .notDownloaded:
+                env.downloads.download(show: model.show, detail: detail)
+            case .inProgress:
+                confirmingCancelDownload = true
+            case .downloaded:
+                confirmingRemoveDownload = true
+            case .failed:
+                env.downloads.retry(identifier: identifier)
+            }
+        } label: {
+            VStack(spacing: 8) {
+                HStack {
+                    downloadLabel(for: state)
+                    Spacer()
+                }
+                if case .inProgress(let progress) = state {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Theme.stroke.opacity(0.6))
+                            Capsule()
+                                .fill(Theme.accent)
+                                .frame(width: max(4, geo.size.width * progress.fraction))
+                        }
+                    }
+                    .frame(height: 3)
+                    .animation(.snappy, value: progress.fraction)
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 13)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                    .stroke(Theme.stroke, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(detail.tracks.isEmpty)
+        .confirmationDialog("Stop this download?", isPresented: $confirmingCancelDownload, titleVisibility: .visible) {
+            Button("Stop & Remove", role: .destructive) {
+                env.downloads.cancelAndDelete(identifier: identifier)
+            }
+        }
+        .confirmationDialog("Remove this download?", isPresented: $confirmingRemoveDownload, titleVisibility: .visible) {
+            Button("Remove Download", role: .destructive) {
+                env.downloads.cancelAndDelete(identifier: identifier)
+            }
+        } message: {
+            Text("You can stream it any time, or download it again.")
+        }
+    }
+
+    @ViewBuilder
+    private func downloadLabel(for state: DownloadManager.DisplayState) -> some View {
+        switch state {
+        case .notDownloaded:
+            Label("Download Show", systemImage: "arrow.down.circle")
+                .font(Theme.mono(13, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+        case .inProgress(let progress):
+            Label("Downloading… \(min(progress.completedTracks + 1, progress.totalTracks)) of \(progress.totalTracks)",
+                  systemImage: "arrow.down.circle.dotted")
+                .font(Theme.mono(13, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+        case .downloaded(let bytes):
+            Label(bytes > 0
+                    ? "Downloaded · \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))"
+                    : "Downloaded",
+                  systemImage: "checkmark.circle.fill")
+                .font(Theme.mono(13, weight: .semibold))
+                .foregroundStyle(Theme.sage)
+        case .failed(let done, let total):
+            Label("Download incomplete (\(done) of \(total)) — Retry", systemImage: "exclamationmark.arrow.circlepath")
+                .font(Theme.mono(13, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+        }
     }
 
     @ViewBuilder

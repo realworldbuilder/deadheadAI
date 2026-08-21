@@ -163,3 +163,19 @@ final class ArchiveStreamingProvider: StreamingProvider {
         ArchiveAPIClient.streamURL(identifier: identifier, fileName: track.fileName)
     }
 }
+
+/// Plays downloaded audio from disk when it's there, otherwise streams.
+final class OfflineFirstStreamingProvider: StreamingProvider {
+    private let store: DownloadStore
+    private let fallback: any StreamingProvider
+
+    init(store: DownloadStore, fallback: any StreamingProvider) {
+        self.store = store
+        self.fallback = fallback
+    }
+
+    func streamURL(identifier: String, track: Track) -> URL? {
+        store.localFileURL(identifier: identifier, fileName: track.fileName)
+            ?? fallback.streamURL(identifier: identifier, track: track)
+    }
+}

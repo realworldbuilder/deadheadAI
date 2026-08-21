@@ -246,6 +246,10 @@ struct SmartCollectionEngineTests {
         return AppEnvironment(
             modelContainer: ModelContainerFactory.make(inMemory: true),
             knowledgeBase: KnowledgeBase.loadFromBundle(Bundle(for: FixtureAnchor.self).appMainBundle),
+            // Ephemeral session: tests must never touch the real background
+            // download session.
+            downloads: DownloadManager(container: ModelContainerFactory.make(inMemory: true),
+                                       makeSession: { _ in URLSession(configuration: .ephemeral) }),
             recordingProvider: recording,
             metadataProvider: recording,
             streamingProvider: MockStreamingProvider(),

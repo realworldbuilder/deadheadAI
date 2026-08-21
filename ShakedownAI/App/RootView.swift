@@ -46,6 +46,7 @@ struct RootView: View {
                 await validateAppleCredentialIfNeeded()
                 await stageForScreenshotsIfRequested()
                 await runDemoAutoplayIfRequested()
+                await runDemoDownloadIfRequested()
             }
             .fullScreenCover(item: $stagedShow) { show in
                 NavigationStack { ShowDetailScreen(show: show) }
@@ -108,6 +109,36 @@ struct RootView: View {
         env.playerEngine.play(show: best, tracks: detail.tracks)
         try? await Task.sleep(for: .seconds(2))
         env.playerEngine.isPresentingFullPlayer = true
+    }
+
+    /// Debug hook: `--demo-download` downloads the best Cornell '77 source and
+    /// logs per-track progress, so the offline pipeline is verifiable from the
+    /// CLI via `log show --predicate 'subsystem == "ai.deadheads"'` plus the
+    /// files landing in the app container.
+    private func runDemoDownloadIfRequested() async {
+        guard ProcessInfo.processInfo.arguments.contains("--demo-download") else { return }
+        let log = Logger(subsystem: "ai.deadheads", category: "demo")
+        do {
+            let shows = try await env.recordingProvider.recordings(forDate: "1977-05-08")
+            guard let best = shows.first else {
+                log.error("DEMO-DL: no recordings found")
+                return
+            }
+            let detail = try await env.metadataProvider.detail(for: best.identifier)
+            log.notice("DEMO-DL: downloading \(best.identifier, privacy: .public) tracks=\(detail.tracks.count)")
+            env.downloads.download(show: best, detail: detail)
+            for _ in 0..<120 {
+                try await Task.sleep(for: .seconds(2))
+                let state = env.downloads.displayState(for: best.identifier)
+                log.notice("DEMO-DL: state=\(String(describing: state), privacy: .public)")
+                switch state {
+                case .downloaded, .failed: return
+                default: continue
+                }
+            }
+        } catch {
+            log.error("DEMO-DL: error \(String(describing: error), privacy: .public)")
+        }
     }
 
     /// Debug hook: `--demo-autoplay` streams the best Cornell '77 source on

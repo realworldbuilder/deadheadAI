@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct ShakedownAIApp: App {
+    // Catches background-download session relaunches.
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var environment: AppEnvironment
 
     init() {

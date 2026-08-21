@@ -249,6 +249,56 @@ final class LocalAccount {
     }
 }
 
+// MARK: - Downloads
+
+/// One downloaded (or downloading) recording. Device-local only — audio files
+/// don't sync. Carries full Show and RecordingDetail snapshots so a downloaded
+/// show opens and plays with no network, even after the metadata cache expires.
+@Model
+final class DownloadedShowRecord {
+    @Attribute(.unique) var identifier: String
+    /// Encoded Show.
+    var showPayload: Data
+    /// Encoded RecordingDetail — the offline track list.
+    var detailPayload: Data
+    var statusRaw: String   // DownloadStore.ShowStatus
+    var requestedAt: Date
+    var completedAt: Date?
+    var totalBytes: Int64
+    @Relationship(deleteRule: .cascade, inverse: \DownloadedTrackRecord.show)
+    var trackRecords: [DownloadedTrackRecord]
+
+    init(identifier: String, showPayload: Data, detailPayload: Data) {
+        self.identifier = identifier
+        self.showPayload = showPayload
+        self.detailPayload = detailPayload
+        self.statusRaw = "queued"
+        self.requestedAt = .now
+        self.completedAt = nil
+        self.totalBytes = 0
+        self.trackRecords = []
+    }
+}
+
+@Model
+final class DownloadedTrackRecord {
+    /// DownloadLocations.trackKey(identifier:fileName:).
+    @Attribute(.unique) var key: String
+    var fileName: String
+    var statusRaw: String   // DownloadStore.TrackStatus
+    var bytes: Int64
+    var errorText: String?
+    var show: DownloadedShowRecord?
+
+    init(key: String, fileName: String) {
+        self.key = key
+        self.fileName = fileName
+        self.statusRaw = "pending"
+        self.bytes = 0
+        self.errorText = nil
+    }
+}
+
 // MARK: - Container factory
 
 enum ModelContainerFactory {
@@ -272,6 +322,8 @@ enum ModelContainerFactory {
         ChatThread.self,
         ChatMessageRecord.self,
         LocalAccount.self,
+        DownloadedShowRecord.self,
+        DownloadedTrackRecord.self,
     ]
 
     static var allModels: [any PersistentModel.Type] { localModels + cloudModels }

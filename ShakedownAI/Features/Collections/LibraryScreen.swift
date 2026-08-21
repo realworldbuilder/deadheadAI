@@ -7,7 +7,7 @@ struct LibraryScreen: View {
     @State private var refreshToken = 0
 
     private enum Destination: Hashable {
-        case journal, history, taste
+        case journal, history, taste, downloads
     }
 
     var body: some View {
@@ -30,6 +30,7 @@ struct LibraryScreen: View {
                 case .journal: JournalListScreen()
                 case .history: HistoryScreen()
                 case .taste: TasteProfileScreen()
+                case .downloads: DownloadsScreen()
                 }
             }
             .navigationDestination(for: PersistentIdentifier.self) { id in
@@ -100,6 +101,10 @@ struct LibraryScreen: View {
             NavigationLink(value: Destination.taste) {
                 libraryRow(icon: "chart.bar.fill", title: "Taste Profile",
                            subtitle: "What the app has learned about your ears.")
+            }
+            NavigationLink(value: Destination.downloads) {
+                libraryRow(icon: "arrow.down.circle.fill", title: "Downloads",
+                           subtitle: "Shows saved for the road — no signal needed.")
             }
         }
         .buttonStyle(.plain)

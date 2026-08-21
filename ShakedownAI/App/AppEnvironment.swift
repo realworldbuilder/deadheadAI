@@ -11,6 +11,7 @@ final class AppEnvironment {
     let library: LibraryStore
     let smartCollections: SmartCollectionStore
     let journeys: JourneyStore
+    let downloads: DownloadManager
     let playerEngine: PlayerEngine
     let knowledgeBase: KnowledgeBase
 
@@ -23,6 +24,7 @@ final class AppEnvironment {
 
     init(modelContainer: ModelContainer,
          knowledgeBase: KnowledgeBase = KnowledgeBase.loadFromBundle(),
+         downloads: DownloadManager,
          recordingProvider: any LiveRecordingProvider,
          metadataProvider: any MetadataProvider,
          streamingProvider: any StreamingProvider,
@@ -36,6 +38,7 @@ final class AppEnvironment {
         self.library = LibraryStore(container: modelContainer)
         self.smartCollections = SmartCollectionStore(container: modelContainer)
         self.journeys = JourneyStore(container: modelContainer)
+        self.downloads = downloads
         self.playerEngine = PlayerEngine(streaming: streamingProvider)
         self.recordingProvider = recordingProvider
         self.metadataProvider = metadataProvider
@@ -59,15 +62,20 @@ final class AppEnvironment {
         let cache = CacheStore(container: container)
         let archive = ArchiveShowProvider(cache: cache)
         let kb = KnowledgeBase.loadFromBundle()
-        return AppEnvironment(
+        let downloads = DownloadManager(container: container)
+        let environment = AppEnvironment(
             modelContainer: container,
             knowledgeBase: kb,
+            downloads: downloads,
             recordingProvider: archive,
             metadataProvider: archive,
-            streamingProvider: ArchiveStreamingProvider(),
+            streamingProvider: OfflineFirstStreamingProvider(store: downloads.store,
+                                                            fallback: ArchiveStreamingProvider()),
             aiProvider: CompositeAIProvider(knowledgeBase: kb),
             authProvider: PersistentAuthProvider()
         )
+        downloads.reconcileOnLaunch()
+        return environment
     }
 
     static func mock() -> AppEnvironment {
@@ -75,6 +83,10 @@ final class AppEnvironment {
         let mockRecording = MockRecordingProvider()
         return AppEnvironment(
             modelContainer: container,
+            // Ephemeral session: never touch the real background session from
+            // previews/tests (duplicate background identifiers are an error).
+            downloads: DownloadManager(container: container,
+                                       makeSession: { _ in URLSession(configuration: .ephemeral) }),
             recordingProvider: mockRecording,
             metadataProvider: mockRecording,
             streamingProvider: MockStreamingProvider(),

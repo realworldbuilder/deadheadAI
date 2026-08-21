@@ -8,6 +8,7 @@ struct SettingsScreen: View {
     @State private var displayName = ""
     @State private var confirmingClearCache = false
     @State private var confirmingSignOut = false
+    @State private var confirmingDeleteDownloads = false
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,7 @@ struct SettingsScreen: View {
                         accountSection
                         aiSection
                         providerSection
+                        downloadsSection
                         cacheSection
                         aboutSection
                     }
@@ -39,6 +41,18 @@ struct SettingsScreen: View {
                 Text("Setlists and search results will re-download from the archive as you browse.")
             }
             .sensoryFeedback(.warning, trigger: confirmingClearCache) { !$0 && $1 }
+            .confirmationDialog(
+                "Delete all downloads?",
+                isPresented: $confirmingDeleteDownloads,
+                titleVisibility: .visible
+            ) {
+                Button("Delete All Downloads", role: .destructive) {
+                    env.downloads.deleteAllDownloads()
+                }
+            } message: {
+                Text("Every saved show is removed from this device. Streaming is unaffected, and you can download them again any time.")
+            }
+            .sensoryFeedback(.warning, trigger: confirmingDeleteDownloads) { !$0 && $1 }
             .confirmationDialog(
                 "Sign out?",
                 isPresented: $confirmingSignOut,
@@ -219,13 +233,52 @@ struct SettingsScreen: View {
         .padding(13)
     }
 
+    // MARK: - Downloads
+
+    private var downloadsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Downloads").sectionHeaderStyle()
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Downloaded shows are stored on this device for offline listening. The audio still comes straight from the archive — nothing is re-hosted.")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                Toggle(isOn: Binding(get: { env.downloads.wifiOnly },
+                                     set: { env.downloads.wifiOnly = $0 })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Wi-Fi only")
+                            .font(Theme.body)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Shows run hundreds of megabytes — keep them off cellular.")
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(Theme.accent)
+                HStack {
+                    let _ = env.downloads.store.changeToken
+                    Text(ByteCountFormatter.string(fromByteCount: env.downloads.store.totalBytes, countStyle: .file))
+                        .font(Theme.mono(13, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Button("Delete All Downloads") {
+                        confirmingDeleteDownloads = true
+                    }
+                    .font(Theme.mono(13, weight: .semibold))
+                    .foregroundStyle(Theme.rose)
+                }
+            }
+            .padding(Theme.cardPadding)
+            .cardStyle()
+        }
+    }
+
     // MARK: - Cache
 
     private var cacheSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Metadata Cache").sectionHeaderStyle()
             VStack(alignment: .leading, spacing: 10) {
-                Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive. Audio is never stored.")
+                Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textSecondary)
                 HStack {
@@ -258,7 +311,7 @@ struct SettingsScreen: View {
                 Text("The music never stopped. Neither should discovering it.")
                     .font(.system(.callout, design: .serif).italic())
                     .foregroundStyle(Theme.textSecondary)
-                Text("Recordings stream directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app hosts no music — it adds the intelligence layer.")
+                Text("Recordings come directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app re-hosts no music — it streams (and saves for offline) straight from the archive, adding the intelligence layer.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }

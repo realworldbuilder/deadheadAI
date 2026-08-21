@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Deadhead AI (repo name ShakedownAI) — a native SwiftUI iOS app (iOS 18+, Swift 6) that layers AI discovery over the Internet Archive's Grateful Dead collection. Audio streams from archive.org via AVPlayer; the app hosts no recordings.
+Deadhead AI (repo name ShakedownAI) — a native SwiftUI iOS app (iOS 18+, Swift 6) that layers AI discovery over the Internet Archive's Grateful Dead collection. Audio streams from archive.org via AVPlayer; the app re-hosts no recordings, though users can save shows to the device for offline listening.
 
 ## Commands
 
@@ -37,7 +37,7 @@ xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
 
 Install on a physical iPhone: `./run-on-phone.sh` (plugged in, unlocked, trusted).
 
-Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--tab explore|chat|library|settings`, `--stage-show` / `--stage-player` (open Cornell '77's show page / full-screen player for CLI screenshot capture), `--force-ai-gate` (exercise the locked AI gate in DEBUG builds).
+Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--demo-download` (downloads Cornell '77 and logs progress, for verifying the offline pipeline from the CLI), `--tab explore|chat|library|settings`, `--stage-show` / `--stage-player` (open Cornell '77's show page / full-screen player for CLI screenshot capture), `--force-ai-gate` (exercise the locked AI gate in DEBUG builds).
 
 ## Releasing
 
@@ -53,6 +53,7 @@ Push to `main` → CI tests, then archives and uploads to TestFlight ([.github/w
 - **Smart collections** (`Core/AI/SmartCollections.swift`, `SmartCollectionEngine.swift`): a pure planner (`SmartCollectionPlanner`) turns clock/calendar/listening trends into grounded briefs; the AI provider names each shelf and orders picks constrained to offered candidates. Results cache in SwiftData per day/daypart slot.
 - **Persistence**: SwiftData stores in `Core/Persistence/` (cache, history/taste profile, library, smart collections, journeys). The container has two configurations (`ModelContainerFactory`): `default.store` for device-local models, and `shakedown-cloud.store` for `ShowCollection`/`CollectionItem`/`JournalEntry`, which opens with CloudKit private-database sync (`iCloud.com.deadhead.ai`) when a persisted Apple sign-in exists and local-only otherwise (never on simulator builds — without the runtime entitlement CloudKit traps asynchronously and uncatchably, so `ModelContainerFactory` forces sync off there) — same file either way, so flipping sync moves no data. Sign-in/out posts `.shakedownAuthChanged` and `ShakedownAIApp` rebuilds the whole `AppEnvironment` (container mode is fixed at creation). The synced models carry no unique constraints (CloudKit forbids them) — `LibraryStore.dedupAfterSync()` collapses duplicates deterministically at launch/foreground. `CloudStoreMigrator` one-time-copies legacy rows into the cloud store from a `pre-cloud-backup.store` file snapshot (flag `cloudStoreMigrationV1Done`). Cache tables hold opaque encoded domain structs; SwiftData models never cross actor boundaries — domain structs (`Core/Models/DomainModels.swift`) do.
 - **Audio**: `PlayerEngine` (`Core/Audio/`) wraps a single AVPlayer with an explicit queue; handles background audio, lock-screen Now Playing, remote commands, interruptions. Listening events flow to `HistoryStore` via a callback set in `AppEnvironment`.
+- **Offline downloads** (`Core/Downloads/`): `DownloadManager` drives a background `URLSession` (id `ai.deadheads.downloads`; relaunch events land in `App/AppDelegate.swift`) that saves a show's MP3s to `Application Support/Downloads/{identifier}/` (backup-excluded); `DownloadStore` (`Core/Persistence/`) indexes them in the local SwiftData store, persisting full `Show`/`RecordingDetail` snapshots so downloaded shows open with no network. Playback needs no player changes: `OfflineFirstStreamingProvider` decorates `ArchiveStreamingProvider` and returns the `file://` URL when a track is on disk. The live `URLSession` is cached process-globally (auth changes rebuild `AppEnvironment`, and duplicate background-session identifiers are an error); tests/previews inject an ephemeral session via `makeSession`. Downloads default to Wi-Fi-only (Settings toggle). ⚠️ Background download tasks fail instantly with `NSURLErrorDomain Code=-1 "unknown error"` in `CODE_SIGNING_ALLOWED=NO` builds (nsurlsessiond can't attribute the session) — to exercise downloads in the simulator, build *without* that flag (ad-hoc signing needs no account); unit tests are unaffected. Also: `URL.path()` returns a percent-encoded path that `FileManager` rejects (the store's paths contain spaces and literal `%`) — always use `path(percentEncoded: false)` for FileManager calls.
 
 ## Secrets
 
