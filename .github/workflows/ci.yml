@@ -109,6 +109,11 @@ jobs:
             echo "::warning::OPENAI_API_KEY secret not set — build ships without a bundled key (offline brain / user-supplied key only)."
           fi
 
+      # The archive is unsigned: signing happens once, at export, with the
+      # cloud-managed Apple Distribution certificate. Signing the archive too
+      # would mint a fresh Apple Development certificate on every ephemeral
+      # runner until the account hits Apple's certificate cap ("Choose a
+      # certificate to revoke").
       - name: Archive
         if: steps.secrets.outputs.configured == 'true'
         run: |
@@ -119,10 +124,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/ShakedownAI.xcarchive \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/private_keys/AuthKey.p8 \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             archive | xcbeautify --renderer github-actions
 
       - name: Upload to App Store Connect
