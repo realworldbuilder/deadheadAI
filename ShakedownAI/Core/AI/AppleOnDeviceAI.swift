@@ -191,16 +191,22 @@ final class AppleOnDeviceAI: AIProvider {
 
         let setlist = detail.tracks.map(\.title).prefix(30).joined(separator: ", ")
         let review = detail.reviews.prefix(2).compactMap(\.body).map { String($0.prefix(200)) }
-        let notable = (detail.dateString ?? show?.dateString).flatMap(kb.notableShow(on:))
+        let day = detail.dateString ?? show?.dateString
+        let notable = day.flatMap(kb.notableShow(on:))
+        // One tight line only — the ~4k window has no room for more.
+        let famousRun = (day.map(kb.runs(on:)) ?? [])
+            .first { RunResolver.resolve($0, in: detail.tracks) != nil }
+            .map { "\($0.title): \(String($0.blurb.prefix(120)))" }
 
         let prompt = """
         Build a listening guide. Use ONLY the data below; reference only songs \
         that appear in the setlist.
 
-        Date: \(detail.dateString ?? "unknown") | Venue: \(detail.venue ?? "unknown")
+        Date: \(day ?? "unknown") | Venue: \(detail.venue ?? "unknown")
         Source: \(detail.source ?? "unknown")
         Setlist: \(setlist)
         Curator notes: \(notable?.blurb.prefix(200) ?? "none")
+        Famous run on this tape: \(famousRun ?? "none")
         Fan reviews: \(review.joined(separator: " ||| "))
         """
 
@@ -214,7 +220,7 @@ final class AppleOnDeviceAI: AIProvider {
             overallMood: g.overallMood,
             historicalContext: g.historicalContext,
             musicalHighlights: g.musicalHighlights,
-            bestTransitions: g.bestTransitions,
+            bestTransitions: TransitionGrounding.filter(g.bestTransitions, tracks: detail.tracks),
             improvisationRating: min(max(g.improvisationRating, 1), 5),
             accessibility: g.accessibility,
             recordingNotes: g.recordingNotes,
@@ -484,6 +490,9 @@ nonisolated struct LookupSongTool: Tool {
         }
         if !song.seguePartners.isEmpty {
             lines.append("segue partners: \(song.seguePartners.joined(separator: ", "))")
+        }
+        for run in kb.runs(containing: song.key).prefix(2) {
+            lines.append("famous run date=\(run.date) \(run.title)")
         }
         return lines.joined(separator: "\n")
     }

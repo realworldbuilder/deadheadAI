@@ -77,6 +77,9 @@ struct ShowDetailScreen: View {
     @State private var showingCollectionPicker = false
     @State private var confirmingCancelDownload = false
     @State private var confirmingRemoveDownload = false
+    @State private var isSelectingTracks = false
+    @State private var selectedTrackIDs: Set<String> = []
+    @State private var playlistSheetPayload: PlaylistSheetPayload?
 
     let show: Show
 
@@ -129,6 +132,14 @@ struct ShowDetailScreen: View {
         .sheet(isPresented: $showingCollectionPicker) {
             CollectionPickerSheet(show: model?.show ?? show)
         }
+        .sheet(item: $playlistSheetPayload, onDismiss: {
+            withAnimation(.snappy) {
+                isSelectingTracks = false
+                selectedTrackIDs = []
+            }
+        }) { payload in
+            PlaylistPickerSheet(show: model?.show ?? show, tracks: payload.tracks)
+        }
     }
 
     @ViewBuilder
@@ -146,6 +157,7 @@ struct ShowDetailScreen: View {
                 } else if let detail = model.detail {
                     playButton(model, detail: detail)
                     downloadButton(model, detail: detail)
+                    famousRunSection(model, detail: detail)
                     guideSection(model)
                     trackList(detail, model: model)
                     if !model.otherRecordings.isEmpty {
@@ -161,7 +173,46 @@ struct ShowDetailScreen: View {
             }
             .padding(Theme.screenPadding)
         }
+        .safeAreaInset(edge: .bottom) {
+            if isSelectingTracks, let detail = model.detail {
+                selectionBar(detail)
+            }
+        }
         .withMiniPlayer()
+    }
+
+    /// Floating action bar while track multi-select is active.
+    private func selectionBar(_ detail: RecordingDetail) -> some View {
+        HStack(spacing: 12) {
+            Button("Cancel") {
+                withAnimation(.snappy) {
+                    isSelectingTracks = false
+                    selectedTrackIDs = []
+                }
+            }
+            .font(Theme.mono(13, weight: .semibold))
+            .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Button {
+                // Setlist order, not tap order.
+                let tracks = detail.tracks.filter { selectedTrackIDs.contains($0.id) }
+                playlistSheetPayload = PlaylistSheetPayload(tracks: tracks)
+            } label: {
+                Text(selectedTrackIDs.isEmpty
+                     ? "Select tracks"
+                     : "Add \(selectedTrackIDs.count) to Playlist")
+                    .font(Theme.mono(13, weight: .bold))
+                    .foregroundStyle(Color.black.opacity(0.85))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Capsule().fill(Theme.accentGradient))
+            }
+            .disabled(selectedTrackIDs.isEmpty)
+            .opacity(selectedTrackIDs.isEmpty ? 0.6 : 1)
+        }
+        .padding(.horizontal, Theme.screenPadding)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
     }
 
     private func header(_ model: ShowDetailModel) -> some View {
@@ -302,6 +353,22 @@ struct ShowDetailScreen: View {
         }
     }
 
+    /// Curated famous runs anchored to this exact transfer — only rendered
+    /// when the song sequence actually resolves against the tape's tracks.
+    @ViewBuilder
+    private func famousRunSection(_ model: ShowDetailModel, detail: RecordingDetail) -> some View {
+        let day = detail.dateString ?? model.show.dateString ?? ""
+        let resolved = env.knowledgeBase.runs(on: day).compactMap { run in
+            RunResolver.resolve(run, in: detail.tracks).map { (run: run, range: $0) }
+        }
+        ForEach(resolved, id: \.run.id) { entry in
+            FamousRunCard(run: entry.run, range: entry.range, tracks: detail.tracks) {
+                engine.play(show: model.show, tracks: detail.tracks, startAt: entry.range.lowerBound)
+                engine.isPresentingFullPlayer = true
+            }
+        }
+    }
+
     @ViewBuilder
     private func guideSection(_ model: ShowDetailModel) -> some View {
         if let guide = model.guide {
@@ -343,12 +410,25 @@ struct ShowDetailScreen: View {
             VStack(spacing: 0) {
                 ForEach(Array(detail.tracks.enumerated()), id: \.element.id) { index, track in
                     Button {
-                        engine.play(show: model.show, tracks: detail.tracks, startAt: index)
+                        if isSelectingTracks {
+                            toggleSelection(track)
+                        } else {
+                            engine.play(show: model.show, tracks: detail.tracks, startAt: index)
+                        }
                     } label: {
                         HStack(spacing: 10) {
-                            Text(String(format: "%02d", index + 1))
-                                .font(Theme.mono(12))
-                                .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textTertiary)
+                            if isSelectingTracks {
+                                Image(systemName: selectedTrackIDs.contains(track.id)
+                                      ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(selectedTrackIDs.contains(track.id)
+                                                     ? Theme.accent : Theme.textTertiary)
+                                    .contentTransition(.symbolEffect(.replace))
+                            } else {
+                                Text(String(format: "%02d", index + 1))
+                                    .font(Theme.mono(12))
+                                    .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textTertiary)
+                            }
                             Text(track.title)
                                 .font(Theme.body)
                                 .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textPrimary)
@@ -363,6 +443,21 @@ struct ShowDetailScreen: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button {
+                            playlistSheetPayload = PlaylistSheetPayload(tracks: [track])
+                        } label: {
+                            Label("Add to Playlist…", systemImage: "music.note.list")
+                        }
+                        Button {
+                            withAnimation(.snappy) {
+                                isSelectingTracks = true
+                                selectedTrackIDs = [track.id]
+                            }
+                        } label: {
+                            Label("Select Tracks…", systemImage: "checklist")
+                        }
+                    }
                     if index < detail.tracks.count - 1 {
                         Divider().overlay(Theme.stroke.opacity(0.5)).padding(.leading, 34)
                     }
@@ -375,6 +470,14 @@ struct ShowDetailScreen: View {
     private func isCurrent(_ track: Track, _ model: ShowDetailModel) -> Bool {
         engine.currentShow?.identifier == model.show.identifier
             && engine.currentTrack?.id == track.id
+    }
+
+    private func toggleSelection(_ track: Track) {
+        if selectedTrackIDs.contains(track.id) {
+            selectedTrackIDs.remove(track.id)
+        } else {
+            selectedTrackIDs.insert(track.id)
+        }
     }
 
     private func sourcesSection(_ model: ShowDetailModel) -> some View {
@@ -471,6 +574,66 @@ struct ShowDetailScreen: View {
                 .foregroundStyle(Theme.accent)
             }
         }
+    }
+}
+
+/// Wraps the tracks headed to the playlist picker so sheet(item:) has identity.
+private struct PlaylistSheetPayload: Identifiable {
+    let id = UUID()
+    let tracks: [Track]
+}
+
+/// "The run people talk about" card: curated canon, playable in one tap.
+struct FamousRunCard: View {
+    let run: FamousRun
+    let range: ClosedRange<Int>
+    let tracks: [Track]
+    let onPlay: () -> Void
+
+    private var runLength: String {
+        let count = "\(range.count) track\(range.count == 1 ? "" : "s")"
+        let seconds = tracks[range].compactMap(\.durationSeconds).reduce(0, +)
+        guard seconds > 0 else { return count }
+        let minutes = Int((seconds / 60).rounded())
+        return "\(count) · \(minutes) min"
+    }
+
+    var body: some View {
+        Button(action: onPlay) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.accent)
+                    Text("FAMOUS RUN")
+                        .font(Theme.mono(11, weight: .bold))
+                        .foregroundStyle(Theme.accent)
+                    Spacer()
+                    Text(runLength)
+                        .font(Theme.mono(11))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                Text(run.title)
+                    .font(Theme.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(run.blurb)
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 6) {
+                    Image(systemName: "play.circle.fill")
+                    Text("Play the run")
+                        .font(Theme.mono(12, weight: .semibold))
+                }
+                .foregroundStyle(Theme.accent)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .cardStyle(raised: true)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

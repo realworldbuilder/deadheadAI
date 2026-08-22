@@ -191,19 +191,28 @@ struct PlayerScreen: View {
                     ScrollViewReader { proxy in
                         ScrollView {
                             LazyVStack(spacing: 4) {
-                                ForEach(Array(engine.queue.enumerated()), id: \.element.id) { index, track in
+                                let spansShows = engine.queueSpansMultipleShows
+                                ForEach(Array(engine.queue.enumerated()), id: \.element.id) { index, entry in
                                     Button { engine.jump(to: index) } label: {
                                         HStack {
                                             Text("\(index + 1)")
                                                 .font(Theme.mono(11))
                                                 .foregroundStyle(Theme.textTertiary)
                                                 .frame(width: 24)
-                                            Text(track.title)
-                                                .font(index == engine.currentIndex ? Theme.mono(13, weight: .bold) : Theme.mono(13))
-                                                .foregroundStyle(index == engine.currentIndex ? Theme.accent : Theme.textSecondary)
-                                                .lineLimit(1)
+                                            VStack(alignment: .leading, spacing: 1) {
+                                                Text(entry.track.title)
+                                                    .font(index == engine.currentIndex ? Theme.mono(13, weight: .bold) : Theme.mono(13))
+                                                    .foregroundStyle(index == engine.currentIndex ? Theme.accent : Theme.textSecondary)
+                                                    .lineLimit(1)
+                                                if spansShows {
+                                                    Text(entry.show.displayDate)
+                                                        .font(Theme.mono(10))
+                                                        .foregroundStyle(Theme.textTertiary)
+                                                        .lineLimit(1)
+                                                }
+                                            }
                                             Spacer()
-                                            Text(track.displayDuration)
+                                            Text(entry.track.displayDuration)
                                                 .font(Theme.mono(11))
                                                 .foregroundStyle(Theme.textTertiary)
                                         }
@@ -215,7 +224,7 @@ struct PlayerScreen: View {
                                         )
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel("Play \(track.title)")
+                                    .accessibilityLabel("Play \(entry.track.title)")
                                     .id(index)
                                 }
                             }

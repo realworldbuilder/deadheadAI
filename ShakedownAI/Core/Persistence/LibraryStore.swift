@@ -47,6 +47,99 @@ final class LibraryStore {
         try? context.save()
     }
 
+    // MARK: - Playlists
+
+    var playlists: [Playlist] {
+        let descriptor = FetchDescriptor<Playlist>(sortBy: [SortDescriptor(\.createdAt)])
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    @discardableResult
+    func createPlaylist(name: String, blurb: String = "", iconName: String = "music.note.list") -> Playlist {
+        let playlist = Playlist(name: name, blurb: blurb, iconName: iconName)
+        context.insert(playlist)
+        try? context.save()
+        return playlist
+    }
+
+    func deletePlaylist(_ playlist: Playlist) {
+        context.delete(playlist)
+        try? context.save()
+    }
+
+    /// Appends tracks from one show, in the order given, skipping tracks the
+    /// playlist already holds (keyed on showIdentifier|fileName).
+    func add(tracks: [Track], from show: Show, to playlist: Playlist) {
+        var existingKeys = Set((playlist.items ?? []).map(\.trackKey))
+        var nextIndex = ((playlist.items ?? []).map(\.sortIndex).max() ?? -1) + 1
+        var inserted = false
+        for track in tracks {
+            let key = show.identifier + "|" + track.fileName
+            guard existingKeys.insert(key).inserted else { continue }
+            let item = PlaylistItem(showIdentifier: show.identifier,
+                                    fileName: track.fileName,
+                                    trackTitle: track.title,
+                                    songKey: track.songKey,
+                                    showDateString: show.dateString ?? "",
+                                    showDisplayName: show.shortName,
+                                    durationSeconds: track.durationSeconds ?? 0,
+                                    sortIndex: nextIndex)
+            item.playlist = playlist
+            context.insert(item)
+            nextIndex += 1
+            inserted = true
+        }
+        if inserted { try? context.save() }
+    }
+
+    func remove(item: PlaylistItem) {
+        let playlist = item.playlist
+        let itemID = item.persistentModelID
+        context.delete(item)
+        if let playlist {
+            let remaining = sortedItems(of: playlist).filter { $0.persistentModelID != itemID }
+            for (index, survivor) in remaining.enumerated() where survivor.sortIndex != index {
+                survivor.sortIndex = index
+            }
+        }
+        try? context.save()
+    }
+
+    /// Swaps the item with its neighbor above (`up`) or below.
+    func move(item: PlaylistItem, up: Bool) {
+        guard let playlist = item.playlist else { return }
+        let items = sortedItems(of: playlist)
+        guard let position = items.firstIndex(where: { $0.persistentModelID == item.persistentModelID }) else { return }
+        let target = up ? position - 1 : position + 1
+        guard items.indices.contains(target) else { return }
+        let other = items[target]
+        swap(&item.sortIndex, &other.sortIndex)
+        try? context.save()
+    }
+
+    /// Rewrites every item's sortIndex to the given track-key order (unlisted
+    /// items keep their relative order at the end).
+    func reorder(_ playlist: Playlist, toTrackKeys keys: [String]) {
+        let items = sortedItems(of: playlist)
+        var position: [String: Int] = [:]
+        for (offset, key) in keys.enumerated() { position[key] = offset }
+        let reordered = items.enumerated().sorted { lhs, rhs in
+            let l = position[lhs.element.trackKey] ?? (keys.count + lhs.offset)
+            let r = position[rhs.element.trackKey] ?? (keys.count + rhs.offset)
+            return l < r
+        }
+        for (index, entry) in reordered.enumerated() where entry.element.sortIndex != index {
+            entry.element.sortIndex = index
+        }
+        try? context.save()
+    }
+
+    func sortedItems(of playlist: Playlist) -> [PlaylistItem] {
+        (playlist.items ?? []).sorted {
+            ($0.sortIndex, $0.addedAt, $0.trackKey) < ($1.sortIndex, $1.addedAt, $1.trackKey)
+        }
+    }
+
     private static let seedFlagKey = "didSeedCollections"
     private static let seedNames: Set<String> = ["Favorites", "Road Trips", "Sunday Morning", "Late Night"]
 
@@ -109,6 +202,40 @@ final class LibraryStore {
                 if seen.insert(item.showIdentifier).inserted {
                     if item.sortIndex != index { item.sortIndex = index; changed = true }
                     index += 1
+                } else {
+                    context.delete(item)
+                    changed = true
+                }
+            }
+        }
+
+        // Playlists: collapse by id (same survivor rule); items collapse on the
+        // composite showIdentifier|fileName key — NEVER the show key alone, or a
+        // playlist would shrink to one track per show.
+        let orderedPlaylists = playlists.sorted {
+            ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString)
+        }
+        var playlistByID: [UUID: Playlist] = [:]
+        for playlist in orderedPlaylists {
+            if let survivor = playlistByID[playlist.id] {
+                let kept = Set((survivor.items ?? []).map(\.trackKey))
+                for item in playlist.items ?? [] where !kept.contains(item.trackKey) {
+                    item.playlist = survivor
+                }
+                context.delete(playlist)
+                changed = true
+            } else {
+                playlistByID[playlist.id] = playlist
+            }
+        }
+        for playlist in playlistByID.values {
+            let items = sortedItems(of: playlist)
+            var seenTracks: Set<String> = []
+            var trackIndex = 0
+            for item in items {
+                if seenTracks.insert(item.trackKey).inserted {
+                    if item.sortIndex != trackIndex { item.sortIndex = trackIndex; changed = true }
+                    trackIndex += 1
                 } else {
                     context.delete(item)
                     changed = true

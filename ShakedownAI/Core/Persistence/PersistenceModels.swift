@@ -32,9 +32,10 @@ final class CachedRecordingMetadata {
 
 // MARK: - Journal
 
-// JournalEntry, ShowCollection, and CollectionItem live in the CloudKit-synced
-// store: no unique attributes, every property defaulted, relationships optional.
-// Duplicates that sync can introduce are collapsed by LibraryStore.dedupAfterSync().
+// JournalEntry, ShowCollection, CollectionItem, Playlist, and PlaylistItem live
+// in the CloudKit-synced store: no unique attributes, every property defaulted,
+// relationships optional. Duplicates that sync can introduce are collapsed by
+// LibraryStore.dedupAfterSync().
 
 @Model
 final class JournalEntry {
@@ -100,6 +101,84 @@ final class CollectionItem {
         self.displayName = displayName
         self.addedAt = .now
         self.sortIndex = sortIndex
+    }
+}
+
+// MARK: - Playlists (track-level, CloudKit-synced)
+
+/// A user playlist of individual tracks, possibly spanning many shows.
+/// Cloud rules apply: no unique attributes, every property defaulted,
+/// relationships optional; LibraryStore.dedupAfterSync() collapses dupes.
+@Model
+final class Playlist {
+    var id: UUID = UUID()
+    var name: String = ""
+    var blurb: String = ""
+    var iconName: String = "music.note.list"
+    var createdAt: Date = Date.now
+    @Relationship(deleteRule: .cascade, inverse: \PlaylistItem.playlist)
+    var items: [PlaylistItem]? = []
+
+    init(name: String, blurb: String = "", iconName: String = "music.note.list") {
+        self.id = UUID()
+        self.name = name
+        self.blurb = blurb
+        self.iconName = iconName
+        self.createdAt = .now
+        self.items = []
+    }
+}
+
+/// One track on a playlist. Snapshots everything needed to display and play
+/// the row with no network: streaming only needs (showIdentifier, fileName).
+@Model
+final class PlaylistItem {
+    var showIdentifier: String = ""
+    var fileName: String = ""
+    var trackTitle: String = ""
+    var songKey: String = ""
+    var showDateString: String = ""
+    var showDisplayName: String = ""
+    var durationSeconds: Double = 0
+    var addedAt: Date = Date.now
+    var sortIndex: Int = 0
+    var playlist: Playlist?
+
+    /// Identity of the underlying track — the dedup key after a sync.
+    var trackKey: String { showIdentifier + "|" + fileName }
+
+    init(showIdentifier: String, fileName: String, trackTitle: String, songKey: String,
+         showDateString: String, showDisplayName: String, durationSeconds: Double, sortIndex: Int) {
+        self.showIdentifier = showIdentifier
+        self.fileName = fileName
+        self.trackTitle = trackTitle
+        self.songKey = songKey
+        self.showDateString = showDateString
+        self.showDisplayName = showDisplayName
+        self.durationSeconds = durationSeconds
+        self.addedAt = .now
+        self.sortIndex = sortIndex
+    }
+}
+
+extension PlaylistItem {
+    /// Rebuilds the playable domain pair from the snapshot — StreamingProvider
+    /// only needs (showIdentifier, fileName), so playlist rows play with no
+    /// network fetch, online or off.
+    var queueEntry: PlayerQueueEntry {
+        let show = Show(identifier: showIdentifier,
+                        title: showDisplayName,
+                        date: IADates.parse(showDateString),
+                        dateString: showDateString.isEmpty ? nil : showDateString,
+                        venue: nil,
+                        location: nil,
+                        year: Int(showDateString.prefix(4)),
+                        avgRating: nil, numReviews: nil, downloads: nil, source: nil)
+        let track = Track(fileName: fileName,
+                          title: trackTitle,
+                          trackNumber: nil,
+                          durationSeconds: durationSeconds > 0 ? durationSeconds : nil)
+        return PlayerQueueEntry(show: show, track: track)
     }
 }
 
@@ -308,6 +387,8 @@ enum ModelContainerFactory {
         JournalEntry.self,
         ShowCollection.self,
         CollectionItem.self,
+        Playlist.self,
+        PlaylistItem.self,
     ]
 
     /// Everything device-local: caches, history/taste, smart shelves,

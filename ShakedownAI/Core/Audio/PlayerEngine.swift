@@ -2,6 +2,16 @@ import AVFoundation
 import Foundation
 import Observation
 
+/// One element of the playback queue: a track together with the show it
+/// belongs to, so queues can mix recordings (playlists, runs, single shows).
+nonisolated struct PlayerQueueEntry: Hashable, Identifiable, Sendable {
+    var show: Show
+    var track: Track
+
+    /// Stable across shows even when two tapes share a file name.
+    var id: String { show.identifier + "|" + track.fileName }
+}
+
 /// Central playback engine: one AVPlayer, an explicit track queue, and
 /// observable state the whole UI hangs off.
 @Observable
@@ -20,19 +30,28 @@ final class PlayerEngine {
     // MARK: - Observable state
 
     private(set) var state: PlaybackState = .idle
-    private(set) var currentShow: Show?
-    private(set) var queue: [Track] = []
+    private(set) var queue: [PlayerQueueEntry] = []
     private(set) var currentIndex: Int = 0
     private(set) var elapsed: Double = 0
     private(set) var duration: Double = 0
     var isPresentingFullPlayer = false
 
-    var currentTrack: Track? {
+    var currentEntry: PlayerQueueEntry? {
         queue.indices.contains(currentIndex) ? queue[currentIndex] : nil
     }
 
+    /// The show the *current* entry belongs to — a queue may span many shows.
+    var currentShow: Show? { currentEntry?.show }
+
+    var currentTrack: Track? { currentEntry?.track }
+
     var isPlaying: Bool { state == .playing }
-    var hasContent: Bool { currentShow != nil && !queue.isEmpty }
+    var hasContent: Bool { !queue.isEmpty }
+
+    /// True when the queue mixes tracks from more than one recording.
+    var queueSpansMultipleShows: Bool {
+        Set(queue.map(\.show.identifier)).count > 1
+    }
 
     var progress: Double {
         duration > 0 ? min(max(elapsed / duration, 0), 1) : 0
@@ -69,15 +88,20 @@ final class PlayerEngine {
 
     /// Loads a show's queue and starts playback at the given track index.
     func play(show: Show, tracks: [Track], startAt index: Int = 0) {
-        guard !tracks.isEmpty else {
+        play(entries: tracks.map { PlayerQueueEntry(show: show, track: $0) }, startAt: index)
+    }
+
+    /// Loads an arbitrary queue — entries may come from different shows
+    /// (playlists) — and starts playback at the given index.
+    func play(entries: [PlayerQueueEntry], startAt index: Int = 0) {
+        guard !entries.isEmpty else {
             state = .failed("No streamable tracks on this recording.")
             return
         }
         session.activate()
         flushListeningEvent(completed: false)
-        currentShow = show
-        queue = tracks
-        currentIndex = min(max(index, 0), tracks.count - 1)
+        queue = entries
+        currentIndex = min(max(index, 0), entries.count - 1)
         loadCurrentTrack(autoplay: true)
     }
 
@@ -147,7 +171,6 @@ final class PlayerEngine {
         flushListeningEvent(completed: false)
         player.replaceCurrentItem(with: nil)
         removeItemObservers()
-        currentShow = nil
         queue = []
         currentIndex = 0
         elapsed = 0
@@ -159,14 +182,14 @@ final class PlayerEngine {
     // MARK: - Track loading
 
     private func loadCurrentTrack(autoplay: Bool) {
-        guard let show = currentShow, let track = currentTrack,
-              let url = streaming.streamURL(identifier: show.identifier, track: track) else {
+        guard let entry = currentEntry,
+              let url = streaming.streamURL(identifier: entry.show.identifier, track: entry.track) else {
             state = .failed("Couldn't build a stream URL for this track.")
             return
         }
         state = .loading
         elapsed = 0
-        duration = track.durationSeconds ?? 0
+        duration = entry.track.durationSeconds ?? 0
         trackStartedAt = .now
         accumulatedSeconds = 0
 
@@ -259,10 +282,10 @@ final class PlayerEngine {
     }
 
     private func flushListeningEvent(completed: Bool) {
-        guard let show = currentShow, let track = currentTrack, trackStartedAt != nil else { return }
+        guard let entry = currentEntry, trackStartedAt != nil else { return }
         let seconds = completed ? (duration > 0 ? duration : accumulatedSeconds) : accumulatedSeconds
         if seconds > 15 {   // ignore instant skips
-            onListeningEvent?(show, track, seconds, completed)
+            onListeningEvent?(entry.show, entry.track, seconds, completed)
         }
         trackStartedAt = nil
         accumulatedSeconds = 0

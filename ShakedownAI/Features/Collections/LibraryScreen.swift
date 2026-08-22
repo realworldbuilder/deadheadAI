@@ -4,6 +4,7 @@ import SwiftData
 struct LibraryScreen: View {
     @Environment(AppEnvironment.self) private var env
     @State private var showingNewCollection = false
+    @State private var showingNewPlaylist = false
     @State private var refreshToken = 0
 
     private enum Destination: Hashable {
@@ -17,6 +18,7 @@ struct LibraryScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
                         SmartShelfSection()
+                        playlistsSection
                         collectionsSection
                         linksSection
                     }
@@ -36,6 +38,9 @@ struct LibraryScreen: View {
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 CollectionDetailScreen(collectionID: id)
             }
+            .navigationDestination(for: PlaylistRoute.self) { route in
+                PlaylistDetailScreen(playlistID: route.id)
+            }
             .navigationDestination(for: SmartCollection.self) { collection in
                 SmartCollectionDetailScreen(collection: collection)
             }
@@ -53,6 +58,41 @@ struct LibraryScreen: View {
         }
         .sheet(isPresented: $showingNewCollection, onDismiss: { refreshToken += 1 }) {
             NewCollectionSheet()
+        }
+        .sheet(isPresented: $showingNewPlaylist, onDismiss: { refreshToken += 1 }) {
+            NewPlaylistSheet()
+        }
+    }
+
+    private var playlistsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Playlists").sectionHeaderStyle()
+                Spacer()
+                Button {
+                    showingNewPlaylist = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(Theme.accent)
+                }
+                .accessibilityLabel("New playlist")
+            }
+            let playlists = env.library.playlists
+            let _ = refreshToken   // re-read after sheet dismissals
+            if playlists.isEmpty {
+                Text("Build your own runs — song by song, across any shows. Long-press a track on any show page to start one.")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible())], spacing: 10) {
+                ForEach(playlists, id: \.persistentModelID) { playlist in
+                    NavigationLink(value: PlaylistRoute(id: playlist.persistentModelID)) {
+                        PlaylistCard(playlist: playlist)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 

@@ -29,6 +29,10 @@ struct JourneysScreen: View {
                     if env.knowledgeBase.journeys.isEmpty {
                         LoadingLampView(text: "Journeys load with the knowledge base.")
                     }
+
+                    if !env.knowledgeBase.runs.isEmpty {
+                        epicRunsSection
+                    }
                 }
                 .padding(Theme.screenPadding)
             }
@@ -39,7 +43,89 @@ struct JourneysScreen: View {
         .navigationDestination(for: Journey.self) { journey in
             JourneyDetailScreen(journey: journey)
         }
+        .navigationDestination(for: FamousRun.self) { run in
+            FamousRunShowScreen(run: run)
+        }
         .onAppear { refreshToken += 1 }
+    }
+
+    /// The canon of runs — single sequences inside one night that fans measure
+    /// everything else against. Each row opens the show whose tape holds it.
+    private var epicRunsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("EPIC RUNS")
+                .font(Theme.mono(11, weight: .bold))
+                .foregroundStyle(Theme.accent)
+                .tracking(2)
+                .padding(.top, 10)
+            Text("Not whole shows — the sequences inside them that people never stop talking about.")
+                .font(Theme.body)
+                .foregroundStyle(Theme.textSecondary)
+            ForEach(env.knowledgeBase.runs.sorted { $0.date < $1.date }) { run in
+                NavigationLink(value: run) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "flame.fill")
+                            .font(.caption)
+                            .foregroundStyle(Theme.accent)
+                            .frame(width: 22)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(run.title)
+                                .font(Theme.headline)
+                                .foregroundStyle(Theme.textPrimary)
+                                .lineLimit(1)
+                            Text(LocalKnowledgeAI.prettyDate(run.date))
+                                .font(Theme.mono(11))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(12)
+                    .cardStyle()
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+/// Resolves the best tape for a famous run's date, then hands off to the
+/// regular show page — where the run card is waiting with a play button.
+struct FamousRunShowScreen: View {
+    @Environment(AppEnvironment.self) private var env
+    let run: FamousRun
+    @State private var resolvedShow: Show?
+    @State private var failed = false
+
+    var body: some View {
+        Group {
+            if let resolvedShow {
+                ShowDetailScreen(show: resolvedShow)
+            } else {
+                ZStack {
+                    SpaceBackground()
+                    if failed {
+                        ErrorCard(message: "Couldn't reach the archive for this night's tape. Check your connection and try again.") {
+                            failed = false
+                            Task { await resolve() }
+                        }
+                        .padding(Theme.screenPadding)
+                    } else {
+                        LoadingLampView(text: "Finding the tape with this run…")
+                    }
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await resolve() }
+    }
+
+    private func resolve() async {
+        guard resolvedShow == nil else { return }
+        resolvedShow = (try? await env.recordingProvider.recordings(forDate: run.date))?.first
+        failed = resolvedShow == nil
     }
 }
 
@@ -196,13 +282,17 @@ nonisolated struct JourneyDayRoute: Hashable {
 
 struct JourneyDayScreen: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(PlayerEngine.self) private var engine
     let journey: Journey
     let dayIndex: Int
     @State private var resolvedShow: Show?
     @State private var showingJournal = false
     @State private var refreshToken = 0
+    @State private var isStartingRun = false
+    @State private var runUnavailable = false
 
     private var day: Journey.JourneyDay { journey.days[dayIndex] }
+    private var focusRun: FamousRun? { day.focusRunID.flatMap(env.knowledgeBase.run(id:)) }
 
     var body: some View {
         ZStack {
@@ -254,6 +344,10 @@ struct JourneyDayScreen: View {
                         LoadingLampView(text: "Finding tonight's tape…")
                     }
 
+                    if let run = focusRun {
+                        runCard(run)
+                    }
+
                     if !day.focusTracks.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Listen for").sectionHeaderStyle()
@@ -303,6 +397,65 @@ struct JourneyDayScreen: View {
                 JournalEditorSheet(show: resolvedShow)
             }
         }
+    }
+
+    /// Tonight's headline sequence, playable without leaving the journey.
+    private func runCard(_ run: FamousRun) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.accent)
+                Text("THE FAMOUS RUN")
+                    .font(Theme.mono(11, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+            }
+            Text(run.title)
+                .font(Theme.headline)
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(run.blurb)
+                .font(Theme.caption)
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if runUnavailable {
+                Text("This tape splits the run differently — open tonight's tape to explore it.")
+                    .font(Theme.mono(11))
+                    .foregroundStyle(Theme.textTertiary)
+            } else {
+                Button {
+                    Task { await playRun(run) }
+                } label: {
+                    HStack(spacing: 6) {
+                        if isStartingRun {
+                            ProgressView().tint(Theme.accent).scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "play.circle.fill")
+                        }
+                        Text("Play the run")
+                            .font(Theme.mono(12, weight: .semibold))
+                    }
+                    .foregroundStyle(Theme.accent)
+                }
+                .disabled(isStartingRun || resolvedShow == nil)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle(raised: true)
+    }
+
+    private func playRun(_ run: FamousRun) async {
+        guard let show = resolvedShow, !isStartingRun else { return }
+        isStartingRun = true
+        defer { isStartingRun = false }
+        guard let detail = try? await env.metadataProvider.detail(for: show.identifier),
+              let range = RunResolver.resolve(run, in: detail.tracks) else {
+            runUnavailable = true
+            return
+        }
+        engine.play(show: show, tracks: detail.tracks, startAt: range.lowerBound)
+        engine.isPresentingFullPlayer = true
     }
 
     private var completeButton: some View {

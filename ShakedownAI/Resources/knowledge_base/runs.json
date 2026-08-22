@@ -1,0 +1,137 @@
+[
+  {
+    "id": "1967-09-03-midnight-hour",
+    "date": "1967-09-03",
+    "title": "In the Midnight Hour",
+    "songKeys": ["in the midnight hour"],
+    "blurb": "The Rio Nido dance hall Midnight Hour — Pigpen preaching over a half-hour R&B vamp while the band learns what it means to stretch a song past its edges.",
+    "eraID": "primal",
+    "tags": ["primal", "pigpen", "marathon", "raw"]
+  },
+  {
+    "id": "1969-02-27-dark-star-eleven-lovelight",
+    "date": "1969-02-27",
+    "title": "Dark Star > St. Stephen > The Eleven > Turn On Your Love Light",
+    "songKeys": ["dark star", "st stephen", "the eleven", "turn on your love light"],
+    "blurb": "The Live/Dead sequence, caught at the Fillmore West: the definitive Dark Star flowing through St. Stephen and The Eleven into Pigpen's Lovelight — the ur-text of the psychedelic Dead.",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "essential", "live-dead", "segue-masterpiece"]
+  },
+  {
+    "id": "1970-02-13-dark-star-other-one-lovelight",
+    "date": "1970-02-13",
+    "title": "Dark Star > The Other One > Turn On Your Love Light",
+    "songKeys": ["dark star", "the other one", "turn on your love light"],
+    "blurb": "The late show at the Fillmore East: a crystalline Dark Star — later woven into Grayfolded — crashing into The Other One and a marathon Lovelight in the small hours of Valentine's Day.",
+    "eraID": "anthem",
+    "tags": ["psychedelic", "fillmore-east", "essential", "late-show"]
+  },
+  {
+    "id": "1972-04-08-truckin-caution",
+    "date": "1972-04-08",
+    "title": "Truckin' > Caution (Do Not Stop on Tracks)",
+    "songKeys": ["truckin'", "caution"],
+    "blurb": "Wembley's second night, early Europe '72: Truckin' boils over into a ferocious Caution — Pigpen's last great rave-up era, and a run reviewers single out on every tape of this show.",
+    "eraID": "europe-wall",
+    "tags": ["europe-72", "pigpen", "high-energy", "segue-masterpiece"]
+  },
+  {
+    "id": "1972-05-11-rotterdam-dark-star-other-one",
+    "date": "1972-05-11",
+    "title": "Dark Star > Drums > The Other One",
+    "songKeys": ["dark star", "the other one"],
+    "blurb": "The Rotterdam marathon: Dark Star and The Other One joined at the hip for the better part of an hour — Europe '72 at its most fearless and far out.",
+    "eraID": "europe-wall",
+    "tags": ["europe-72", "marathon", "psychedelic", "deep-jam"]
+  },
+  {
+    "id": "1972-08-27-china-rider",
+    "date": "1972-08-27",
+    "title": "China Cat Sunflower > I Know You Rider",
+    "songKeys": ["china cat sunflower", "i know you rider"],
+    "blurb": "The Veneta China > Rider: sun-blasted, joyous, and locked-in — the classic pairing at the peak of its 1972 stride.",
+    "eraID": "europe-wall",
+    "tags": ["veneta", "sunshine-daydream", "joyous", "classic-pairing"]
+  },
+  {
+    "id": "1972-08-27-veneta-dark-star",
+    "date": "1972-08-27",
+    "title": "The Veneta Dark Star",
+    "songKeys": ["dark star"],
+    "blurb": "Played in 100-degree Oregon heat at the Springfield Creamery benefit — for many Heads the single greatest Dark Star ever performed.",
+    "eraID": "europe-wall",
+    "tags": ["veneta", "sunshine-daydream", "essential", "peak-jam"]
+  },
+  {
+    "id": "1972-09-21-philly-dark-star",
+    "date": "1972-09-21",
+    "title": "The Philadelphia Dark Star",
+    "songKeys": ["dark star"],
+    "blurb": "The Spectrum Dark Star — half an hour of patient, exploratory playing that tape collectors rank with Veneta among the best of the year.",
+    "eraID": "europe-wall",
+    "tags": ["deep-jam", "psychedelic", "collector-favorite"]
+  },
+  {
+    "id": "1977-05-08-scarlet-fire",
+    "date": "1977-05-08",
+    "title": "Scarlet Begonias > Fire on the Mountain",
+    "songKeys": ["scarlet begonias", "fire on the mountain"],
+    "blurb": "The Cornell Scarlet > Fire: the transition every other version is measured against — patient, melodic, and perfectly recorded on the Betty board.",
+    "eraID": "hiatus-return",
+    "tags": ["cornell", "may-77", "essential", "segue-masterpiece"]
+  },
+  {
+    "id": "1977-05-08-cornell-morning-dew",
+    "date": "1977-05-08",
+    "title": "The Cornell Morning Dew",
+    "songKeys": ["morning dew"],
+    "blurb": "Barton Hall's closing statement: a Morning Dew that builds to one of Garcia's most shattering peaks — the reason this tape became legend.",
+    "eraID": "hiatus-return",
+    "tags": ["cornell", "may-77", "emotional", "essential"]
+  },
+  {
+    "id": "1977-05-09-help-slip-franklins",
+    "date": "1977-05-09",
+    "title": "Help on the Way > Slipknot! > Franklin's Tower",
+    "songKeys": ["help on the way", "slipknot", "franklin's tower"],
+    "blurb": "The night after Cornell, Buffalo opens with a Help > Slip > Franklin's so assured it steals the whole May '77 conversation for many listeners.",
+    "eraID": "hiatus-return",
+    "tags": ["may-77", "opener", "segue-masterpiece", "high-energy"]
+  },
+  {
+    "id": "1989-07-07-jfk-morning-dew",
+    "date": "1989-07-07",
+    "title": "The JFK Morning Dew",
+    "songKeys": ["morning dew"],
+    "blurb": "From the Crimson, White & Indigo stand at JFK Stadium: a late-eighties Morning Dew with the full weight of the big-stadium Dead behind it.",
+    "eraID": "brent",
+    "tags": ["stadium-era", "emotional", "official-release"]
+  },
+  {
+    "id": "1989-10-09-hampton-dark-star",
+    "date": "1989-10-09",
+    "title": "The Hampton Dark Star",
+    "songKeys": ["dark star"],
+    "blurb": "Billed as 'Formerly the Warlocks': the house lights drop, the first Dark Star in five years opens, and Hampton Coliseum comes apart at the seams.",
+    "eraID": "brent",
+    "tags": ["breakout", "warlocks", "legendary-moment"]
+  },
+  {
+    "id": "1990-03-29-branford-eyes",
+    "date": "1990-03-29",
+    "title": "Eyes of the World with Branford Marsalis",
+    "songKeys": ["eyes of the world"],
+    "blurb": "Branford Marsalis sits in at Nassau and the band lifts to meet him — an Eyes of the World widely held as the finest of the modern era.",
+    "eraID": "brent",
+    "tags": ["guest", "branford", "essential", "spring-90"]
+  },
+  {
+    "id": "1995-03-19-unbroken-chain",
+    "date": "1995-03-19",
+    "title": "The Unbroken Chain Breakout",
+    "songKeys": ["unbroken chain"],
+    "blurb": "Twenty-one years after Mars Hotel, Philadelphia gets the first live Unbroken Chain — the crowd realizes what's happening a few bars in and the roar is on every tape.",
+    "eraID": "vince",
+    "tags": ["breakout", "legendary-moment", "phil"]
+  }
+]

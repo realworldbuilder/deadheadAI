@@ -168,18 +168,29 @@ final class OpenAIResponsesAI: AIProvider {
     func showGuide(for detail: RecordingDetail, show: Show?) async throws -> ShowGuide {
         let apiKey = try requireKey()
         let setlist = detail.tracks.map(\.title).joined(separator: ", ")
-        let reviewSample = detail.reviews.prefix(4).compactMap(\.body).map { String($0.prefix(240)) }
-        let notable = (detail.dateString ?? show?.dateString).flatMap(kb.notableShow(on:))
+        let reviewSample = detail.reviews.prefix(6).compactMap(\.body).map { String($0.prefix(300)) }
+        let day = detail.dateString ?? show?.dateString
+        let notable = day.flatMap(kb.notableShow(on:))
+        // Only offer runs that actually resolve on this transfer.
+        let famousRuns = (day.map(kb.runs(on:)) ?? [])
+            .filter { RunResolver.resolve($0, in: detail.tracks) != nil }
+        let runLines = famousRuns.map { "\($0.title) — \($0.blurb)" }.joined(separator: " ||| ")
 
         let input = """
         Build a listening guide for this recording. Use ONLY the data below; only \
         reference songs that appear in the setlist.
 
-        Date: \(detail.dateString ?? "unknown") | Venue: \(detail.venue ?? "unknown"), \(detail.location ?? "")
+        Date: \(day ?? "unknown") | Venue: \(detail.venue ?? "unknown"), \(detail.location ?? "")
         Source: \(detail.source ?? "unknown") | Lineage: \(detail.lineage ?? "unknown")
         Setlist: \(setlist)
         Curator notes: \(notable?.blurb ?? "none")
+        Canonized famous runs on this tape: \(runLines.isEmpty ? "none" : runLines)
         Community reviews (\(detail.reviews.count) total): \(reviewSample.joined(separator: " ||| "))
+
+        The reviews are where fans celebrate specific segues and runs. When they \
+        rave about a sequence (or a canonized run is listed above), lead \
+        bestTransitions with it, formatted "Song A > Song B — why it matters", \
+        naming only songs from the setlist.
         """
 
         func stringProp() -> JSONValue { .object(["type": .string("string")]) }
@@ -213,7 +224,9 @@ final class OpenAIResponsesAI: AIProvider {
             text: .init(format: .init(name: "show_guide", schema: schema))
         )
         let data = try await Self.send(request, apiKey: apiKey)
-        return try Self.decodeStructured(ShowGuide.self, from: data)
+        var guide = try Self.decodeStructured(ShowGuide.self, from: data)
+        guide.bestTransitions = TransitionGrounding.filter(guide.bestTransitions, tracks: detail.tracks)
+        return guide
     }
 
     // MARK: - Search intent
@@ -422,6 +435,9 @@ final class OpenAIResponsesAI: AIProvider {
             }
             if !song.seguePartners.isEmpty {
                 lines.append("segue partners: \(song.seguePartners.joined(separator: ", "))")
+            }
+            for run in kb.runs(containing: song.key) {
+                lines.append("famous run date=\(run.date) \(run.title) — \(run.blurb)")
             }
             return lines.joined(separator: "\n")
         case "best_recording_for_date":

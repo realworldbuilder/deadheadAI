@@ -249,6 +249,69 @@ struct PlayerQueueTests {
     }
 }
 
+// MARK: - Cross-show queues (playlists)
+
+struct CrossShowQueueTests {
+    private func mixedQueue() -> [PlayerQueueEntry] {
+        [
+            PlayerQueueEntry(show: MockData.cornell, track: MockData.cornellTracks[0]),
+            PlayerQueueEntry(show: MockData.cornell, track: MockData.cornellTracks[1]),
+            PlayerQueueEntry(show: MockData.veneta,
+                             track: Track(fileName: "veneta-t1.mp3", title: "Dark Star",
+                                          trackNumber: 1, durationSeconds: 1800)),
+        ]
+    }
+
+    @Test func advancingAcrossTheShowBoundaryChangesCurrentShow() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(entries: mixedQueue(), startAt: 1)
+        #expect(engine.currentShow?.identifier == MockData.cornell.identifier)
+        engine.next()
+        #expect(engine.currentShow?.identifier == MockData.veneta.identifier)
+        #expect(engine.currentTrack?.title == "Dark Star")
+        #expect(engine.queueSpansMultipleShows)
+    }
+
+    @Test func listeningEventsAttributeToTheEntrysOwnShow() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        var events: [(show: String, track: String, completed: Bool)] = []
+        engine.onListeningEvent = { show, track, _, completed in
+            events.append((show.identifier, track.title, completed))
+        }
+        engine.play(entries: mixedQueue(), startAt: 1)
+        engine.trackDidFinish()   // finishes the Cornell track, moves to Veneta
+        engine.trackDidFinish()   // finishes the Veneta track, queue ends
+        #expect(events.count == 2)
+        #expect(events.first?.show == MockData.cornell.identifier)
+        #expect(events.last?.show == MockData.veneta.identifier)
+        #expect(events.last?.track == "Dark Star")
+        #expect(engine.state == .finished)
+    }
+
+    @Test func resumeAfterFinishRestartsAtTheFirstEntry() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(entries: mixedQueue(), startAt: 2)
+        engine.trackDidFinish()
+        #expect(engine.state == .finished)
+        engine.resume()
+        #expect(engine.currentIndex == 0)
+        #expect(engine.currentShow?.identifier == MockData.cornell.identifier)
+    }
+
+    @Test func singleShowQueueDoesNotSpanShows() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(show: MockData.cornell, tracks: MockData.cornellTracks)
+        #expect(!engine.queueSpansMultipleShows)
+    }
+
+    @Test func entryIDsDisambiguateSharedFileNames() {
+        let track = Track(fileName: "t01.mp3", title: "Bertha", trackNumber: 1, durationSeconds: 300)
+        let a = PlayerQueueEntry(show: MockData.cornell, track: track)
+        let b = PlayerQueueEntry(show: MockData.veneta, track: track)
+        #expect(a.id != b.id)
+    }
+}
+
 // MARK: - Journeys
 
 struct JourneyProgressionTests {

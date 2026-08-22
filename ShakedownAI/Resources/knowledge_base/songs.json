@@ -678,5 +678,61 @@
     ],
     "seguePartners": [],
     "tags": ["ballad", "mellow"]
+  },
+  {
+    "key": "caution",
+    "title": "Caution (Do Not Stop on Tracks)",
+    "writtenBy": "Grateful Dead",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "One of the band's oldest vehicles, grown out of their jug-band blues roots: a one-chord rave-up built for Pigpen to preach over while the band churned behind him. In the primal years it closed shows in a haze of feedback; by Europe '72 it had become a ferocious, harmonica-driven freight train that could erupt out of Truckin' without warning. It left the book when Pigpen did, which is exactly why the surviving versions feel so precious.",
+    "famousVersions": [
+      {"date": "1972-04-08", "note": "The Wembley version boils out of Truckin' into one of Pigpen's last great rave-ups — the run reviewers single out on every tape of this show.", "label": "The benchmark"}
+    ],
+    "seguePartners": ["truckin'", "good lovin'"],
+    "tags": ["primal", "pigpen", "high-energy", "blues"]
+  },
+  {
+    "key": "the eleven",
+    "title": "The Eleven",
+    "writtenBy": "Lesh, Hunter",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Named for its 11/8 time signature, this was the rhythmic high-wire act of the late sixties: a whirling, chant-like sprint that almost always erupted out of St. Stephen. The 1968-69 versions capture the twin-drummer band at its most telepathic. It vanished from the repertoire in 1970, making every surviving tape a document of the psychedelic Dead at maximum velocity.",
+    "famousVersions": [
+      {"date": "1969-02-27", "note": "The Live/Dead version — the definitive reading, spinning out of St. Stephen at the Fillmore West.", "label": "The benchmark"}
+    ],
+    "seguePartners": ["st stephen", "turn on your love light"],
+    "tags": ["primal", "psychedelic", "rhythmic", "essential"]
+  },
+  {
+    "key": "in the midnight hour",
+    "title": "In the Midnight Hour",
+    "writtenBy": "Wilson Pickett, Steve Cropper",
+    "debut": null,
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Pickett's soul hit became Pigpen's pulpit: the early Dead would stretch it past the half-hour mark while he improvised verses and worked the crowd like a revival preacher. It's the clearest window into the band's dance-hall origins — R&B first, psychedelia second — and it resurfaced occasionally for decades whenever they wanted to summon that ballroom spirit.",
+    "famousVersions": [
+      {"date": "1967-09-03", "note": "The Rio Nido dance-hall marathon: a half-hour of Pigpen preaching over the vamp while the band learns to stretch.", "label": "The benchmark"}
+    ],
+    "seguePartners": [],
+    "tags": ["primal", "pigpen", "soul", "marathon"]
+  },
+  {
+    "key": "unbroken chain",
+    "title": "Unbroken Chain",
+    "writtenBy": "Lesh, Petersen",
+    "debut": "1995-03-19",
+    "lastPlayed": null,
+    "timesPlayed": null,
+    "evolution": "Phil's intricate Mars Hotel masterpiece sat unplayed for twenty-one years — too complex, the story went, to bring to the stage. When the opening chords finally rang out in Philadelphia in March 1995, the roar of recognition is audible on every tape. The handful of versions from that final spring are treasured less for their polish than for the sheer improbability of hearing the song live at all.",
+    "famousVersions": [
+      {"date": "1995-03-19", "note": "The breakout: the first live version ever, twenty-one years after the studio recording.", "label": "The moment"}
+    ],
+    "seguePartners": [],
+    "tags": ["phil", "intricate", "rare", "nineties"]
   }
 ]

@@ -262,6 +262,22 @@ nonisolated struct NotableShow: Codable, Hashable, Identifiable, Sendable {
     var monthDay: String { String(date.dropFirst(5)) }
 }
 
+/// A canonized segue run (or single legendary performance) inside one show —
+/// the "Truckin' > Caution" moments fans rave about in archive reviews.
+nonisolated struct FamousRun: Codable, Hashable, Identifiable, Sendable {
+    var id: String                   // "1972-04-08-truckin-caution"
+    var date: String                 // "1972-04-08"
+    var title: String                // "Truckin' > Caution (Do Not Stop on Tracks)"
+    /// Ordered, pre-normalized song keys (see Track.normalizeSongKey).
+    /// Bridging tracks like Drums between entries are tolerated at match time.
+    var songKeys: [String]
+    var blurb: String
+    var eraID: String?
+    var tags: [String]
+
+    var year: Int? { Int(date.prefix(4)) }
+}
+
 nonisolated struct SongInfo: Codable, Hashable, Identifiable, Sendable {
     var key: String                  // normalized, e.g. "dark star"
     var title: String
@@ -309,6 +325,8 @@ nonisolated struct Journey: Codable, Hashable, Identifiable, Sendable {
         var essay: String
         var focusTracks: [String]
         var journalPrompt: String
+        /// Optional FamousRun id — the night's headline sequence, playable in one tap.
+        var focusRunID: String?
     }
 }
 

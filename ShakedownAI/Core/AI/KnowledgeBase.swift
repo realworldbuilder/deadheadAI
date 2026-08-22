@@ -8,8 +8,9 @@ nonisolated struct KnowledgeBase: Sendable {
     let eras: [EraInfo]
     let journeys: [Journey]
     let quotes: [BandQuote]
+    let runs: [FamousRun]
 
-    static let empty = KnowledgeBase(notableShows: [], songs: [], eras: [], journeys: [], quotes: [])
+    static let empty = KnowledgeBase(notableShows: [], songs: [], eras: [], journeys: [], quotes: [], runs: [])
 
     static func loadFromBundle(_ bundle: Bundle = .main) -> KnowledgeBase {
         func load<T: Decodable>(_ name: String, as type: T.Type) -> T? {
@@ -23,7 +24,8 @@ nonisolated struct KnowledgeBase: Sendable {
             songs: load("songs", as: [SongInfo].self) ?? [],
             eras: (load("eras", as: [EraInfo].self) ?? []).sorted { $0.startYear < $1.startYear },
             journeys: load("journeys", as: [Journey].self) ?? [],
-            quotes: load("quotes", as: [BandQuote].self) ?? []
+            quotes: load("quotes", as: [BandQuote].self) ?? [],
+            runs: load("runs", as: [FamousRun].self) ?? []
         )
     }
 
@@ -63,6 +65,19 @@ nonisolated struct KnowledgeBase: Sendable {
 
     func journey(id: String) -> Journey? {
         journeys.first { $0.id == id }
+    }
+
+    func run(id: String) -> FamousRun? {
+        runs.first { $0.id == id }
+    }
+
+    /// Famous runs on a "yyyy-mm-dd" date, canonical order preserved.
+    func runs(on date: String) -> [FamousRun] {
+        runs.filter { $0.date == date }
+    }
+
+    func runs(containing songKey: String) -> [FamousRun] {
+        runs.filter { $0.songKeys.contains(songKey) }
     }
 
     // MARK: - Daily picks (deterministic)

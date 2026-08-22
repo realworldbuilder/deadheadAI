@@ -203,8 +203,16 @@ final class LocalKnowledgeAI: AIProvider {
                 .prefix(3).map(\.title)
         }
 
-        // Transitions: consecutive tracks that are known segue partners.
+        // Transitions: canonized famous runs on this tape lead, then any other
+        // consecutive tracks that are known segue partners.
         var transitions: [String] = []
+        let resolvedRuns = day.map { kb.runs(on: $0).filter { RunResolver.resolve($0, in: detail.tracks) != nil } } ?? []
+        for run in resolvedRuns {
+            transitions.append("\(run.title) — \(run.blurb)")
+            if !highlights.contains(run.title) {
+                highlights.insert(run.title, at: 0)
+            }
+        }
         for (a, b) in zip(detail.tracks, detail.tracks.dropFirst()) {
             if let info = kb.song(forKey: a.songKey), info.seguePartners.contains(b.songKey) {
                 transitions.append("\(a.title) > \(b.title)")
@@ -290,6 +298,10 @@ final class LocalKnowledgeAI: AIProvider {
             if song.famousVersions.count > 1 {
                 let rest = song.famousVersions.dropFirst().map { "\(Self.showLink($0.date, kb: kb)) (\($0.label ?? "essential"))" }
                 out.append("Then chase down \(rest.joined(separator: ", ")).")
+            }
+            let runs = kb.runs(containing: song.key).prefix(2)
+            for run in runs {
+                out.append("It's also half the story of a famous run: \(run.title) from \(Self.showLink(run.date, kb: kb)).")
             }
             return out
         }
