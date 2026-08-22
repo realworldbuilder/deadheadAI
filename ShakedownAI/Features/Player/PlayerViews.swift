@@ -241,6 +241,24 @@ struct PlayerScreen: View {
             .accessibilityLabel("Close player")
             .padding(.leading, 8)
         }
+        .overlay(alignment: .topTrailing) {
+            if let show = engine.currentShow {
+                let track = engine.currentTrack
+                ShareLink(
+                    item: track.map { show.shareURL(for: $0) } ?? show.shareURL,
+                    subject: Text(show.shortName),
+                    message: Text(show.shareText(track: track))
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Share")
+                .padding(.trailing, 8)
+            }
+        }
         .sensoryFeedback(.selection, trigger: skipCount)
     }
 

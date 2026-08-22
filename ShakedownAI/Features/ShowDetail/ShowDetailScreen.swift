@@ -72,6 +72,7 @@ struct ShowDetailScreen: View {
     @Environment(PlayerEngine.self) private var engine
     @State private var model: ShowDetailModel?
     @State private var showingSources = false
+    @State private var visibleReviewCount = 5
     @State private var showingJournal = false
     @State private var showingCollectionPicker = false
     @State private var confirmingCancelDownload = false
@@ -100,6 +101,14 @@ struct ShowDetailScreen: View {
         .toolbarBackground(Theme.background, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                ShareLink(
+                    item: (model?.show ?? show).shareURL,
+                    subject: Text((model?.show ?? show).shortName),
+                    message: Text((model?.show ?? show).shareText())
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .accessibilityLabel("Share this show")
                 Button {
                     showingJournal = true
                 } label: {
@@ -442,34 +451,71 @@ struct ShowDetailScreen: View {
     private func reviewsSection(_ detail: RecordingDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("From the Community").sectionHeaderStyle()
-            ForEach(Array(detail.reviews.prefix(5).enumerated()), id: \.offset) { _, review in
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(review.title ?? "Review")
-                            .font(Theme.headline)
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                        Spacer()
-                        if let stars = review.stars, stars > 0 {
-                            RatingDots(rating: stars, showValue: false)
+            ForEach(Array(detail.reviews.prefix(visibleReviewCount).enumerated()), id: \.offset) { _, review in
+                ReviewCard(review: review)
+            }
+            if detail.reviews.count > 5 {
+                HStack(spacing: 16) {
+                    if visibleReviewCount < detail.reviews.count {
+                        Button("Show more (\(detail.reviews.count - visibleReviewCount) left)") {
+                            withAnimation(.snappy) { visibleReviewCount += 5 }
                         }
                     }
-                    if let body = review.body {
-                        Text(body)
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textSecondary)
-                            .lineLimit(6)
-                    }
-                    if let reviewer = review.reviewer {
-                        Text("— \(reviewer)")
-                            .font(Theme.mono(11))
-                            .foregroundStyle(Theme.textTertiary)
+                    if visibleReviewCount > 5 {
+                        Button("Show fewer") {
+                            withAnimation(.snappy) { visibleReviewCount = 5 }
+                        }
                     }
                 }
-                .padding(Theme.cardPadding)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .cardStyle()
+                .font(Theme.mono(12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
             }
         }
+    }
+}
+
+private struct ReviewCard: View {
+    let review: Review
+    @State private var isExpanded = false
+
+    private var isLongBody: Bool {
+        guard let body = review.body else { return false }
+        return body.count > 280 || body.filter(\.isNewline).count >= 6
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(review.title ?? "Review")
+                    .font(Theme.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Spacer()
+                if let stars = review.stars, stars > 0 {
+                    RatingDots(rating: stars, showValue: false)
+                }
+            }
+            if let body = review.body {
+                Text(body)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(isExpanded ? nil : 6)
+            }
+            if isLongBody {
+                Button(isExpanded ? "Show less" : "Read more") {
+                    withAnimation(.snappy) { isExpanded.toggle() }
+                }
+                .font(Theme.mono(12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            }
+            if let reviewer = review.reviewer {
+                Text("— \(reviewer)")
+                    .font(Theme.mono(11))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+        }
+        .padding(Theme.cardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
     }
 }

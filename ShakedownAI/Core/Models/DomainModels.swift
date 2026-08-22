@@ -57,6 +57,27 @@ nonisolated struct Show: Codable, Hashable, Identifiable, Sendable {
         f.locale = Locale(identifier: "en_US")
         return f
     }()
+
+    /// Public archive.org page for this recording — the shareable link.
+    var shareURL: URL {
+        URL(string: "https://archive.org/details/\(identifier)") ?? URL(string: "https://archive.org")!
+    }
+
+    /// Deep link that opens the archive.org player on a specific track.
+    func shareURL(for track: Track) -> URL {
+        guard let file = track.fileName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+              let url = URL(string: "https://archive.org/details/\(identifier)/\(file)") else {
+            return shareURL
+        }
+        return url
+    }
+
+    /// "Grateful Dead — May 8, 1977 · Barton Hall…" text that rides along with the link.
+    func shareText(track: Track? = nil) -> String {
+        var line = "Grateful Dead — \(displayDate) · \(displayVenue)"
+        if let track { line = "\(track.title) — " + line }
+        return line
+    }
 }
 
 /// Full metadata for one recording, from archive.org/metadata/{id}.
