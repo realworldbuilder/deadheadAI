@@ -5,6 +5,8 @@ final class HomeModel {
     var hero: NotableShow?
     var heroRecording: Show?
     var heroNarrative: Recommendation?
+    var isLoadingNarrative = false
+    var narrativeError: String?
     var becauseYouLiked: [NotableShow] = []
     var onThisDay: [Show] = []
     var topShelf: [Show] = []
@@ -26,6 +28,8 @@ final class HomeModel {
         refreshLocalSections(dayOfYear: dayOfYear)
         guard loadedForDay != dayOfYear else { return }
         loadedForDay = dayOfYear
+        heroNarrative = nil
+        narrativeError = nil
 
         isLoadingHero = true
         defer { isLoadingHero = false }
@@ -33,6 +37,18 @@ final class HomeModel {
         // Resolve the hero pick to a real archive recording.
         if let hero {
             heroRecording = (try? await env.recordingProvider.recordings(forDate: hero.date))?.first
+        }
+
+        // Start writing the "Why this show?" story now, alongside the rest of
+        // the feed, so the sheet is ready before anyone taps for it. Cached
+        // per day + tape, so relaunches never pay for the same story twice.
+        if let heroRecording {
+            let key = CacheStore.heroNarrativeKey(identifier: heroRecording.identifier)
+            if let cached = env.cache.cachedHeroNarrative(key: key) {
+                heroNarrative = cached
+            } else {
+                Task { await loadHeroNarrative() }
+            }
         }
 
         // On This Day: real archive lookup, cached hard by the provider.
@@ -81,12 +97,30 @@ final class HomeModel {
     }
 
     func loadHeroNarrative() async {
-        guard heroNarrative == nil, let heroRecording else { return }
-        heroNarrative = try? await env.aiProvider.recommend(
-            query: nil,
-            profile: env.history.tasteSnapshot,
-            candidates: [heroRecording]
-        )
+        guard heroNarrative == nil, !isLoadingNarrative else { return }
+        guard let heroRecording else {
+            if !isLoadingHero {
+                narrativeError = "Couldn't find a tape for tonight's show. Check your connection and try again."
+            }
+            return
+        }
+        isLoadingNarrative = true
+        narrativeError = nil
+        defer { isLoadingNarrative = false }
+        do {
+            let rec = try await env.aiProvider.recommend(
+                query: nil,
+                profile: env.history.tasteSnapshot,
+                candidates: [heroRecording]
+            )
+            heroNarrative = rec
+            env.cache.storeHeroNarrative(
+                rec,
+                key: CacheStore.heroNarrativeKey(identifier: heroRecording.identifier)
+            )
+        } catch {
+            narrativeError = "Couldn't write tonight's story right now. Try again in a moment."
+        }
     }
 
     nonisolated static func monthDayString(_ date: Date) -> String {
@@ -265,7 +299,8 @@ private struct HeroCard: View {
     private var artworkBanner: some View {
         let artwork = coverImage ?? StubArtwork.image(
             for: recording ?? .artworkPlaceholder(date: notable.date, venue: notable.venue,
-                                                  location: notable.location))
+                                                  location: notable.location),
+            layout: .banner)
         return Color.clear
             .frame(height: 230)
             .overlay(
@@ -415,7 +450,8 @@ struct NotableShowCard: View {
                 .overlay(
                     Image(uiImage: coverImage ?? StubArtwork.image(
                         for: .artworkPlaceholder(date: notable.date, venue: notable.venue,
-                                                 location: notable.location)))
+                                                 location: notable.location),
+                        layout: .wide))
                         .resizable()
                         .scaledToFill()
                 )
@@ -512,6 +548,10 @@ private struct WhySheet: View {
                                         .foregroundStyle(Theme.textSecondary)
                                 }
                             }
+                        }
+                    } else if let error = model?.narrativeError {
+                        ErrorCard(message: error) {
+                            Task { await model?.loadHeroNarrative() }
                         }
                     } else {
                         LoadingLampView(text: "Thinking it over…")

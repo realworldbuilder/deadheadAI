@@ -29,6 +29,13 @@ final class OpenAIResponsesAI: AIProvider {
         var input: String
         var text: TextFormat?
         var stream: Bool?
+        /// Caps generation length; the tail of an OpenAI call is all output tokens.
+        var maxOutputTokens: Int?
+
+        nonisolated enum CodingKeys: String, CodingKey {
+            case model, instructions, input, text, stream
+            case maxOutputTokens = "max_output_tokens"
+        }
 
         nonisolated struct TextFormat: Encodable {
             var format: Format
@@ -74,12 +81,14 @@ final class OpenAIResponsesAI: AIProvider {
         }
     }
 
-    nonisolated private static func send(_ request: ResponsesRequest, apiKey: String) async throws -> Data {
+    nonisolated private static func send(_ request: ResponsesRequest,
+                                         apiKey: String,
+                                         timeout: TimeInterval = 60) async throws -> Data {
         var urlRequest = URLRequest(url: URL(string: "https://api.openai.com/v1/responses")!)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.timeoutInterval = 60
+        urlRequest.timeoutInterval = timeout
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
@@ -152,9 +161,13 @@ final class OpenAIResponsesAI: AIProvider {
             model: model,
             instructions: Self.systemVoice,
             input: input,
-            text: .init(format: .init(name: "recommendation", schema: schema))
+            text: .init(format: .init(name: "recommendation", schema: schema)),
+            maxOutputTokens: 350
         )
-        let data = try await Self.send(request, apiKey: apiKey)
+        // A short story deserves a short leash: on a slow network the composite
+        // provider falls through to the on-device/local tier instead of
+        // leaving the sheet spinning for a minute.
+        let data = try await Self.send(request, apiKey: apiKey, timeout: 20)
         let rec = try Self.decodeStructured(Recommendation.self, from: data)
         // Guardrail: the model must pick a real candidate.
         guard candidates.contains(where: { $0.identifier == rec.chosenIdentifier }) else {

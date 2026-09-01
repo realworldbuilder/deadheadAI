@@ -64,15 +64,54 @@ final class CacheStore {
         try? context.save()
     }
 
+    // MARK: - Hero narrative
+
+    /// Cache key for a day's "Why this show?" story: the narrative is written
+    /// for one tape on one day, so a new day or a new hero misses.
+    nonisolated static func heroNarrativeKey(identifier: String, date: Date = .now) -> String {
+        let cal = Calendar.current
+        let year = cal.component(.year, from: date)
+        let day = cal.ordinality(of: .day, in: .year, for: date) ?? 0
+        return "\(year)|\(day)|\(identifier)"
+    }
+
+    func cachedHeroNarrative(key: String) -> Recommendation? {
+        let descriptor = FetchDescriptor<CachedHeroNarrative>(
+            predicate: #Predicate { $0.key == key }
+        )
+        guard let row = try? context.fetch(descriptor).first,
+              let rec = try? JSONDecoder().decode(Recommendation.self, from: row.payload)
+        else { return nil }
+        return rec
+    }
+
+    func storeHeroNarrative(_ recommendation: Recommendation, key: String) {
+        guard let payload = try? JSONEncoder().encode(recommendation) else { return }
+        let descriptor = FetchDescriptor<CachedHeroNarrative>(
+            predicate: #Predicate { $0.key == key }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            existing.payload = payload
+            existing.fetchedAt = .now
+        } else {
+            context.insert(CachedHeroNarrative(key: key, payload: payload))
+        }
+        try? context.save()
+    }
+
     func clearAll() {
         try? context.delete(model: CachedShowSearch.self)
         try? context.delete(model: CachedRecordingMetadata.self)
+        try? context.delete(model: CachedHeroNarrative.self)
         try? context.save()
     }
 
     var approximateSizeBytes: Int {
         let searches = (try? context.fetch(FetchDescriptor<CachedShowSearch>())) ?? []
         let details = (try? context.fetch(FetchDescriptor<CachedRecordingMetadata>())) ?? []
-        return searches.reduce(0) { $0 + $1.payload.count } + details.reduce(0) { $0 + $1.payload.count }
+        let narratives = (try? context.fetch(FetchDescriptor<CachedHeroNarrative>())) ?? []
+        return searches.reduce(0) { $0 + $1.payload.count }
+            + details.reduce(0) { $0 + $1.payload.count }
+            + narratives.reduce(0) { $0 + $1.payload.count }
     }
 }

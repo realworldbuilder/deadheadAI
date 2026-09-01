@@ -30,6 +30,21 @@ final class CachedRecordingMetadata {
     }
 }
 
+/// The AI-written "Why this show?" story for a day's hero tape, keyed by
+/// day + identifier so a relaunch never re-bills the same narrative.
+@Model
+final class CachedHeroNarrative {
+    @Attribute(.unique) var key: String
+    var payload: Data
+    var fetchedAt: Date
+
+    init(key: String, payload: Data, fetchedAt: Date = .now) {
+        self.key = key
+        self.payload = payload
+        self.fetchedAt = fetchedAt
+    }
+}
+
 // MARK: - Journal
 
 // JournalEntry, ShowCollection, CollectionItem, Playlist, and PlaylistItem live
@@ -396,6 +411,7 @@ enum ModelContainerFactory {
     static let localModels: [any PersistentModel.Type] = [
         CachedShowSearch.self,
         CachedRecordingMetadata.self,
+        CachedHeroNarrative.self,
         SmartCollectionRecord.self,
         ListeningEvent.self,
         TasteProfileRecord.self,

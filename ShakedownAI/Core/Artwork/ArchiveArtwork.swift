@@ -107,12 +107,15 @@ extension Show {
 enum StubArtwork {
     private static let cache = NSCache<NSString, UIImage>()
 
-    static func image(for show: Show) -> UIImage {
-        if let hit = cache.object(forKey: show.identifier as NSString) { return hit }
+    static func image(for show: Show,
+                      layout: NowPlayingCoordinator.StubLayout = .square) -> UIImage {
+        let key = "\(show.identifier)|\(layout.rawValue)" as NSString
+        if let hit = cache.object(forKey: key) { return hit }
         let image = NowPlayingCoordinator.renderStubImage(
             dateText: show.displayDate,
-            venueText: show.venue ?? "Grateful Dead")
-        cache.setObject(image, forKey: show.identifier as NSString)
+            venueText: show.venue ?? "Grateful Dead",
+            layout: layout)
+        cache.setObject(image, forKey: key)
         return image
     }
 }

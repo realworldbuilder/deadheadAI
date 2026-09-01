@@ -186,16 +186,6 @@ struct SpaceBackground: View {
             context.fill(Path(ellipseIn: core), with: .color(color.opacity(a)))
         }
     }
-
-    /// Tiny deterministic pseudo-random generator (stable star placement).
-    private struct LCG {
-        private var state: UInt64
-        init(seed: UInt64) { state = seed }
-        mutating func next() -> CGFloat {
-            state = state &* 6364136223846793005 &+ 1442695040888963407
-            return CGFloat((state >> 33) % 10_000) / 10_000
-        }
-    }
 }
 
 /// A procedural planet, like the celestial nav buttons on the 1996 home page.
@@ -212,10 +202,17 @@ struct PlanetView: View {
         case redGiant     // hot red annulus, burning at the rim
         case starburst    // electric-blue streaks from a common origin
         case wireGlobe    // a meshed sphere, latitude and longitude
+        case moon         // tonight's moon, lit to its real phase
+        case cluster      // a knot of bright stars, Pleiades-style
     }
 
     var style: Style
     var size: CGFloat = 44
+    /// Only `.moon` reads this: 0 is new, 0.5 is full, 1 wraps to new.
+    var moonPhase: Double = 0.5
+    /// Only `.comet` reads this: turns the whole body so the tail can
+    /// stream in a chosen direction (away from the sun, say).
+    var heading: Angle = .zero
 
     var body: some View {
         ZStack {
@@ -229,6 +226,7 @@ struct PlanetView: View {
                 sphere(colors: [Theme.sage, Color(red: 0.05, green: 0.25, blue: 0.55), .black])
             case .comet:
                 cometBody
+                    .rotationEffect(heading)
             case .galaxy:
                 galaxyBody
             case .sun:
@@ -244,6 +242,10 @@ struct PlanetView: View {
                 starburstBody
             case .wireGlobe:
                 wireGlobeBody
+            case .moon:
+                moonBody
+            case .cluster:
+                clusterBody
             }
         }
         .frame(width: size, height: size)
@@ -273,12 +275,21 @@ struct PlanetView: View {
         ZStack {
             // Tail
             Path { path in
-                path.move(to: CGPoint(x: size * 0.55, y: size * 0.45))
-                path.addLine(to: CGPoint(x: size * 1.05, y: -size * 0.1))
-                path.addLine(to: CGPoint(x: size * 0.75, y: size * 0.6))
+                path.move(to: CGPoint(x: size * 0.50, y: size * 0.38))
+                path.addLine(to: CGPoint(x: size * 1.25, y: -size * 0.30))
+                path.addLine(to: CGPoint(x: size * 0.78, y: size * 0.64))
                 path.closeSubpath()
             }
-            .fill(LinearGradient(colors: [Theme.sage.opacity(0.7), .clear],
+            .fill(LinearGradient(colors: [Theme.sage.opacity(0.95), Theme.sage.opacity(0.45), .clear],
+                                 startPoint: .bottomLeading, endPoint: .topTrailing))
+            // A hot inner streak so the tail reads at a glance.
+            Path { path in
+                path.move(to: CGPoint(x: size * 0.56, y: size * 0.46))
+                path.addLine(to: CGPoint(x: size * 1.10, y: -size * 0.14))
+                path.addLine(to: CGPoint(x: size * 0.66, y: size * 0.52))
+                path.closeSubpath()
+            }
+            .fill(LinearGradient(colors: [Color.white.opacity(0.85), .clear],
                                  startPoint: .bottomLeading, endPoint: .topTrailing))
             Circle()
                 .fill(RadialGradient(colors: [.white, Theme.sage, .clear],
@@ -435,6 +446,87 @@ struct PlanetView: View {
         }
         .shadow(color: Theme.accent.opacity(0.4), radius: size * 0.1)
     }
+
+    /// The moon as it is tonight. The lit side is the shaded sphere with a
+    /// couple of maria; the night side is a near-black disc with a faint rim
+    /// so a new moon still reads as a body. The terminator is the classic
+    /// half-disc-plus-ellipse construction, driven by `moonPhase`.
+    private var moonBody: some View {
+        ZStack {
+            Circle()
+                .fill(Color(red: 0.11, green: 0.10, blue: 0.09))
+            Circle()
+                .strokeBorder(Color.white.opacity(0.14), lineWidth: max(size * 0.02, 0.8))
+
+            ZStack {
+                sphere(colors: [Color(red: 0.95, green: 0.92, blue: 0.84),
+                                Color(red: 0.66, green: 0.63, blue: 0.58),
+                                Color(red: 0.34, green: 0.32, blue: 0.30)])
+                Circle()
+                    .fill(Color.black.opacity(0.22))
+                    .frame(width: size * 0.30, height: size * 0.30)
+                    .offset(x: -size * 0.12, y: -size * 0.08)
+                    .blur(radius: size * 0.05)
+                Circle()
+                    .fill(Color.black.opacity(0.18))
+                    .frame(width: size * 0.22, height: size * 0.22)
+                    .offset(x: size * 0.15, y: size * 0.16)
+                    .blur(radius: size * 0.05)
+            }
+            .mask { moonLitMask }
+        }
+        .shadow(color: Color(red: 0.95, green: 0.92, blue: 0.84).opacity(0.35), radius: size * 0.1)
+    }
+
+    /// White where the sun reaches. Waxing moons light up on the right.
+    private var moonLitMask: some View {
+        Canvas { context, canvasSize in
+            let d = canvasSize.width
+            let r = d / 2
+            let c = cos(2 * .pi * moonPhase)
+            let waxing = moonPhase < 0.5
+            let half = CGRect(x: waxing ? r : 0, y: 0, width: r, height: d)
+            let bulge = CGRect(x: r - abs(c) * r, y: 0, width: 2 * abs(c) * r, height: d)
+
+            context.clip(to: Path(ellipseIn: CGRect(origin: .zero, size: canvasSize)))
+            if c > 0 {
+                // Crescent: the terminator bows into the lit half.
+                context.clip(to: Path(half))
+                var lit = Path(half)
+                lit.addPath(Path(ellipseIn: bulge))
+                context.fill(lit, with: .color(.white), style: FillStyle(eoFill: true))
+            } else {
+                // Gibbous: the terminator bows into the dark half.
+                context.fill(Path(half), with: .color(.white))
+                context.fill(Path(ellipseIn: bulge), with: .color(.white))
+            }
+        }
+    }
+
+    /// A knot of bright stars — one dominant, the rest strewn around it —
+    /// in a faint blue haze. The brightest tapes, bunched together.
+    private var clusterBody: some View {
+        ZStack {
+            wisp(Color(red: 0.45, green: 0.60, blue: 1.0), opacity: 0.35)
+                .frame(width: size, height: size * 0.8)
+            ForEach(Array(Self.clusterPoints.enumerated()), id: \.offset) { _, point in
+                let s = size * point.scale
+                Circle()
+                    .fill(RadialGradient(colors: [.white,
+                                                  Color(red: 0.78, green: 0.87, blue: 1.0),
+                                                  .clear],
+                                         center: .center, startRadius: 0, endRadius: s * 0.5))
+                    .frame(width: s, height: s)
+                    .shadow(color: Color(red: 0.6, green: 0.8, blue: 1.0).opacity(0.8), radius: s * 0.25)
+                    .offset(x: size * point.x, y: size * point.y)
+            }
+        }
+    }
+
+    private static let clusterPoints: [(x: CGFloat, y: CGFloat, scale: CGFloat)] = [
+        (0.02, -0.04, 0.34), (-0.26, 0.10, 0.22), (0.24, -0.22, 0.20), (0.30, 0.18, 0.17),
+        (-0.14, -0.28, 0.15), (-0.34, -0.14, 0.12), (0.08, 0.30, 0.13),
+    ]
 }
 
 /// A slow-spinning tie-dye spiral: our original nod to the psychedelic
@@ -442,6 +534,7 @@ struct PlanetView: View {
 struct SpiralMandala: View {
     var size: CGFloat = 120
     @State private var spin = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -466,10 +559,22 @@ struct SpiralMandala: View {
         // as `.animation(_:value:)`, which would also capture this view's first
         // placement and send it drifting across the screen for 24 seconds.
         .onAppear {
-            guard !spin else { return }
+            guard !spin, !reduceMotion else { return }
             withAnimation(.linear(duration: 24).repeatForever(autoreverses: false)) {
                 spin = true
             }
         }
+    }
+}
+
+/// Tiny deterministic pseudo-random generator: the same seed lays the same
+/// stars in the same places every launch. Shared by the static starfield and
+/// the Explore sky's twinkle layer.
+struct LCG {
+    private var state: UInt64
+    init(seed: UInt64) { state = seed }
+    mutating func next() -> CGFloat {
+        state = state &* 6364136223846793005 &+ 1442695040888963407
+        return CGFloat((state >> 33) % 10_000) / 10_000
     }
 }

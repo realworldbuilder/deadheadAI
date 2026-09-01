@@ -362,6 +362,38 @@ struct JourneyProgressionTests {
     }
 }
 
+// MARK: - Hero narrative cache
+
+struct HeroNarrativeCacheTests {
+    @Test func roundTripsByKeyAndMissesOtherKeys() {
+        let container = ModelContainerFactory.make(inMemory: true)
+        let cache = CacheStore(container: container)
+        let key = CacheStore.heroNarrativeKey(identifier: "gd1977-05-08.sbd", date: .now)
+        #expect(cache.cachedHeroNarrative(key: key) == nil)
+
+        let rec = Recommendation(chosenIdentifier: "gd1977-05-08.sbd",
+                                 narrative: "Barton Hall, and the Scarlet>Fire that made the tape famous.",
+                                 hook: "The one everyone starts with.",
+                                 listenFor: ["Scarlet Begonias > Fire on the Mountain", "Morning Dew"])
+        cache.storeHeroNarrative(rec, key: key)
+        #expect(cache.cachedHeroNarrative(key: key) == rec)
+
+        let otherDay = CacheStore.heroNarrativeKey(identifier: "gd1977-05-08.sbd",
+                                                   date: .now.addingTimeInterval(-86_400 * 3))
+        #expect(otherDay != key)
+        #expect(cache.cachedHeroNarrative(key: otherDay) == nil)
+
+        // Upsert replaces rather than duplicates.
+        var revised = rec
+        revised.hook = "Still the one."
+        cache.storeHeroNarrative(revised, key: key)
+        #expect(cache.cachedHeroNarrative(key: key)?.hook == "Still the one.")
+
+        cache.clearAll()
+        #expect(cache.cachedHeroNarrative(key: key) == nil)
+    }
+}
+
 // MARK: - Helpers
 
 extension Bundle {
