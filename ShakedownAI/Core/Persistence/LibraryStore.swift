@@ -297,7 +297,7 @@ final class LibraryStore {
 
     /// Markdown export of the whole journal.
     func journalMarkdown() -> String {
-        var lines = ["# Shakedown Journal", ""]
+        var lines = ["# TapeTree Journal", ""]
         for entry in journalEntries.sorted(by: { $0.createdAt < $1.createdAt }) {
             lines.append("## \(entry.showDisplayName)")
             if let mood = entry.mood, !mood.isEmpty {

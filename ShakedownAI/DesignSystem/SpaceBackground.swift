@@ -1,18 +1,18 @@
 import SwiftUI
 
-/// Deep space behind every screen: a midnight-indigo sky with warm nebula
-/// haze, an ember sunrise glowing low like the sun behind the emblem's mask,
-/// and a starfield laid out in three planes of depth so the view reads as
-/// distance rather than as a flat dot pattern. Deterministic — the same stars
+/// The dark of the den behind every screen: espresso shadow with warm haze,
+/// an ember glow low on the screen like lamplight off a spinning reel, and
+/// dust motes laid out in three planes of depth so the view reads as
+/// distance rather than as a flat dot pattern. Deterministic — the same motes
 /// sit in the same places every launch, and nothing animates, so this stays
 /// cheap on the ~30 screens that use it.
 struct SpaceBackground: View {
     var body: some View {
         ZStack {
-            // Void, lifted very slightly toward warm indigo at the center so
+            // Void, lifted very slightly toward warm espresso at the center so
             // the screen has a middle rather than a wall.
             RadialGradient(
-                colors: [Color(red: 0.055, green: 0.045, blue: 0.10), .black],
+                colors: [Color(red: 0.072, green: 0.054, blue: 0.036), .black],
                 center: UnitPoint(x: 0.5, y: 0.38),
                 startRadius: 0, endRadius: 620
             )
@@ -49,18 +49,18 @@ struct SpaceBackground: View {
 
     // MARK: - Nebulae
 
-    /// Three soft clouds of gas. Heavily blurred, low opacity — they should
-    /// register as depth, never as shapes you could point at. Lapis overhead,
-    /// old gold at the horizon line, rust below — the emblem's own strata.
+    /// Three soft clouds of haze. Heavily blurred, low opacity — they should
+    /// register as depth, never as shapes you could point at. Forest overhead,
+    /// amber at the horizon line, rust below — the palette's own strata.
     private var nebulae: some View {
         GeometryReader { proxy in
             let w = proxy.size.width
             let h = proxy.size.height
             ZStack {
-                cloud(Color(red: 0.22, green: 0.26, blue: 0.68), opacity: 0.30)
+                cloud(Color(red: 0.15, green: 0.34, blue: 0.19), opacity: 0.30)
                     .frame(width: w * 1.15, height: w * 1.15)
                     .position(x: w * 0.20, y: h * 0.18)
-                cloud(Color(red: 0.55, green: 0.38, blue: 0.10), opacity: 0.20)
+                cloud(Color(red: 0.50, green: 0.33, blue: 0.11), opacity: 0.20)
                     .frame(width: w * 1.0, height: w * 1.0)
                     .position(x: w * 0.92, y: h * 0.44)
                 cloud(Color(red: 0.55, green: 0.20, blue: 0.06), opacity: 0.18)
@@ -81,16 +81,16 @@ struct SpaceBackground: View {
             )
     }
 
-    /// The dusty lane of a galaxy cutting across the sky on a diagonal,
-    /// tinted like gold dust.
+    /// A dusty lane of light cutting across the dark on a diagonal,
+    /// tinted like cream label stock.
     private var galacticBand: some View {
         GeometryReader { proxy in
             Ellipse()
                 .fill(
                     LinearGradient(
                         colors: [.clear,
-                                 Color(red: 0.88, green: 0.76, blue: 0.52).opacity(0.11),
-                                 Color(red: 0.98, green: 0.92, blue: 0.76).opacity(0.05),
+                                 Color(red: 0.88, green: 0.78, blue: 0.58).opacity(0.11),
+                                 Color(red: 0.96, green: 0.92, blue: 0.80).opacity(0.05),
                                  .clear],
                         startPoint: .leading, endPoint: .trailing
                     )
@@ -104,9 +104,9 @@ struct SpaceBackground: View {
         .allowsHitTesting(false)
     }
 
-    /// The emblem's sunrise: an ember glow low on the screen with faint
-    /// concentric gold rings radiating from it, like the lines cut around
-    /// the sun on the mask's brow. Static, so it costs one draw.
+    /// The reel glow: an ember low on the screen with faint concentric
+    /// rings radiating from it, like lamplight tracing the wraps of tape
+    /// on a spinning reel. Static, so it costs one draw.
     private var sunrise: some View {
         GeometryReader { proxy in
             let w = proxy.size.width
@@ -135,7 +135,7 @@ struct SpaceBackground: View {
                                           width: r * 2, height: r * 2)
                         context.stroke(
                             Path(ellipseIn: rect),
-                            with: .color(Color(red: 0.88, green: 0.70, blue: 0.42).opacity(alpha)),
+                            with: .color(Color(red: 0.86, green: 0.74, blue: 0.52).opacity(alpha)),
                             lineWidth: 1
                         )
                     }
@@ -162,7 +162,7 @@ struct SpaceBackground: View {
             let color: Color
             if tint > 0.965 { color = Theme.rose }
             else if tint > 0.925 { color = Theme.sage }
-            else if tint > 0.895 { color = Color(red: 1.0, green: 0.85, blue: 0.55) }
+            else if tint > 0.895 { color = Color(red: 1.0, green: 0.92, blue: 0.72) }
             else if tint > 0.865 { color = Theme.denim }
             else { color = .white }
 

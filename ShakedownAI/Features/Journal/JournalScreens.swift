@@ -45,7 +45,7 @@ struct JournalListScreen: View {
         .toolbar {
             if !env.library.journalEntries.isEmpty {
                 ShareLink(item: env.library.journalMarkdown(),
-                          preview: SharePreview("Shakedown Journal")) {
+                          preview: SharePreview("TapeTree Journal")) {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .accessibilityLabel("Export journal")

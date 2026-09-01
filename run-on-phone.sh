@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Build Deadheads.AI and install it on a connected iPhone.
+# Build TapeTree and install it on a connected iPhone.
 # Usage: ./run-on-phone.sh
 # Requires: iPhone plugged in (or on same network with wireless debugging),
 # unlocked, and trusted with this Mac. Developer Mode must be enabled on the
@@ -42,5 +42,5 @@ xcrun devicectl device install app --device "$DEVICE_ID" "$APP"
 echo "→ Launching…"
 xcrun devicectl device process launch --device "$DEVICE_ID" com.deadhead.ai || true
 
-echo "✓ Deadheads.AI is on your phone."
+echo "✓ TapeTree is on your phone."
 echo "  Free Apple ID note: the install expires after 7 days — rerun this script to refresh."

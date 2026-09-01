@@ -1,84 +1,83 @@
 import SwiftUI
 
-/// Deadhead AI design language: a temple ceiling painted with the night sky.
-/// Deep indigo space behind everything, aged-gold accents like gilding on
-/// stone, terracotta and lapis where the old palette ran red and blue, and
-/// parchment-toned type. Egyptian funerary art by way of the space age —
-/// the light is warm now, coming off gold leaf instead of an aurora.
+/// TapeTree design language: a tape trader's den after dark — walnut
+/// shelving and lamplight, cream Maxell labels, ferric-oxide rust and
+/// forest green where the old palette ran gold and lapis. The light is
+/// still warm, but now it comes off a VU meter instead of gold leaf.
 enum Theme {
 
     // MARK: - Colors
 
-    /// Deep space. The starfield and nebulae draw on top of this.
+    /// The dark of the den. Backdrop haze and dust draw on top of this.
     static let background = Color.black
-    /// Barely-lifted midnight indigo panel, like painted tomb plaster.
-    static let surface = Color(red: 0.045, green: 0.045, blue: 0.088)
-    /// Raised card surface, catching a little lamplight.
-    static let surfaceRaised = Color(red: 0.080, green: 0.075, blue: 0.135)
-    /// Thin gold-leaf wireframe strokes.
-    static let stroke = Color(red: 0.83, green: 0.69, blue: 0.45).opacity(0.26)
+    /// Barely-lifted espresso panel, like a shelf in shadow.
+    static let surface = Color(red: 0.078, green: 0.058, blue: 0.040)
+    /// Raised walnut card surface, catching a little lamplight.
+    static let surfaceRaised = Color(red: 0.125, green: 0.094, blue: 0.066)
+    /// Thin cream tape-label strokes.
+    static let stroke = Color(red: 0.85, green: 0.76, blue: 0.60).opacity(0.26)
 
-    /// Aged temple gold. Primary accent — gilding, not glitter.
-    static let accent = Color(red: 0.85, green: 0.69, blue: 0.42)
-    /// Deep bronze for gradients and pressed states.
-    static let accentDeep = Color(red: 0.45, green: 0.31, blue: 0.13)
-    /// Terracotta rust, like the waves in the emblem. Links, alerts.
-    static let rose = Color(red: 0.80, green: 0.33, blue: 0.15)
-    /// Faience turquoise for SBD tags and cool highlights.
-    static let sage = Color(red: 0.42, green: 0.80, blue: 0.72)
-    /// Lapis lazuli for segues/links to songs.
-    static let denim = Color(red: 0.48, green: 0.56, blue: 0.92)
+    /// Ferric-oxide rust-amber. Primary accent — tape coating, not glitter.
+    static let accent = Color(red: 0.86, green: 0.50, blue: 0.24)
+    /// Deep oxide for gradients and pressed states.
+    static let accentDeep = Color(red: 0.44, green: 0.21, blue: 0.09)
+    /// Red rust, a shade redder than the accent. Links, alerts.
+    static let rose = Color(red: 0.76, green: 0.25, blue: 0.14)
+    /// Forest-leaf green for SBD tags and cool highlights.
+    static let sage = Color(red: 0.44, green: 0.72, blue: 0.42)
+    /// Faded workshirt denim for segues/links to songs.
+    static let denim = Color(red: 0.52, green: 0.62, blue: 0.78)
 
-    /// Warm parchment white, like papyrus catching lamplight.
-    static let textPrimary = Color(red: 0.96, green: 0.92, blue: 0.83)
-    /// Sandstone body copy — warm grey, not phosphor.
-    static let textSecondary = Color(red: 0.74, green: 0.68, blue: 0.56)
-    /// Dusty-limestone captions and metadata.
-    static let textTertiary = Color(red: 0.52, green: 0.47, blue: 0.38)
+    /// Cream label white, like a J-card catching lamplight.
+    static let textPrimary = Color(red: 0.96, green: 0.92, blue: 0.80)
+    /// Warm oat body copy — warm grey, not phosphor.
+    static let textSecondary = Color(red: 0.76, green: 0.69, blue: 0.55)
+    /// Dusty-kraft captions and metadata.
+    static let textTertiary = Color(red: 0.54, green: 0.47, blue: 0.36)
 
     static let accentGradient = LinearGradient(
         colors: [accent, accentDeep],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 
-    /// Translucent hull for hero surfaces, so the starfield reads through.
+    /// Translucent hull for hero surfaces, so the backdrop reads through.
     static let heroGradient = LinearGradient(
         colors: [
-            Color(red: 0.12, green: 0.09, blue: 0.17).opacity(0.82),
-            Color(red: 0.045, green: 0.035, blue: 0.075).opacity(0.90),
-            Color(red: 0.025, green: 0.018, blue: 0.045).opacity(0.86),
+            Color(red: 0.14, green: 0.10, blue: 0.065).opacity(0.82),
+            Color(red: 0.082, green: 0.058, blue: 0.038).opacity(0.90),
+            Color(red: 0.045, green: 0.030, blue: 0.020).opacity(0.86),
         ],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 
-    /// Ember wash for large surfaces that want depth behind them — the sun
-    /// rising behind the mask in the emblem.
+    /// Oxide wash for large surfaces that want depth behind them — lamplight
+    /// pooling on a reel of tape.
     static let nebulaGradient = RadialGradient(
         colors: [
-            Color(red: 0.55, green: 0.28, blue: 0.08).opacity(0.42),
-            Color(red: 0.16, green: 0.09, blue: 0.20).opacity(0.32),
+            Color(red: 0.50, green: 0.24, blue: 0.08).opacity(0.42),
+            Color(red: 0.20, green: 0.11, blue: 0.06).opacity(0.32),
             .clear,
         ],
         center: .center, startRadius: 0, endRadius: 260
     )
 
-    /// Gold-leaf lettering, burnished top to bottom.
+    /// Burnished cream-brass lettering, top to bottom.
     static let chromeGradient = LinearGradient(
         colors: [
-            Color(red: 0.99, green: 0.93, blue: 0.76),
-            Color(red: 0.76, green: 0.58, blue: 0.32),
-            Color(red: 0.95, green: 0.85, blue: 0.62),
-            Color(red: 0.55, green: 0.40, blue: 0.19),
+            Color(red: 0.99, green: 0.95, blue: 0.84),
+            Color(red: 0.80, green: 0.70, blue: 0.53),
+            Color(red: 0.95, green: 0.89, blue: 0.74),
+            Color(red: 0.56, green: 0.45, blue: 0.30),
         ],
         startPoint: .top, endPoint: .bottom
     )
 
-    /// Painted-tomb spectrum — gold, ember, rust, faience, lapis — used
+    /// Analog spectrum — rust, amber, cream, leaf, denim, walnut — used
     /// sparingly for special borders.
     static let cosmicGradient = AngularGradient(
-        colors: [rose, Color(red: 0.93, green: 0.55, blue: 0.20), accent,
-                 Color(red: 0.99, green: 0.90, blue: 0.65), sage, denim,
-                 Color(red: 0.35, green: 0.22, blue: 0.55), rose],
+        colors: [rose, Color(red: 0.90, green: 0.52, blue: 0.18), accent,
+                 Color(red: 0.98, green: 0.92, blue: 0.72), sage, denim,
+                 Color(red: 0.30, green: 0.18, blue: 0.10), rose],
         center: .center
     )
 
@@ -160,10 +159,10 @@ extension View {
             .textCase(.uppercase)
     }
 
-    /// Gold-leaf wordmark treatment.
+    /// Cream-brass wordmark treatment.
     func chromeText() -> some View {
         foregroundStyle(Theme.chromeGradient)
             .tracking(Theme.titleTracking)
-            .shadow(color: Color(red: 1.0, green: 0.85, blue: 0.55).opacity(0.35), radius: 1, y: 0.5)
+            .shadow(color: Color(red: 1.0, green: 0.94, blue: 0.78).opacity(0.30), radius: 1, y: 0.5)
     }
 }

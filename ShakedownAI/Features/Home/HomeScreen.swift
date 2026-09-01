@@ -165,14 +165,14 @@ struct HomeScreen: View {
                 .font(Theme.mono(11, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
             HStack(spacing: 10) {
-                Text("DEADHEAD AI")
+                Text("TAPETREE")
                     .font(Theme.display(32))
                     .kerning(1.5)
                     .chromeText()
                 Spacer()
                 SpiralMandala(size: 40)
             }
-            Text("the deadhead's ai companion")
+            Text("first generation, straight from the source")
                 .font(Theme.mono(11))
                 .foregroundStyle(Theme.textTertiary)
         }

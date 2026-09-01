@@ -39,7 +39,7 @@ targets:
     info:
       path: ShakedownAI/App/Info.plist
       properties:
-        CFBundleDisplayName: Deadhead AI
+        CFBundleDisplayName: TapeTree
         UILaunchScreen: {}
         # remote-notification lets CloudKit push wake sync.
         UIBackgroundModes: [audio, remote-notification]
@@ -51,7 +51,8 @@ targets:
         OpenAIAPIKey: $(OPENAI_API_KEY)
     settings:
       base:
-        # Must match the App Store Connect app record ("Deadhead AI").
+        # Must match the App Store Connect app record (being renamed to
+        # "TapeTree"; the bundle ID itself is frozen and must never change).
         PRODUCT_BUNDLE_IDENTIFIER: com.deadhead.ai
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"
