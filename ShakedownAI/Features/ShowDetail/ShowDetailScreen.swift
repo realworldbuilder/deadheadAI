@@ -261,13 +261,18 @@ struct ShowDetailScreen: View {
 
     private func header(_ model: ShowDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(model.show.displayDate)
-                .font(Theme.mono(15, weight: .bold))
-                .foregroundStyle(Theme.accent)
-            Text(model.show.venue ?? model.show.title)
-                .font(Theme.display(28))
-                .foregroundStyle(Theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .top, spacing: 14) {
+                ShowArtworkView(show: model.show, size: 92)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(model.show.displayDate)
+                        .font(Theme.mono(15, weight: .bold))
+                        .foregroundStyle(Theme.accent)
+                    Text(model.show.venue ?? model.show.title)
+                        .font(Theme.display(28))
+                        .foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             if let location = model.show.location {
                 Text(location)
                     .font(Theme.body)
