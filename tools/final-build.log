@@ -1,0 +1,31 @@
+cd pipeline && python3 stage4_build.py
+{
+  "schema_version": "1",
+  "generated_at": "2026-09-01T15:26:38Z",
+  "git_commit": "2f6b31f",
+  "show_count": "2073",
+  "recording_count": "18335",
+  "setlist_full": "1592",
+  "setlist_partial": "0",
+  "digest_count": "1998",
+  "size_mb": "12.1",
+  "build_seconds": "5"
+}
+build gates passed
+mkdir -p ../../ShakedownAI/Resources/catalog/
+cp pipeline/../out/catalog.sqlite ../../ShakedownAI/Resources/catalog/catalog.sqlite
+cd pipeline && python3 stage6_backfill.py
+stage6: filled 0/67 preferredIdentifiers
+cd pipeline && python3 stage4_build.py --fixture 1977-05-08,1972-05-04,1969-02-27,1970-02-13,1989-07-07,1995-07-09,1966-01-08,1978-04-24,1985-06-24,1990-03-29,1974-06-28,1982-04-06 --out /Users/williamhussey/shakedown.ai/ShakedownAITests/Fixtures/catalog-fixture.sqlite
+{
+  "schema_version": "1",
+  "generated_at": "2026-09-01T15:26:38Z",
+  "git_commit": "2f6b31f",
+  "show_count": "12",
+  "recording_count": "150",
+  "setlist_full": "9",
+  "setlist_partial": "0",
+  "digest_count": "12",
+  "size_mb": "0.2",
+  "build_seconds": "0"
+}
