@@ -9,6 +9,7 @@ struct SettingsScreen: View {
     @State private var confirmingClearCache = false
     @State private var confirmingSignOut = false
     @State private var confirmingDeleteDownloads = false
+    @State private var catalogStamp: String?
 
     var body: some View {
         NavigationStack {
@@ -170,7 +171,7 @@ struct SettingsScreen: View {
     }
 
     private var aiStatusTitle: String {
-        if aiActive { return "Deadhead AI connected" }
+        if aiActive { return "TapeTree AI connected" }
         if KeychainStore.keyAwaitingUnlock { return "Full AI brain locked" }
         return "Offline brain active"
     }
@@ -304,7 +305,7 @@ struct SettingsScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("About").sectionHeaderStyle()
             VStack(alignment: .leading, spacing: 8) {
-                Text("DEADHEAD AI")
+                Text("TAPETREE")
                     .font(Theme.display(22))
                     .kerning(1)
                     .chromeText()
@@ -314,10 +315,22 @@ struct SettingsScreen: View {
                 Text("Recordings come directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app re-hosts no music — it streams (and saves for offline) straight from the archive, adding the intelligence layer.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
+                if let stamp = catalogStamp {
+                    Text(stamp)
+                        .font(Theme.mono(10))
+                        .foregroundStyle(Theme.textTertiary)
+                }
             }
             .padding(Theme.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .cardStyle()
+        }
+        .task {
+            guard env.catalog.isAvailable else { return }
+            let meta = await env.catalog.meta()
+            if let shows = meta["show_count"], let generated = meta["generated_at"] {
+                catalogStamp = "Show catalog: \(shows) shows · data as of \(String(generated.prefix(10)))"
+            }
         }
     }
 }

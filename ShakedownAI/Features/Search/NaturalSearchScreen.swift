@@ -9,6 +9,9 @@ final class NaturalSearchModel {
     var isSearching = false
     var searched = false
     var errorMessage: String?
+    /// Instant offline FTS hits from the bundled catalog ("5-8-77",
+    /// "barton hall", "scarlet fire 77") — rendered as-you-type.
+    var directHits: [Show] = []
 
     private let env: AppEnvironment
 
@@ -29,6 +32,22 @@ final class NaturalSearchModel {
         "Rainy Sunday morning",
     ]
 
+    /// Debounced as-you-type lookup against the local catalog.
+    func updateDirectHits() async {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        guard env.catalog.isAvailable, text.count >= 2 else {
+            directHits = []
+            return
+        }
+        directHits = await env.catalog.searchText(text, limit: 8).compactMap(\.asShow)
+    }
+
+    /// A query naming a date, year, venue, or song is answered exactly by
+    /// the catalog — no AI parse, no network. Mood queries fall through.
+    private func looksStructural(_ text: String) -> Bool {
+        text.rangeOfCharacter(from: .decimalDigits) != nil
+    }
+
     func search() async {
         let text = query.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty else { return }
@@ -41,6 +60,17 @@ final class NaturalSearchModel {
         // Knowledge-base picks always come back instantly, even offline.
         let tags = LocalKnowledgeAI.tags(inQuery: text)
         kbSuggestions = env.knowledgeBase.shows(matchingTags: tags, limit: 6)
+
+        if env.catalog.isAvailable, looksStructural(text) {
+            let hits = await env.catalog.searchText(text, limit: 40).compactMap(\.asShow)
+            if !hits.isEmpty {
+                results = hits
+                directHits = []
+                isSearching = false
+                return
+            }
+        }
+        await updateDirectHits()
 
         do {
             let filters = try await env.aiProvider.parseSearchIntent(text)
@@ -96,6 +126,9 @@ struct NaturalSearchScreen: View {
                         } else if model.searched {
                             resultsSection(model)
                         } else {
+                            if !model.directHits.isEmpty {
+                                directHitsSection(model)
+                            }
                             promptIdeas(model)
                         }
                     }
@@ -108,6 +141,23 @@ struct NaturalSearchScreen: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             if model == nil { model = NaturalSearchModel(env: env) }
+        }
+        .task(id: model?.query ?? "") {
+            // Debounce the as-you-type catalog lookup.
+            guard let model, !model.searched else { return }
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            await model.updateDirectHits()
+        }
+    }
+
+    private func directHitsSection(_ model: NaturalSearchModel) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Direct Hits").sectionHeaderStyle()
+            ForEach(model.directHits) { show in
+                NavigationLink(value: show) { ShowRow(show: show) }
+                    .buttonStyle(.plain)
+            }
         }
     }
 
@@ -163,6 +213,11 @@ struct NaturalSearchScreen: View {
         }
         if let error = model.errorMessage {
             ErrorCard(message: error, retry: nil)
+        }
+        let resultIDs = Set(model.results.map(\.identifier))
+        let extraHits = model.directHits.filter { !resultIDs.contains($0.identifier) }
+        if !extraHits.isEmpty {
+            directHitsSection(model)
         }
         ForEach(model.results) { show in
             NavigationLink(value: show) { ShowRow(show: show) }

@@ -9,19 +9,55 @@ final class ShowDetailModel {
     var isLoadingGuide = false
     var errorMessage: String?
     var isLoading = false
+    /// The real setlist from the bundled catalog (nil when unknown).
+    var setlist: Setlist?
+    /// Build-time consensus of this night's archive reviews.
+    var digest: ShowDigest?
+    /// Catalog facts about tapes of this night, keyed by identifier —
+    /// source type, taper, review counts for the source picker rows.
+    var catalogRecordings: [String: CatalogRecording] = [:]
+    /// Taper-spelling → canonical song key, for setlist↔track alignment.
+    var songAliases: [String: String] = [:]
 
     private let metadata: any MetadataProvider
     private let recordings: any LiveRecordingProvider
     private let ai: any AIProvider
     private let downloads: DownloadManager?
+    private let catalog: (any ShowCatalog)?
 
     init(show: Show, metadata: any MetadataProvider, recordings: any LiveRecordingProvider,
-         ai: any AIProvider, downloads: DownloadManager? = nil) {
+         ai: any AIProvider, downloads: DownloadManager? = nil, catalog: (any ShowCatalog)? = nil) {
         self.show = show
         self.metadata = metadata
         self.recordings = recordings
         self.ai = ai
         self.downloads = downloads
+        self.catalog = catalog
+    }
+
+    /// Catalog source type for the tape currently in front of the user.
+    var sourceType: SourceType? {
+        catalogRecordings[show.identifier]?.sourceType
+    }
+
+    func loadCatalogContext() async {
+        guard let catalog, catalog.isAvailable, let day = show.dateString else { return }
+        if setlist == nil {
+            setlist = await catalog.setlist(forDate: day)
+        }
+        if songAliases.isEmpty {
+            songAliases = await catalog.songAliases()
+        }
+        if catalogRecordings.isEmpty {
+            for night in await catalog.shows(onDate: day) {
+                if digest == nil {
+                    digest = await catalog.digest(forShow: night.showID)
+                }
+                for recording in await catalog.recordings(forShow: night.showID) {
+                    catalogRecordings[recording.identifier] = recording
+                }
+            }
+        }
     }
 
     func loadGuide() async {
@@ -35,6 +71,7 @@ final class ShowDetailModel {
         guard detail == nil else { return }
         isLoading = true
         errorMessage = nil
+        await loadCatalogContext()
         do {
             detail = try await metadata.detail(for: show.identifier)
             if let day = show.dateString {
@@ -96,7 +133,8 @@ struct ShowDetailScreen: View {
                                         metadata: env.metadataProvider,
                                         recordings: env.recordingProvider,
                                         ai: env.aiProvider,
-                                        downloads: env.downloads)
+                                        downloads: env.downloads,
+                                        catalog: env.catalog)
             }
             await model?.load()
         }
@@ -159,12 +197,18 @@ struct ShowDetailScreen: View {
                     downloadButton(model, detail: detail)
                     famousRunSection(model, detail: detail)
                     guideSection(model)
+                    if let setlist = model.setlist {
+                        setlistSection(setlist, detail: detail, model: model)
+                    }
                     trackList(detail, model: model)
                     if !model.otherRecordings.isEmpty {
                         sourcesSection(model)
                     }
                     if let notes = detail.notes ?? detail.lineage {
                         notesSection(notes: detail.notes, lineage: detail.lineage, fallback: notes)
+                    }
+                    if let digest = model.digest {
+                        digestCard(digest)
                     }
                     if !detail.reviews.isEmpty {
                         reviewsSection(detail)
@@ -230,7 +274,14 @@ struct ShowDetailScreen: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             HStack(spacing: 8) {
-                if model.show.isSoundboard { TagPill(text: "SOUNDBOARD", tint: Theme.sage) }
+                // Prefer the pipeline's source detection over the old
+                // identifier substring sniff, which stays as the fallback.
+                if let sourceType = model.sourceType, sourceType != .unknown {
+                    TagPill(text: sourceType.displayName.uppercased(),
+                            tint: sourceType == .audience ? Theme.denim : Theme.sage)
+                } else if model.show.isSoundboard {
+                    TagPill(text: "SOUNDBOARD", tint: Theme.sage)
+                }
                 if model.show.isMillerTransfer { TagPill(text: "MILLER", tint: Theme.denim) }
                 if let rating = model.show.avgRating, rating > 0 {
                     RatingDots(rating: rating)
@@ -404,9 +455,106 @@ struct ShowDetailScreen: View {
         }
     }
 
+    /// The real setlist (sets, encores, segues) from the catalog, aligned
+    /// against this tape so every song the taper caught is one tap away.
+    private func setlistSection(_ setlist: Setlist, detail: RecordingDetail,
+                                model: ShowDetailModel) -> some View {
+        let matched = SetlistMatcher.align(setlist.sets.flatMap(\.entries), with: detail.tracks,
+                                           aliases: model.songAliases)
+        let indexByPosition = Dictionary(uniqueKeysWithValues: matched.map { ($0.entry.position, $0.trackIndex) })
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Setlist").sectionHeaderStyle()
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(setlist.sets) { set in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(set.label.uppercased())
+                            .font(Theme.mono(11, weight: .bold))
+                            .foregroundStyle(Theme.accent)
+                        ForEach(set.entries, id: \.position) { entry in
+                            let trackIndex = indexByPosition[entry.position] ?? nil
+                            Button {
+                                if let trackIndex {
+                                    engine.play(show: model.show, tracks: detail.tracks, startAt: trackIndex)
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Text(entry.songTitle)
+                                        .font(Theme.body)
+                                        .foregroundStyle(trackIndex == nil ? Theme.textTertiary : Theme.textPrimary)
+                                        .lineLimit(1)
+                                    if entry.seguesIntoNext {
+                                        Text(">")
+                                            .font(Theme.mono(12, weight: .bold))
+                                            .foregroundStyle(Theme.accent)
+                                    }
+                                    Spacer()
+                                    if trackIndex != nil {
+                                        Image(systemName: "play.circle")
+                                            .font(.system(size: 13))
+                                            .foregroundStyle(Theme.textTertiary)
+                                    }
+                                }
+                                .padding(.vertical, 5)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(trackIndex == nil)
+                        }
+                    }
+                }
+                if setlist.status == .partial {
+                    Text("Partial setlist — reconstructed from taper notes.")
+                        .font(Theme.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                if matched.contains(where: { $0.trackIndex == nil }) {
+                    Text("Dimmed songs aren't on this tape.")
+                        .font(Theme.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
+            .padding(Theme.cardPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .cardStyle()
+        }
+    }
+
+    /// What the community agrees on — computed at build time from every
+    /// archive.org review of this night, readable with zero network.
+    private func digestCard(_ digest: ShowDigest) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Fan Consensus").sectionHeaderStyle()
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    RatingDots(rating: digest.derivedRating)
+                    Text(digest.sentiment.uppercased())
+                        .font(Theme.mono(10, weight: .bold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                Text(digest.consensusSummary)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !digest.standoutSongs.isEmpty {
+                    Text("Standouts: " + digest.standoutSongs.joined(separator: " · "))
+                        .font(Theme.mono(11))
+                        .foregroundStyle(Theme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Text(digest.ratingRationale)
+                    .font(Theme.mono(10))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(Theme.cardPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .cardStyle(raised: true)
+        }
+    }
+
     private func trackList(_ detail: RecordingDetail, model: ShowDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Setlist").sectionHeaderStyle()
+            Text(model.setlist == nil ? "Setlist" : "On This Tape").sectionHeaderStyle()
             VStack(spacing: 0) {
                 ForEach(Array(detail.tracks.enumerated()), id: \.element.id) { index, track in
                     Button {
@@ -496,25 +644,7 @@ struct ShowDetailScreen: View {
                 Button {
                     Task { await model.switchSource(to: other) }
                 } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: other.isSoundboard ? "waveform" : "person.wave.2")
-                            .foregroundStyle(other.isSoundboard ? Theme.sage : Theme.denim)
-                            .frame(width: 22)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(other.identifier)
-                                .font(Theme.mono(11))
-                                .foregroundStyle(Theme.textPrimary)
-                                .lineLimit(1)
-                            if let rating = other.avgRating, rating > 0 {
-                                RatingDots(rating: rating)
-                            }
-                        }
-                        Spacer()
-                        Image(systemName: "arrow.right.circle")
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                    .padding(10)
-                    .cardStyle()
+                    sourceRow(other, model: model)
                 }
                 .buttonStyle(.plain)
             }
@@ -526,6 +656,51 @@ struct ShowDetailScreen: View {
                 .foregroundStyle(Theme.accent)
             }
         }
+    }
+
+    /// "SBD · ★4.8 (156 reviews) · Betty Cantor" when the catalog knows this
+    /// tape; identifier + rating dots otherwise.
+    private func sourceRow(_ other: Show, model: ShowDetailModel) -> some View {
+        let info = model.catalogRecordings[other.identifier]
+        let sourceType = info?.sourceType ?? (other.isSoundboard ? .soundboard : .unknown)
+        let isDownloaded: Bool = {
+            if case .downloaded = env.downloads.displayState(for: other.identifier) { return true }
+            return false
+        }()
+        return HStack(spacing: 10) {
+            Image(systemName: sourceType.systemImage)
+                .foregroundStyle(sourceType == .audience || sourceType == .unknown ? Theme.denim : Theme.sage)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(sourceType.badge)
+                        .font(Theme.mono(10, weight: .bold))
+                        .foregroundStyle(sourceType == .audience || sourceType == .unknown ? Theme.denim : Theme.sage)
+                    if let rating = other.avgRating, rating > 0 {
+                        RatingDots(rating: rating, showValue: true)
+                    }
+                    if let reviews = other.numReviews, reviews > 0 {
+                        Text("(\(reviews))")
+                            .font(Theme.mono(10))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    if isDownloaded {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.sage)
+                    }
+                }
+                Text(info?.taper.map { "Taper: \($0)" } ?? other.identifier)
+                    .font(Theme.mono(11))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "arrow.right.circle")
+                .foregroundStyle(Theme.textTertiary)
+        }
+        .padding(10)
+        .cardStyle()
     }
 
     private func notesSection(notes: String?, lineage: String?, fallback: String) -> some View {

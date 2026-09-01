@@ -1,0 +1,9 @@
+# Raw crawl caches are rebuildable from the network, so they stay out —
+# with two exceptions that are committed forever: cache/setlists/ (the CMU
+# origin is unmaintained) and cache/digests/ (regenerating them costs
+# OpenAI spend; they are the digest source of truth).
+cache/search/
+cache/metadata/
+out/
+__pycache__/
+.pytest_cache/

@@ -40,7 +40,7 @@ final class ChatModel {
                 .sorted { $0.createdAt < $1.createdAt }
                 .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text) }
         } else {
-            let fresh = ChatThread(title: "Deadhead AI")
+            let fresh = ChatThread(title: "TapeTree")
             context.insert(fresh)
             try? context.save()
             thread = fresh
@@ -74,7 +74,7 @@ final class ChatModel {
 
         do {
             let turns = messages.dropLast().suffix(16).map { ChatTurn(role: $0.role, text: $0.text) }
-            let stream = try await env.aiProvider.chatReply(messages: Array(turns), grounding: buildGrounding(for: text))
+            let stream = try await env.aiProvider.chatReply(messages: Array(turns), grounding: await buildGrounding(for: text))
             for try await delta in stream {
                 if let index = messages.firstIndex(where: { $0.id == replyID }) {
                     messages[index].text += delta
@@ -121,7 +121,28 @@ final class ChatModel {
 
     /// Grounding context: now playing, recent listens, and KB snippets matched
     /// to the question so even the remote model stays anchored in real data.
-    private func buildGrounding(for question: String) -> GroundingContext {
+    /// "5/8/77", "1977-05-08", "may 8 1977" → "1977-05-08" for catalog lookups.
+    static func mentionedDates(in text: String) -> [String] {
+        var dates: [String] = []
+        let iso = /\b(19[6-9]\d)-(\d{1,2})-(\d{1,2})\b/
+        for match in text.matches(of: iso) {
+            if let m = Int(match.2), let d = Int(match.3), (1...12).contains(m), (1...31).contains(d) {
+                dates.append(String(format: "%@-%02d-%02d", String(match.1), m, d))
+            }
+        }
+        let slashes = /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/
+        for match in text.matches(of: slashes) {
+            guard let m = Int(match.1), let d = Int(match.2), var y = Int(match.3),
+                  (1...12).contains(m), (1...31).contains(d) else { continue }
+            if y < 100 { y += 1900 }
+            if (1965...1995).contains(y) {
+                dates.append(String(format: "%04d-%02d-%02d", y, m, d))
+            }
+        }
+        return Array(Set(dates)).sorted()
+    }
+
+    private func buildGrounding(for question: String) async -> GroundingContext {
         var snippets: [String] = []
         let kb = env.knowledgeBase
         if let song = kb.song(matching: question) ?? LocalKnowledgeAI.songMention(in: question, kb: kb) {
@@ -130,6 +151,29 @@ final class ChatModel {
                 line += " Famous version \(famous.date): \(famous.note)"
             }
             snippets.append(line)
+        }
+
+        // The catalog knows every night, not just the curated 67: real
+        // setlists, best tapes, and the community's consensus.
+        if env.catalog.isAvailable {
+            for date in Self.mentionedDates(in: question).prefix(2) {
+                guard let night = await env.catalog.show(onDate: date) else { continue }
+                var line = "\(date) \(night.venue ?? "?"), \(night.location ?? "?"):"
+                line += " \(night.recordingCount) tapes on the archive, best is \(night.bestSourceType.displayName)."
+                if let rating = night.avgRating {
+                    line += " Community rating \(String(format: "%.1f", rating)) across \(night.totalReviews) reviews."
+                }
+                if let setlist = await env.catalog.setlist(forDate: date) {
+                    let songs = setlist.sets.map { set in
+                        "\(set.label): " + set.entries.map(\.songTitle).joined(separator: ", ")
+                    }.joined(separator: " | ")
+                    line += " Setlist — \(songs)."
+                }
+                if let digest = await env.catalog.digest(forShow: night.showID) {
+                    line += " Fan consensus: \(digest.consensusSummary)"
+                }
+                snippets.append(line)
+            }
         }
         if let years = LocalKnowledgeAI.years(inQuery: question), let era = kb.era(forYear: years.lowerBound) {
             snippets.append("\(era.name) (\(era.years)): \(era.summary) \(era.context)")
@@ -179,7 +223,7 @@ struct ChatScreen: View {
                     }
                 }
             }
-            .navigationTitle("Deadhead AI")
+            .navigationTitle("TapeTree")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Menu {

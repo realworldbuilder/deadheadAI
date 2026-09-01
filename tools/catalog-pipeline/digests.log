@@ -1,0 +1,78 @@
+stage5: FAILED 1973-12-06: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+stage5: 50/491
+stage5: 100/491
+stage5: 150/491
+stage5: 200/491
+stage5: 250/491
+stage5: 300/491
+stage5: 350/491
+stage5: 400/491
+stage5: 450/491
+stage5: wrote 490 new digests
+stage5: FAILED 1981-12-31: <urlopen error [Errno 54] Connection reset by peer>
+stage5: FAILED 1983-04-13: The read operation timed out
+stage5: FAILED 1983-06-20: The read operation timed out
+stage5: FAILED 1980-09-02: The read operation timed out
+stage5: 50/1482
+stage5: FAILED 1990-06-08: Remote end closed connection without response
+stage5: FAILED 1993-06-11: The read operation timed out
+stage5: 100/1482
+stage5: FAILED 1979-09-01: The read operation timed out
+stage5: FAILED 1989-08-19: The read operation timed out
+stage5: FAILED 1979-02-03: The read operation timed out
+stage5: FAILED 1982-04-03: The read operation timed out
+stage5: 150/1482
+stage5: FAILED 1989-10-16: The read operation timed out
+stage5: FAILED 1972-04-29: The read operation timed out
+stage5: FAILED 1990-07-14: The read operation timed out
+stage5: FAILED 1991-06-06: <urlopen error _ssl.c:989: The handshake operation timed out>
+stage5: FAILED 1987-07-06: The read operation timed out
+stage5: FAILED 1990-06-23: The read operation timed out
+stage5: 200/1482
+stage5: FAILED 1990-05-06: The read operation timed out
+stage5: FAILED 1995-05-28: The read operation timed out
+stage5: 250/1482
+stage5: FAILED 1978-01-31: The read operation timed out
+stage5: FAILED 1978-05-07: The read operation timed out
+stage5: 300/1482
+stage5: FAILED 1990-09-07: The read operation timed out
+stage5: FAILED 1991-04-28: The read operation timed out
+stage5: 350/1482
+stage5: 400/1482
+stage5: FAILED 1979-08-04: The read operation timed out
+stage5: FAILED 1979-08-12: The read operation timed out
+stage5: FAILED 1980-10-26: The read operation timed out
+stage5: FAILED 1980-11-28: The read operation timed out
+stage5: 450/1482
+stage5: 500/1482
+stage5: FAILED 1990-03-26: The read operation timed out
+stage5: FAILED 1990-10-20: The read operation timed out
+stage5: FAILED 1993-06-22: The read operation timed out
+stage5: FAILED 1993-06-23: The read operation timed out
+stage5: FAILED 1983-05-14: The read operation timed out
+stage5: FAILED 1983-06-27: The read operation timed out
+stage5: FAILED 1983-08-27: The read operation timed out
+stage5: FAILED 1984-07-07: The read operation timed out
+stage5: 550/1482
+stage5: FAILED 1993-06-15: The read operation timed out
+stage5: FAILED 1994-12-16: The read operation timed out
+stage5: FAILED 1972-07-16: The read operation timed out
+stage5: FAILED 1973-10-27: The read operation timed out
+stage5: 600/1482
+stage5: 650/1482
+stage5: 700/1482
+stage5: 750/1482
+stage5: 800/1482
+stage5: 850/1482
+stage5: 900/1482
+stage5: 950/1482
+stage5: 1000/1482
+stage5: 1050/1482
+stage5: 1100/1482
+stage5: 1150/1482
+stage5: 1200/1482
+stage5: 1250/1482
+stage5: 1300/1482
+stage5: 1350/1482
+stage5: 1400/1482
+stage5: wrote 1444 new digests

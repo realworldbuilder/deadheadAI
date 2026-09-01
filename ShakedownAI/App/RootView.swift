@@ -72,7 +72,7 @@ struct RootView: View {
             Tab("Explore", systemImage: "map.fill", value: .explore) {
                 ExploreTabView()
             }
-            Tab("Deadhead AI", systemImage: "bubble.left.and.text.bubble.right.fill", value: .chat) {
+            Tab("TapeTree", systemImage: "bubble.left.and.text.bubble.right.fill", value: .chat) {
                 ChatScreen()
             }
             Tab("Library", systemImage: "books.vertical.fill", value: .library) {
@@ -182,7 +182,7 @@ struct ExploreTabView: View {
 
     private enum Destination: Hashable {
         case search, topShelf, eras, songs, journeys, darkStar, onThisDay,
-             journal, taste
+             journal, taste, vault
     }
 
     /// One labelled body in the map. `position` is where the *body* sits in
@@ -228,6 +228,9 @@ struct ExploreTabView: View {
         Star(id: "songs", destination: .songs, title: "Songs",
              style: .spiral, bodySize: 52, position: UnitPoint(x: 0.78, y: 0.60),
              side: .bottom),
+        Star(id: "vault", destination: .vault, title: "The\nVault",
+             style: .nebula, bodySize: 44, position: UnitPoint(x: 0.10, y: 0.53),
+             side: .trailing),
         Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
              style: .comet, bodySize: 44, position: UnitPoint(x: 0.21, y: 0.66),
              side: .bottom),
@@ -302,6 +305,8 @@ struct ExploreTabView: View {
                     )
                 case .darkStar:
                     DarkStarScreen()
+                case .vault:
+                    BrowseScreen()
                 case .journal:
                     JournalListScreen()
                 case .taste:
@@ -324,7 +329,7 @@ struct ExploreTabView: View {
         VStack(spacing: 6) {
             SpiralMandala(size: 116)
                 .shadow(color: Theme.denim.opacity(0.5), radius: 26)
-            Text("Deadhead AI")
+            Text("TapeTree")
                 .font(Theme.display(21))
                 .chromeText()
         }

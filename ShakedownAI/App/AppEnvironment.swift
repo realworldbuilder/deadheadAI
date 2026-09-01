@@ -5,6 +5,10 @@ import SwiftData
 /// Dependency container for the whole app. Injected via `.environment(...)`.
 @Observable
 final class AppEnvironment {
+    /// The environment the running app is using — the hook for entry points
+    /// SwiftUI doesn't own (App Intents, the CarPlay scene). Rebuilt on auth
+    /// changes, so hold it weakly and read it fresh at each use.
+    private(set) static weak var current: AppEnvironment?
     let modelContainer: ModelContainer
     let cache: CacheStore
     let history: HistoryStore
@@ -14,6 +18,7 @@ final class AppEnvironment {
     let downloads: DownloadManager
     let playerEngine: PlayerEngine
     let knowledgeBase: KnowledgeBase
+    let catalog: any ShowCatalog
 
     let recordingProvider: any LiveRecordingProvider
     let metadataProvider: any MetadataProvider
@@ -24,6 +29,7 @@ final class AppEnvironment {
 
     init(modelContainer: ModelContainer,
          knowledgeBase: KnowledgeBase = KnowledgeBase.loadFromBundle(),
+         catalog: any ShowCatalog = MockShowCatalog(),
          downloads: DownloadManager,
          recordingProvider: any LiveRecordingProvider,
          metadataProvider: any MetadataProvider,
@@ -33,6 +39,7 @@ final class AppEnvironment {
          socialProvider: any SocialProvider = MockSocialProvider()) {
         self.modelContainer = modelContainer
         self.knowledgeBase = knowledgeBase
+        self.catalog = catalog
         self.cache = CacheStore(container: modelContainer)
         self.history = HistoryStore(container: modelContainer)
         self.library = LibraryStore(container: modelContainer)
@@ -47,6 +54,7 @@ final class AppEnvironment {
         self.authProvider = authProvider
         self.socialProvider = socialProvider
 
+        Self.current = self
         history.loadTasteProfile()
         playerEngine.onListeningEvent = { [weak history] show, track, seconds, completed in
             history?.record(show: show, track: track, seconds: seconds, completed: completed)
@@ -61,13 +69,15 @@ final class AppEnvironment {
         let container = ModelContainerFactory.make(cloudSync: cloudSync)
         let cache = CacheStore(container: container)
         let archive = ArchiveShowProvider(cache: cache)
+        let catalog = CatalogStore()
         let kb = KnowledgeBase.loadFromBundle()
         let downloads = DownloadManager(container: container)
         let environment = AppEnvironment(
             modelContainer: container,
             knowledgeBase: kb,
+            catalog: catalog,
             downloads: downloads,
-            recordingProvider: archive,
+            recordingProvider: CatalogFirstShowProvider(catalog: catalog, fallback: archive),
             metadataProvider: archive,
             streamingProvider: OfflineFirstStreamingProvider(store: downloads.store,
                                                             fallback: ArchiveStreamingProvider()),

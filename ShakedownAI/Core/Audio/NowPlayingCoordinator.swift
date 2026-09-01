@@ -36,6 +36,22 @@ final class NowPlayingCoordinator {
             Task { @MainActor [weak self] in self?.engine?.previous() }
             return .success
         }
+        center.skipBackwardCommand.preferredIntervals = [15]
+        center.skipBackwardCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let engine = self?.engine else { return }
+                engine.seek(to: max(0, engine.elapsed - 15))
+            }
+            return .success
+        }
+        center.skipForwardCommand.preferredIntervals = [15]
+        center.skipForwardCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let engine = self?.engine else { return }
+                engine.seek(to: min(engine.duration > 0 ? engine.duration : .infinity, engine.elapsed + 15))
+            }
+            return .success
+        }
         center.changePlaybackPositionCommand.addTarget { [weak self] event in
             let seconds = (event as? MPChangePlaybackPositionCommandEvent)?.positionTime
             Task { @MainActor [weak self] in

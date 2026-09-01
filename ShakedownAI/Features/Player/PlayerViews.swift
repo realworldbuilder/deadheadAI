@@ -1,3 +1,4 @@
+import AVKit
 import SwiftUI
 
 // MARK: - Mini player bar
@@ -179,6 +180,40 @@ struct PlayerScreen: View {
                 }
                 .foregroundStyle(Theme.textPrimary)
 
+                // Secondary row: route audio, doze off gracefully.
+                HStack(spacing: 40) {
+                    AirPlayRoutePicker()
+                        .frame(width: 30, height: 30)
+                    Menu {
+                        Picker("Sleep Timer", selection: Binding(
+                            get: { engine.sleepTimer },
+                            set: { engine.setSleepTimer($0) }
+                        )) {
+                            Text("Off").tag(PlayerEngine.SleepTimer.off)
+                            ForEach([15, 30, 45, 60], id: \.self) { minutes in
+                                Text("\(minutes) minutes").tag(PlayerEngine.SleepTimer.minutes(minutes))
+                            }
+                            Text("End of track").tag(PlayerEngine.SleepTimer.endOfTrack)
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: engine.sleepTimer == .off ? "moon.zzz" : "moon.zzz.fill")
+                                .font(.system(size: 17))
+                            if let deadline = engine.sleepDeadline {
+                                Text(deadline, style: .timer)
+                                    .font(Theme.mono(11))
+                            } else if engine.sleepTimer == .endOfTrack {
+                                Text("track end")
+                                    .font(Theme.mono(11))
+                            }
+                        }
+                        .foregroundStyle(engine.sleepTimer == .off ? Theme.textTertiary : Theme.accent)
+                        .frame(minWidth: 30, minHeight: 30)
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Sleep timer")
+                }
+
                 if case .failed(let message) = engine.state {
                     Text(message)
                         .font(Theme.caption)
@@ -276,4 +311,17 @@ struct PlayerScreen: View {
         let total = Int(seconds)
         return String(format: "%d:%02d", total / 60, total % 60)
     }
+}
+
+/// System AirPlay route picker, themed to sit with the transport icons.
+struct AirPlayRoutePicker: UIViewRepresentable {
+    func makeUIView(context: Context) -> AVRoutePickerView {
+        let view = AVRoutePickerView()
+        view.activeTintColor = UIColor(Theme.accent)
+        view.tintColor = UIColor(Theme.textTertiary)
+        view.backgroundColor = .clear
+        return view
+    }
+
+    func updateUIView(_ uiView: AVRoutePickerView, context: Context) {}
 }

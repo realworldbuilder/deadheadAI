@@ -1,9 +1,9 @@
-# Deadhead AI
+# TapeTree
 
 [![CI](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml/badge.svg)](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml)
 
-**The Deadhead's AI companion.**
-*The music never stopped. Neither should discovering it.*
+**The Deadhead's AI companion.** Formerly Deadhead AI — renamed for the [tape trees](https://snarkus.com/Music/index.html) that spread these recordings hand to hand.
+*First generation, straight from the source.*
 
 A native SwiftUI iOS app that sits as an intelligence layer above the Internet Archive's Grateful Dead collection: AI-powered recommendations, natural-language search, per-show listening guides, era and song explorers, guided listening journeys, journals, self-curating collections, and a taste profile that learns your ears. Audio streams directly from archive.org via AVPlayer — the app never hosts or stores recordings.
 
@@ -36,10 +36,11 @@ The app works without any key (offline brain). To bake a key into your own build
 
 - **Swift 6** strict concurrency with `SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor` (approachable concurrency). Networking/parsing code opts out with `nonisolated`.
 - **Provider protocols** (`ShakedownAI/Core/Providers/Providers.swift`): `LiveRecordingProvider`, `MetadataProvider`, `StreamingProvider`, `AIProvider`, `AuthProvider`, `SocialProvider`. Live implementations hit archive.org; mocks power previews, tests, and the demo social layer. Swap providers without touching UI.
-- **AI**: `CompositeAIProvider` uses the OpenAI Responses API when a key is available (Settings → Keychain, or a build-time bundled key — see "Bundling an OpenAI key"), and falls back to `LocalKnowledgeAI` — a deterministic offline brain built on the bundled knowledge base (`Resources/knowledge_base/*.json`: 67 curated shows, 45 song histories, 7 eras, 6 journeys, quotes). Prompts are grounded: the model only ever chooses among real archive candidates and real setlists.
+- **Bundled show catalog** (`Core/Catalog/`, built by [tools/catalog-pipeline](tools/catalog-pipeline/README.md)): every show 1965–95 offline — real setlists with sets/encores/segues, every tape ranked with detected source type (SBD/MTX/FM/AUD), instant FTS search (`5-8-77`, venues, songs), browse by year and venue ("The Vault"), song performance histories, and per-show fan-consensus digests. `CatalogFirstShowProvider` answers locally first; the network fills in whatever the catalog doesn't know.
+- **AI**: `CompositeAIProvider` uses the OpenAI Responses API when a key is available (Settings → Keychain, or a build-time bundled key — see "Bundling an OpenAI key"), and falls back to `LocalKnowledgeAI` — a deterministic offline brain built on the bundled knowledge base (`Resources/knowledge_base/*.json`: 67 curated shows, 49 song histories, 7 eras, 6 journeys, quotes). Prompts are grounded: the model only ever chooses among real archive candidates and real setlists.
 - **Smart collections** (`Core/AI/SmartCollections.swift`, `SmartCollectionEngine.swift`): four shelves the app builds for itself and rebuilds whenever the day or the daypart turns over. A pure planner (`SmartCollectionPlanner`) reads the clock, the calendar (show anniversaries, song debuts, tour seasons), and listening trends (`TrendEngine`) into grounded briefs; the AI provider names each shelf and orders its picks, constrained to shows it was offered. Results cache in SwiftData per slot, and any shelf can be pinned into a real, editable collection.
 - **Persistence**: SwiftData (`Core/Persistence/`) for metadata caches, journal, collections, listening history, taste profile, journey progress, and chat. Cache tables store opaque encoded domain structs; models never cross actor boundaries.
-- **Audio**: `PlayerEngine` wraps one AVPlayer with an explicit queue; background audio, lock-screen Now Playing info and remote commands, interruption handling. Listening events feed the taste engine.
+- **Audio**: `PlayerEngine` wraps an `AVQueuePlayer` with an explicit queue and a preloaded next track, so segues play gapless; sleep timer with fade-out, AirPlay picker, lock-screen ±15s skips, background audio, Now Playing info and remote commands, interruption handling. Listening events feed the taste engine. Siri App Intents ("play tonight's show") and a dormant CarPlay scene (pending Apple's entitlement) live in `Features/Intents/` and `Features/CarPlay/`.
 
 ## Releasing
 

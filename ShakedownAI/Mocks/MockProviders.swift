@@ -160,6 +160,63 @@ final class MockAuthProvider: AuthProvider {
     }
 }
 
+// MARK: - Catalog mock
+
+/// In-memory ShowCatalog for previews/tests. Empty by default; tests seed
+/// the stored properties directly.
+final class MockShowCatalog: ShowCatalog {
+    var isAvailable = true
+    var metaValues: [String: String] = ["schema_version": "1"]
+    var showsByID: [String: CatalogShow] = [:]
+    var recordingsByShow: [String: [CatalogRecording]] = [:]
+    var setlistsByShow: [String: Setlist] = [:]
+    var digestsByShow: [String: ShowDigest] = [:]
+    var searchResults: [CatalogShow] = []
+    var songsByKey: [String: SongStats] = [:]
+    var aliasMap: [String: String] = [:]
+    var performancesByKey: [String: [CatalogShow]] = [:]
+    var venueList: [VenueSummary] = []
+
+    func meta() async -> [String: String] { metaValues }
+    func show(withID id: String) async -> CatalogShow? { showsByID[id] }
+    func shows(onDate date: String) async -> [CatalogShow] {
+        showsByID.values.filter { $0.date == date }.sorted { $0.showID < $1.showID }
+    }
+    func shows(inYear year: Int) async -> [CatalogShow] {
+        showsByID.values.filter { $0.year == year }.sorted { $0.date < $1.date }
+    }
+    func shows(onMonthDay monthDay: String) async -> [CatalogShow] {
+        showsByID.values
+            .filter { String(format: "%02d-%02d", $0.month, $0.day) == monthDay }
+            .sorted { $0.year < $1.year }
+    }
+    func topRated(yearRange: ClosedRange<Int>?, limit: Int) async -> [CatalogShow] {
+        showsByID.values
+            .filter { show in yearRange.map { range in range.contains(show.year) } ?? true }
+            .sorted { ($0.avgRating ?? 0) > ($1.avgRating ?? 0) }
+            .prefix(limit).map { $0 }
+    }
+    func recordings(forShow showID: String) async -> [CatalogRecording] { recordingsByShow[showID] ?? [] }
+    func recording(identifier: String) async -> CatalogRecording? {
+        recordingsByShow.values.flatMap { $0 }.first { $0.identifier == identifier }
+    }
+    func setlist(forShow showID: String) async -> Setlist? { setlistsByShow[showID] }
+    func digest(forShow showID: String) async -> ShowDigest? { digestsByShow[showID] }
+    func searchText(_ query: String, limit: Int) async -> [CatalogShow] { Array(searchResults.prefix(limit)) }
+    func song(forKey key: String) async -> SongStats? { songsByKey[key] }
+    func songAliases() async -> [String: String] { aliasMap }
+    func performances(ofSong key: String) async -> [CatalogShow] { performancesByKey[key] ?? [] }
+    func venues(matching prefix: String?, limit: Int) async -> [VenueSummary] { Array(venueList.prefix(limit)) }
+    func shows(atVenue venue: String) async -> [CatalogShow] {
+        showsByID.values.filter { $0.venue == venue }.sorted { $0.date < $1.date }
+    }
+    func yearCounts() async -> [(year: Int, count: Int)] {
+        Dictionary(grouping: showsByID.values, by: \.year)
+            .map { (year: $0.key, count: $0.value.count) }
+            .sorted { $0.year < $1.year }
+    }
+}
+
 // MARK: - Helpers
 
 extension Array {

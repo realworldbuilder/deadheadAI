@@ -158,6 +158,110 @@ final class ArchiveShowProvider: LiveRecordingProvider, MetadataProvider {
     }
 }
 
+/// Answers from the bundled catalog when it can, and falls back to the
+/// live archive for anything the catalog doesn't know (mood queries, shows
+/// uploaded after the catalog was generated, or a missing catalog file).
+final class CatalogFirstShowProvider: LiveRecordingProvider {
+    private let catalog: any ShowCatalog
+    private let fallback: any LiveRecordingProvider
+
+    init(catalog: any ShowCatalog, fallback: any LiveRecordingProvider) {
+        self.catalog = catalog
+        self.fallback = fallback
+    }
+
+    func shows(matching filters: SearchFilters) async throws -> [Show] {
+        guard catalog.isAvailable else { return try await fallback.shows(matching: filters) }
+
+        var catalogShows: [CatalogShow] = []
+        if let songText = filters.songText, !songText.isEmpty {
+            let normalized = Track.normalizeSongKey(songText)
+            let key = await catalog.songAliases()[normalized] ?? normalized
+            catalogShows = await catalog.performances(ofSong: key)
+            if catalogShows.isEmpty {
+                catalogShows = await catalog.searchText(songText, limit: 60)
+            }
+        } else if let monthDay = filters.monthDay {
+            catalogShows = await catalog.shows(onMonthDay: monthDay)
+        } else if let venueText = filters.venueText, !venueText.isEmpty {
+            catalogShows = await catalog.searchText(venueText, limit: 60)
+        } else if let yearRange = filters.yearRange {
+            catalogShows = await catalog.topRated(yearRange: yearRange, limit: 60)
+        }
+
+        if let yearRange = filters.yearRange {
+            catalogShows = catalogShows.filter { yearRange.contains($0.year) }
+        }
+        if let monthDay = filters.monthDay {
+            catalogShows = catalogShows.filter {
+                String(format: "%02d-%02d", $0.month, $0.day) == monthDay
+            }
+        }
+        if let minRating = filters.minRating {
+            catalogShows = catalogShows.filter { ($0.avgRating ?? 0) >= minRating }
+        }
+        if filters.soundboardOnly == true {
+            catalogShows = catalogShows.filter {
+                $0.bestSourceType == .soundboard || $0.bestSourceType == .matrix
+            }
+        }
+        if filters.sortByRating == true {
+            catalogShows.sort { ($0.avgRating ?? 0) > ($1.avgRating ?? 0) }
+        }
+        var results = catalogShows.compactMap(\.asShow)
+
+        // Mood/free-text queries are the archive's (and the AI's) domain —
+        // merge its extras after the catalog's exact answers.
+        let needsNetwork = results.isEmpty || (filters.freeText?.isEmpty == false)
+        if needsNetwork, let networkShows = try? await fallback.shows(matching: filters) {
+            let seen = Set(results.map(\.identifier))
+            results.append(contentsOf: networkShows.filter { !seen.contains($0.identifier) })
+        }
+        return results
+    }
+
+    func recordings(forDate day: String) async throws -> [Show] {
+        guard catalog.isAvailable else { return try await fallback.recordings(forDate: day) }
+        let nights = await catalog.shows(onDate: day)
+        var results: [Show] = []
+        for night in nights {
+            let recordings = await catalog.recordings(forShow: night.showID)
+            results.append(contentsOf: recordings.map { makeShow($0, night: night) })
+        }
+        guard !results.isEmpty else { return try await fallback.recordings(forDate: day) }
+        return results
+    }
+
+    func topRated(yearRange: ClosedRange<Int>?, limit: Int) async throws -> [Show] {
+        guard catalog.isAvailable else { return try await fallback.topRated(yearRange: yearRange, limit: limit) }
+        let shows = await catalog.topRated(yearRange: yearRange, limit: limit).compactMap(\.asShow)
+        guard !shows.isEmpty else { return try await fallback.topRated(yearRange: yearRange, limit: limit) }
+        return shows
+    }
+
+    func onThisDay(monthDay: String) async throws -> [Show] {
+        guard catalog.isAvailable else { return try await fallback.onThisDay(monthDay: monthDay) }
+        let shows = await catalog.shows(onMonthDay: monthDay).compactMap(\.asShow)
+        guard !shows.isEmpty else { return try await fallback.onThisDay(monthDay: monthDay) }
+        return shows
+    }
+
+    /// A playable Show for one specific tape, carrying the night's venue.
+    private func makeShow(_ recording: CatalogRecording, night: CatalogShow) -> Show {
+        Show(identifier: recording.identifier,
+             title: recording.title ?? "Grateful Dead Live at \(night.venue ?? "?") on \(night.date)",
+             date: night.asShow?.date,
+             dateString: night.date,
+             venue: night.venue,
+             location: night.location,
+             year: night.year,
+             avgRating: recording.avgRating,
+             numReviews: recording.numReviews,
+             downloads: recording.downloads,
+             source: recording.sourceText)
+    }
+}
+
 final class ArchiveStreamingProvider: StreamingProvider {
     func streamURL(identifier: String, track: Track) -> URL? {
         ArchiveAPIClient.streamURL(identifier: identifier, fileName: track.fileName)

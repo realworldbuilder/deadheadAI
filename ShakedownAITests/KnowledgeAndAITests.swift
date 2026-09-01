@@ -247,6 +247,26 @@ struct PlayerQueueTests {
         #expect(engine.currentIndex == 0)
         #expect(engine.state == .playing)
     }
+
+    @Test func endOfTrackSleepTimerParksAtTheBoundary() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.play(show: MockData.cornell, tracks: MockData.cornellTracks)
+        engine.setSleepTimer(.endOfTrack)
+        engine.trackDidFinish()
+        // Advanced to the next track, but paused there, timer disarmed.
+        #expect(engine.currentIndex == 1)
+        #expect(engine.state == .paused)
+        #expect(engine.sleepTimer == .off)
+    }
+
+    @Test func minutesSleepTimerArmsAndCancels() {
+        let engine = PlayerEngine(streaming: MockStreamingProvider())
+        engine.setSleepTimer(.minutes(30))
+        #expect(engine.sleepDeadline != nil)
+        engine.setSleepTimer(.off)
+        #expect(engine.sleepDeadline == nil)
+        #expect(engine.sleepTimer == .off)
+    }
 }
 
 // MARK: - Cross-show queues (playlists)

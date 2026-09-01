@@ -57,6 +57,47 @@ final class PlayerEngine {
         duration > 0 ? min(max(elapsed / duration, 0), 1) : 0
     }
 
+    // MARK: - Sleep timer
+
+    enum SleepTimer: Hashable {
+        case off
+        case minutes(Int)
+        case endOfTrack
+    }
+
+    private(set) var sleepTimer: SleepTimer = .off
+    /// When a minutes timer is armed, the wall-clock moment it fires.
+    private(set) var sleepDeadline: Date?
+    private var sleepTask: Task<Void, Never>?
+
+    func setSleepTimer(_ timer: SleepTimer) {
+        sleepTask?.cancel()
+        sleepTask = nil
+        sleepDeadline = nil
+        sleepTimer = timer
+        if case .minutes(let minutes) = timer {
+            let deadline = Date.now.addingTimeInterval(TimeInterval(minutes * 60))
+            sleepDeadline = deadline
+            sleepTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(minutes * 60))
+                guard !Task.isCancelled else { return }
+                await self?.fadeOutAndPause()
+            }
+        }
+    }
+
+    /// Gentle fade instead of a hard stop — it's a sleep timer.
+    private func fadeOutAndPause() async {
+        for step in stride(from: 0.8, through: 0.0, by: -0.2) {
+            player.volume = Float(step)
+            try? await Task.sleep(for: .milliseconds(600))
+        }
+        pause()
+        player.volume = 1
+        sleepTimer = .off
+        sleepDeadline = nil
+    }
+
     // MARK: - Listening callbacks
 
     /// Fired when a track finishes or is abandoned: (show, track, secondsListened, completed).
@@ -64,7 +105,10 @@ final class PlayerEngine {
 
     // MARK: - Internals
 
-    private let player = AVPlayer()
+    // AVQueuePlayer with the next track preloaded is what makes segues
+    // gapless: at a natural track boundary it rolls into the buffered next
+    // item itself, and we just catch up our own state.
+    private let player = AVQueuePlayer()
     private let session = AudioSessionManager()
     private let streaming: any StreamingProvider
     private var nowPlaying: NowPlayingCoordinator?
@@ -169,7 +213,7 @@ final class PlayerEngine {
 
     func stop() {
         flushListeningEvent(completed: false)
-        player.replaceCurrentItem(with: nil)
+        player.removeAllItems()
         removeItemObservers()
         queue = []
         currentIndex = 0
@@ -194,8 +238,10 @@ final class PlayerEngine {
         accumulatedSeconds = 0
 
         removeItemObservers()
+        player.removeAllItems()
         let item = AVPlayerItem(url: url)
-        player.replaceCurrentItem(with: item)
+        player.insert(item, after: nil)
+        preloadNextItem()
         observeEnd(of: item)
         observeFailure(of: item)
         observeStatus(of: item)
@@ -204,6 +250,37 @@ final class PlayerEngine {
             player.play()
             state = .playing
         }
+        nowPlaying?.refresh()
+    }
+
+    /// Buffers the following track behind the current one so the queue
+    /// player can roll straight into it at the boundary — no segue gap.
+    private func preloadNextItem() {
+        guard player.items().count < 2,
+              queue.indices.contains(currentIndex + 1) else { return }
+        let entry = queue[currentIndex + 1]
+        guard let url = streaming.streamURL(identifier: entry.show.identifier, track: entry.track) else { return }
+        player.insert(AVPlayerItem(url: url), after: player.items().last)
+    }
+
+    /// After the queue player advanced on its own, catch our state up to
+    /// the already-playing preloaded item.
+    private func adoptAdvancedItem() {
+        guard let item = player.currentItem, let entry = currentEntry else {
+            // The preload was missing (URL failure) — rebuild explicitly.
+            loadCurrentTrack(autoplay: true)
+            return
+        }
+        elapsed = 0
+        duration = entry.track.durationSeconds ?? 0
+        trackStartedAt = .now
+        accumulatedSeconds = 0
+        removeItemObservers()
+        observeEnd(of: item)
+        observeFailure(of: item)
+        observeStatus(of: item)
+        preloadNextItem()
+        state = .playing
         nowPlaying?.refresh()
     }
 
@@ -261,13 +338,23 @@ final class PlayerEngine {
     // without a real stream playing to its end.
     func trackDidFinish() {
         flushListeningEvent(completed: true)
-        if currentIndex + 1 < queue.count {
-            currentIndex += 1
-            loadCurrentTrack(autoplay: true)
-        } else {
+        guard currentIndex + 1 < queue.count else {
             state = .finished
             nowPlaying?.refresh()
+            return
         }
+        currentIndex += 1
+        if sleepTimer == .endOfTrack {
+            // Boundary reached: park at the top of the next track.
+            sleepTimer = .off
+            player.pause()
+            adoptAdvancedItem()
+            seek(to: 0)
+            state = .paused
+            nowPlaying?.refresh()
+            return
+        }
+        adoptAdvancedItem()
     }
 
     private func addPeriodicTimeObserver() {

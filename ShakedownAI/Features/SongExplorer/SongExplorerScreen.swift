@@ -90,6 +90,9 @@ struct SongDetailScreen: View {
                     if !seguePartnerSongs.isEmpty {
                         seguesSection
                     }
+                    if !performances.isEmpty {
+                        performancesSection
+                    }
                 }
                 .padding(Theme.screenPadding)
             }
@@ -97,6 +100,56 @@ struct SongDetailScreen: View {
         }
         .navigationTitle(song.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            guard env.catalog.isAvailable, performances.isEmpty else { return }
+            let key = Track.normalizeSongKey(song.title)
+            let canonical = await env.catalog.songAliases()[key] ?? key
+            performances = await env.catalog.performances(ofSong: canonical)
+        }
+    }
+
+    @State private var performances: [CatalogShow] = []
+    @State private var showAllPerformances = false
+
+    /// Every night the catalog's setlists have this song — the full trail,
+    /// not just the canon.
+    private var performancesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("All \(performances.count) in the Vault").sectionHeaderStyle()
+            Text("Every setlist that carries it, first to last.")
+                .font(Theme.caption)
+                .foregroundStyle(Theme.textSecondary)
+            ForEach(performances.prefix(showAllPerformances ? performances.count : 8)) { night in
+                if let show = night.asShow {
+                    NavigationLink(value: show) {
+                        HStack {
+                            Text(show.displayDate)
+                                .font(Theme.mono(12, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                            Spacer()
+                            Text(night.venue ?? "")
+                                .font(Theme.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 12)
+                        .cardStyle()
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            if performances.count > 8 {
+                Button(showAllPerformances ? "Show fewer" : "Show all \(performances.count)") {
+                    withAnimation(.snappy) { showAllPerformances.toggle() }
+                }
+                .font(Theme.mono(12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            }
+        }
     }
 
     private var header: some View {
