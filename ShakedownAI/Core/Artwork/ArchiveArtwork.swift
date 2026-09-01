@@ -67,6 +67,40 @@ final class ArchiveArtwork {
     }
 }
 
+extension ArchiveArtwork {
+    /// One resolver for every card: the jerrygarcia.com scan for the date
+    /// if the catalog has one, else the archive item tile (filtered),
+    /// else nil — caller falls back to the generated stub.
+    @MainActor
+    func cover(date: String?, identifier: String?, catalog: any ShowCatalog) async -> UIImage? {
+        if catalog.isAvailable, let date,
+           let night = await catalog.show(onDate: date),
+           let coverURL = night.coverImageURL, let url = URL(string: coverURL),
+           let scanned = await image(from: url) {
+            return scanned
+        }
+        if let identifier {
+            return await thumbnail(for: identifier)
+        }
+        return nil
+    }
+}
+
+extension Show {
+    /// A minimal Show for artwork rendering when no recording is resolved
+    /// yet (hero card before its lookup, curated canon cards).
+    static func artworkPlaceholder(date: String, venue: String?, location: String? = nil) -> Show {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return Show(identifier: "placeholder-\(date)", title: venue ?? date,
+                    date: formatter.date(from: date), dateString: date,
+                    venue: venue, location: location, year: Int(date.prefix(4)),
+                    avgRating: nil, numReviews: nil, downloads: nil, source: nil)
+    }
+}
+
 /// Generated ticket-stub cover art, cached per show — the offline
 /// fallback when the archive has no usable image.
 @MainActor

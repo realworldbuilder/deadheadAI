@@ -17,3 +17,12 @@ stage_images: 1000 pages, 611 images
 stage_images: 1100 pages, 706 images
 stage_images: 1200 pages, 806 images
 stage_images: 1300 pages, 906 images
+stage_images: 1400 pages, 1005 images
+stage_images: FAILED https://jerrygarcia.com/show/1989-07-04-rich-stadium-buffalo-ny-usa/: HTTP Error 500: Internal Server Error
+stage_images: 1500 pages, 1104 images
+stage_images: FAILED https://jerrygarcia.com/show/1990-03-24-knickerbocker-arena-albany-ny-usa/: HTTP Error 500: Internal Server Error
+stage_images: 1600 pages, 1204 images
+stage_images: 1700 pages, 1302 images
+stage_images: 1800 pages, 1401 images
+stage_images: 1900 pages, 1501 images
+stage_images: 1954 dates resolved, 1540 with an image (7 look like tickets)

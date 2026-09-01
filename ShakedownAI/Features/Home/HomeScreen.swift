@@ -249,6 +249,7 @@ struct HomeScreen: View {
 // MARK: - Hero card
 
 private struct HeroCard: View {
+    @Environment(AppEnvironment.self) private var env
     let notable: NotableShow
     let recording: Show?
     let isLoading: Bool
@@ -257,26 +258,67 @@ private struct HeroCard: View {
     let onPlay: () -> Void
     let onWhy: () -> Void
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("TONIGHT'S SHOW")
-                .font(Theme.mono(11, weight: .bold))
-                .foregroundStyle(Theme.accent)
-                .tracking(2)
+    @State private var coverImage: UIImage?
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(LocalKnowledgeAI.prettyDate(notable.date))
-                    .font(Theme.display(40))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("\(notable.venue) · \(notable.location)")
-                    .font(Theme.headline)
-                    .foregroundStyle(Theme.textSecondary)
+    /// The night's poster or ticket scan, full-bleed across the card's top,
+    /// with the date rising out of a scrim — the show's face leads.
+    private var artworkBanner: some View {
+        let artwork = coverImage ?? StubArtwork.image(
+            for: recording ?? .artworkPlaceholder(date: notable.date, venue: notable.venue,
+                                                  location: notable.location))
+        return Color.clear
+            .frame(height: 230)
+            .overlay(
+                Image(uiImage: artwork)
+                    .resizable()
+                    .scaledToFill()
+            )
+            .clipped()
+            .overlay(
+                LinearGradient(
+                    stops: [
+                        .init(color: .black.opacity(0.55), location: 0),
+                        .init(color: .clear, location: 0.3),
+                        .init(color: .clear, location: 0.45),
+                        .init(color: .black.opacity(0.88), location: 1),
+                    ],
+                    startPoint: .top, endPoint: .bottom)
+            )
+            .overlay(alignment: .topLeading) {
+                Text("TONIGHT'S SHOW")
+                    .font(Theme.mono(11, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+                    .tracking(2)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.black.opacity(0.6)))
+                    .padding(12)
             }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(LocalKnowledgeAI.prettyDate(notable.date))
+                        .font(Theme.display(34))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.7), radius: 4, y: 1)
+                    Text("\(notable.venue) · \(notable.location)")
+                        .font(Theme.headline)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .shadow(color: .black.opacity(0.7), radius: 3, y: 1)
+                        .lineLimit(2)
+                }
+                .padding(14)
+            }
+    }
 
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            artworkBanner
+
+            VStack(alignment: .leading, spacing: 12) {
             Text(notable.blurb)
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
-                .lineLimit(4)
+                .lineLimit(3)
 
             HStack(spacing: 6) {
                 ForEach(notable.tags.prefix(3), id: \.self) { TagPill(text: $0) }
@@ -326,8 +368,9 @@ private struct HeroCard: View {
                     .font(Theme.caption)
                     .foregroundStyle(Theme.rose)
             }
+            }
+            .padding(16)
         }
-        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
@@ -339,45 +382,79 @@ private struct HeroCard: View {
                         .fill(Theme.nebulaGradient)
                         .blendMode(.plusLighter)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(colors: [Theme.accent.opacity(0.45), Theme.stroke.opacity(0.3)],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 1
-                        )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(colors: [Theme.accent.opacity(0.45), Theme.stroke.opacity(0.3)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    lineWidth: 1
                 )
         )
+        .task(id: notable.date + "|" + (recording?.identifier ?? "")) {
+            coverImage = await ArchiveArtwork.shared.cover(
+                date: notable.date, identifier: recording?.identifier, catalog: env.catalog)
+        }
     }
 }
 
 // MARK: - Notable show card (horizontal shelf)
 
 struct NotableShowCard: View {
+    @Environment(AppEnvironment.self) private var env
     let notable: NotableShow
     let era: EraInfo?
 
+    @State private var coverImage: UIImage?
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(LocalKnowledgeAI.prettyDate(notable.date))
-                .font(Theme.mono(18, weight: .bold))
-                .foregroundStyle(Theme.accent)
-            Text(notable.venue)
-                .font(Theme.headline)
-                .foregroundStyle(Theme.textPrimary)
-                .lineLimit(2, reservesSpace: true)
-            Text(notable.location)
-                .font(Theme.caption)
-                .foregroundStyle(Theme.textSecondary)
-                .lineLimit(1)
-            Spacer(minLength: 0)
-            if let era {
-                TagPill(text: era.name, tint: Theme.rose)
+        VStack(alignment: .leading, spacing: 0) {
+            Color.clear
+                .frame(width: 190, height: 120)
+                .overlay(
+                    Image(uiImage: coverImage ?? StubArtwork.image(
+                        for: .artworkPlaceholder(date: notable.date, venue: notable.venue,
+                                                 location: notable.location)))
+                        .resizable()
+                        .scaledToFill()
+                )
+                .clipped()
+                .overlay(alignment: .bottomTrailing) {
+                    if let era {
+                        Text(era.name)
+                            .font(Theme.mono(9, weight: .bold))
+                            .foregroundStyle(Theme.textPrimary)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.black.opacity(0.65)))
+                            .padding(6)
+                            .lineLimit(1)
+                    }
+                }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(LocalKnowledgeAI.prettyDate(notable.date))
+                    .font(Theme.mono(14, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+                    .lineLimit(1)
+                Text(notable.venue)
+                    .font(Theme.mono(12, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                Text(notable.location)
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1)
             }
+            .padding(10)
+            .frame(width: 190, alignment: .leading)
         }
-        .padding(14)
-        .frame(width: 190, height: 150, alignment: .leading)
         .cardStyle(raised: true)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .task(id: notable.date) {
+            coverImage = await ArchiveArtwork.shared.cover(
+                date: notable.date, identifier: notable.preferredIdentifier, catalog: env.catalog)
+        }
     }
 }
 

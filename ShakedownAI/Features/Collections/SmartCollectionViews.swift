@@ -150,30 +150,71 @@ struct SmartCollectionCard: View {
 
 /// Compact variant for the Home shelf.
 struct SmartCollectionMiniCard: View {
+    @Environment(AppEnvironment.self) private var env
     let collection: SmartCollection
 
+    @State private var coverImage: UIImage?
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: collection.iconName)
-                .font(.title3)
+        ZStack(alignment: .bottomLeading) {
+            // The shelf's first show lends its poster or stub as the face;
+            // a scrim keeps the type readable over any scan.
+            Color.clear
+                .overlay {
+                    if let coverImage {
+                        Image(uiImage: coverImage)
+                            .resizable()
+                            .scaledToFill()
+                    } else if let first = collection.items.first {
+                        Image(uiImage: StubArtwork.image(
+                            for: .artworkPlaceholder(date: first.date, venue: first.title)))
+                            .resizable()
+                            .scaledToFill()
+                    }
+                }
+                .clipped()
+            LinearGradient(
+                stops: [
+                    .init(color: .black.opacity(0.25), location: 0),
+                    .init(color: .black.opacity(0.85), location: 1),
+                ],
+                startPoint: .top, endPoint: .bottom)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 5) {
+                    Image(systemName: collection.iconName)
+                        .font(.caption2)
+                    Text(collection.badge)
+                        .font(Theme.mono(9, weight: .bold))
+                        .tracking(1.4)
+                        .lineLimit(1)
+                }
                 .foregroundStyle(Theme.accent)
-            Text(collection.badge)
-                .font(Theme.mono(9, weight: .bold))
-                .tracking(1.4)
-                .foregroundStyle(Theme.textTertiary)
-                .lineLimit(1)
-            Text(collection.title)
-                .font(Theme.headline)
-                .foregroundStyle(Theme.textPrimary)
-                .lineLimit(2, reservesSpace: true)
-            Spacer(minLength: 0)
-            Text("\(collection.items.count) shows")
-                .font(Theme.mono(10))
-                .foregroundStyle(Theme.textTertiary)
+                Text(collection.title)
+                    .font(Theme.headline)
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+                    .shadow(color: .black.opacity(0.6), radius: 2, y: 1)
+                Text("\(collection.items.count) shows")
+                    .font(Theme.mono(10))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+            .padding(12)
         }
-        .padding(14)
-        .frame(width: 165, height: 160, alignment: .leading)
-        .cardStyle(raised: true)
+        .frame(width: 165, height: 160)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                .strokeBorder(Theme.stroke, lineWidth: 1)
+        )
+        .task(id: collection.id) {
+            for item in collection.items.prefix(3) {
+                if let found = await ArchiveArtwork.shared.cover(
+                    date: item.date, identifier: item.identifier, catalog: env.catalog) {
+                    coverImage = found
+                    return
+                }
+            }
+        }
     }
 }
 

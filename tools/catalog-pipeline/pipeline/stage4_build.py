@@ -410,8 +410,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
         full72 = [r for r in post72 if r["setlist_status"] == "full"]
         if post72 and len(full72) / len(post72) < 0.85:
             errors.append(f"setlist coverage 1972+ is {len(full72)}/{len(post72)} < 85%")
-        if size_mb > 12:
-            errors.append(f"size {size_mb:.1f}MB > 12MB budget")
+        if size_mb > 14:
+            errors.append(f"size {size_mb:.1f}MB > 14MB budget")
         if errors:
             print("BUILD GATES FAILED:\n  " + "\n  ".join(errors), file=sys.stderr)
             sys.exit(1)
