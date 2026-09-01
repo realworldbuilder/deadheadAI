@@ -47,7 +47,8 @@ CREATE TABLE shows(
   recording_count INTEGER NOT NULL,
   best_identifier TEXT,
   best_source_type TEXT,
-  avg_rating REAL, total_reviews INTEGER NOT NULL, total_downloads INTEGER NOT NULL
+  avg_rating REAL, total_reviews INTEGER NOT NULL, total_downloads INTEGER NOT NULL,
+  cover_image_url TEXT
 );
 CREATE INDEX idx_shows_ymd ON shows(year, month, day);
 CREATE INDEX idx_shows_monthday ON shows(month, day);
@@ -174,6 +175,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
     t0 = time.time()
     items = read_json(OUT / "items.json")
     setlists = read_json(OUT / "setlists.json") if (OUT / "setlists.json").exists() else {}
+    images_path = CACHE / "jgimages" / "index.json"
+    cover_images = read_json(images_path) if images_path.exists() else {}
 
     if fixture_dates:
         items = [it for it in items if it["date"] in fixture_dates]
@@ -322,6 +325,7 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
             "avg_rating": round(avg_rating, 2) if avg_rating else None,
             "total_reviews": total_reviews,
             "total_downloads": show_downloads[show_id],
+            "cover_image_url": cover_images.get(date) or None,
         })
         fts_inputs.append(fts.build_blob(
             year=year, month=month, day=day, venue=venue, city=city, state=state,
@@ -352,7 +356,7 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
     db.executemany(
         "INSERT INTO shows VALUES(:show_id,:date,:year,:month,:day,:era_id,:venue,:city,:state,"
         ":setlist_status,:recording_count,:best_identifier,:best_source_type,:avg_rating,"
-        ":total_reviews,:total_downloads)", show_rows)
+        ":total_reviews,:total_downloads,:cover_image_url)", show_rows)
     db.executemany(
         "INSERT INTO recordings VALUES(:identifier,:show_id,:title,:source_type,:source_text,"
         ":lineage,:taper,:avg_rating,:num_reviews,:downloads,:quality_score)", rec_rows)

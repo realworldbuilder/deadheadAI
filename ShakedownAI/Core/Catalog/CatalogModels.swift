@@ -64,6 +64,8 @@ nonisolated struct CatalogShow: Sendable, Hashable, Identifiable {
     var avgRating: Double?
     var totalReviews: Int
     var totalDownloads: Int
+    /// Ticket stub / poster scan from jerrygarcia.com, hotlinked.
+    var coverImageURL: String?
 
     var id: String { showID }
 

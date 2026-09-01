@@ -60,7 +60,8 @@ nonisolated actor CatalogDB {
 
     private static let showColumns = """
         show_id, date, year, month, day, era_id, venue, city, state, setlist_status,
-        recording_count, best_identifier, best_source_type, avg_rating, total_reviews, total_downloads
+        recording_count, best_identifier, best_source_type, avg_rating, total_reviews, total_downloads,
+        cover_image_url
         """
 
     func show(id: String) -> CatalogShow? {
@@ -317,7 +318,8 @@ nonisolated actor CatalogDB {
             bestSourceType: SourceType(rawValue: text(stmt, 12) ?? "") ?? .unknown,
             avgRating: real(stmt, 13),
             totalReviews: Int(sqlite3_column_int(stmt, 14)),
-            totalDownloads: Int(sqlite3_column_int(stmt, 15)))
+            totalDownloads: Int(sqlite3_column_int(stmt, 15)),
+            coverImageURL: text(stmt, 16))
     }
 
     private static func text(_ stmt: OpaquePointer, _ index: Int32) -> String? {

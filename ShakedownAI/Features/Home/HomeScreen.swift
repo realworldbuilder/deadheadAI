@@ -7,6 +7,7 @@ final class HomeModel {
     var heroNarrative: Recommendation?
     var becauseYouLiked: [NotableShow] = []
     var onThisDay: [Show] = []
+    var topShelf: [Show] = []
     var recentShows: [(identifier: String, displayName: String, lastPlayed: Date)] = []
     var quote: BandQuote?
     var isLoadingHero = false
@@ -37,6 +38,14 @@ final class HomeModel {
         // On This Day: real archive lookup, cached hard by the provider.
         let monthDay = Self.monthDayString(.now)
         onThisDay = (try? await env.recordingProvider.onThisDay(monthDay: monthDay)) ?? []
+
+        // Top Shelf rail: instant from the catalog, rotated daily so the
+        // same twelve don't greet every morning.
+        let top = (try? await env.recordingProvider.topRated(yearRange: nil, limit: 40)) ?? []
+        if !top.isEmpty {
+            let offset = dayOfYear % max(top.count, 1)
+            topShelf = Array((top[offset...] + top[..<offset]).prefix(12))
+        }
     }
 
     func refreshLocalSections(dayOfYear: Int) {
@@ -124,7 +133,20 @@ struct HomeScreen: View {
                                 )
                             }
                             if !model.onThisDay.isEmpty {
-                                onThisDaySection(model.onThisDay)
+                                ShowRail(
+                                    title: "Today in Dead History",
+                                    subtitle: "The Dead played \(model.onThisDay.count) documented show\(model.onThisDay.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).",
+                                    shows: model.onThisDay,
+                                    icon: "calendar"
+                                )
+                            }
+                            if !model.topShelf.isEmpty {
+                                ShowRail(
+                                    title: "Top Shelf",
+                                    subtitle: "The tapes the community rates highest.",
+                                    shows: model.topShelf,
+                                    icon: "star.fill"
+                                )
                             }
                             if !model.recentShows.isEmpty {
                                 recentSection(model.recentShows)
@@ -191,23 +213,6 @@ struct HomeScreen: View {
                         .buttonStyle(.plain)
                     }
                 }
-            }
-        }
-    }
-
-    private func onThisDaySection(_ shows: [Show]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "calendar")
-                    .foregroundStyle(Theme.accent)
-                Text("On This Day").sectionHeaderStyle()
-            }
-            Text("The Dead played \(shows.count) documented show\(shows.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).")
-                .font(Theme.caption)
-                .foregroundStyle(Theme.textSecondary)
-            ForEach(shows.prefix(4)) { show in
-                NavigationLink(value: show) { ShowRow(show: show) }
-                    .buttonStyle(.plain)
             }
         }
     }

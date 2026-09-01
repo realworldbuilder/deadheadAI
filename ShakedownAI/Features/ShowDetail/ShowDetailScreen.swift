@@ -18,6 +18,8 @@ final class ShowDetailModel {
     var catalogRecordings: [String: CatalogRecording] = [:]
     /// Taper-spelling → canonical song key, for setlist↔track alignment.
     var songAliases: [String: String] = [:]
+    /// Ticket stub / poster scan URL for this night, from the catalog.
+    var coverImageURL: String?
 
     private let metadata: any MetadataProvider
     private let recordings: any LiveRecordingProvider
@@ -52,6 +54,9 @@ final class ShowDetailModel {
             for night in await catalog.shows(onDate: day) {
                 if digest == nil {
                     digest = await catalog.digest(forShow: night.showID)
+                }
+                if coverImageURL == nil {
+                    coverImageURL = night.coverImageURL
                 }
                 for recording in await catalog.recordings(forShow: night.showID) {
                     catalogRecordings[recording.identifier] = recording
@@ -262,7 +267,7 @@ struct ShowDetailScreen: View {
     private func header(_ model: ShowDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top, spacing: 14) {
-                ShowArtworkView(show: model.show, size: 92)
+                ShowArtworkView(show: model.show, coverURL: model.coverImageURL, size: 92)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(model.show.displayDate)
                         .font(Theme.mono(15, weight: .bold))

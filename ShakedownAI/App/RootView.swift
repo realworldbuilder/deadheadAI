@@ -49,8 +49,22 @@ struct RootView: View {
                 await runDemoDownloadIfRequested()
             }
             .fullScreenCover(item: $stagedShow) { show in
-                NavigationStack { ShowDetailScreen(show: show) }
-                    .environment(env.playerEngine)
+                NavigationStack {
+                    ShowDetailScreen(show: show)
+                        .toolbar {
+                            // The staging cover must never trap a human who
+                            // wanders into a simulator left in this mode.
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    stagedShow = nil
+                                } label: {
+                                    Image(systemName: "xmark")
+                                }
+                                .accessibilityLabel("Close staged show")
+                            }
+                        }
+                }
+                .environment(env.playerEngine)
             }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { env.library.dedupAfterSync() }

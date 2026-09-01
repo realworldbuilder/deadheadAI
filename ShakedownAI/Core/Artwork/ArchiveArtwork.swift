@@ -12,6 +12,23 @@ final class ArchiveArtwork {
     /// Identifiers whose tile was missing or junk — don't re-fetch this run.
     private var misses = Set<String>()
 
+    /// Fetch any remote cover (e.g. a jerrygarcia.com ticket-stub scan
+    /// from the catalog). No waveform filter — these are curated scans.
+    func image(from url: URL) async -> UIImage? {
+        let key = url.absoluteString as NSString
+        if let hit = cache.object(forKey: key) { return hit }
+        guard !misses.contains(url.absoluteString),
+              let (data, response) = try? await URLSession.shared.data(from: url),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let image = UIImage(data: data),
+              image.size.width >= 50 else {
+            misses.insert(url.absoluteString)
+            return nil
+        }
+        cache.setObject(image, forKey: key)
+        return image
+    }
+
     func thumbnail(for identifier: String) async -> UIImage? {
         if let hit = cache.object(forKey: identifier as NSString) { return hit }
         guard !misses.contains(identifier),
