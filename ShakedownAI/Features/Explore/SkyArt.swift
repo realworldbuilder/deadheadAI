@@ -1,12 +1,48 @@
 import SwiftUI
 
+// MARK: - The night sky's own palette
+//
+// Explore is the one screen that stays a night sky whatever the reader's
+// appearance setting, so it can't use the adaptive `Theme` colours (by day
+// they'd go dark-on-black). These are the den-after-dark values, pinned.
+enum Sky {
+    static let ink = Color(red: 0.96, green: 0.92, blue: 0.80)
+    static let inkSoft = Color(red: 0.76, green: 0.69, blue: 0.55)
+    static let inkFaint = Color(red: 0.54, green: 0.47, blue: 0.36)
+    static let accent = Color(red: 0.86, green: 0.50, blue: 0.24)
+    static let rose = Color(red: 0.76, green: 0.25, blue: 0.14)
+    static let sage = Color(red: 0.44, green: 0.72, blue: 0.42)
+    static let denim = Color(red: 0.52, green: 0.62, blue: 0.78)
+
+    /// Burnished cream-brass lettering for the wordmark.
+    static let chromeGradient = LinearGradient(
+        colors: [
+            Color(red: 0.99, green: 0.95, blue: 0.84),
+            Color(red: 0.80, green: 0.70, blue: 0.53),
+            Color(red: 0.95, green: 0.89, blue: 0.74),
+            Color(red: 0.56, green: 0.45, blue: 0.30),
+        ],
+        startPoint: .top, endPoint: .bottom
+    )
+}
+
+extension View {
+    /// Cream-brass wordmark treatment, sky only.
+    func skyChrome() -> some View {
+        foregroundStyle(Sky.chromeGradient)
+            .tracking(1.1)
+            .shadow(color: Color(red: 1.0, green: 0.94, blue: 0.78).opacity(0.30), radius: 1, y: 0.5)
+    }
+}
+
+
 /// The dark of the den behind every screen: espresso shadow with warm haze,
 /// an ember glow low on the screen like lamplight off a spinning reel, and
 /// dust motes laid out in three planes of depth so the view reads as
 /// distance rather than as a flat dot pattern. Deterministic — the same motes
 /// sit in the same places every launch, and nothing animates, so this stays
 /// cheap on the ~30 screens that use it.
-struct SpaceBackground: View {
+struct StarfieldBackground: View {
     var body: some View {
         ZStack {
             // Void, lifted very slightly toward warm espresso at the center so
@@ -160,10 +196,10 @@ struct SpaceBackground: View {
             // Most stars are white; a scattering carry a stellar tint.
             let tint = rng.next()
             let color: Color
-            if tint > 0.965 { color = Theme.rose }
-            else if tint > 0.925 { color = Theme.sage }
+            if tint > 0.965 { color = Sky.rose }
+            else if tint > 0.925 { color = Sky.sage }
             else if tint > 0.895 { color = Color(red: 1.0, green: 0.92, blue: 0.72) }
-            else if tint > 0.865 { color = Theme.denim }
+            else if tint > 0.865 { color = Sky.denim }
             else { color = .white }
 
             if glow {
@@ -218,12 +254,12 @@ struct PlanetView: View {
         ZStack {
             switch style {
             case .marbled:
-                sphere(colors: [Theme.rose, Color(red: 0.45, green: 0.05, blue: 0.25), .black])
+                sphere(colors: [Sky.rose, Color(red: 0.45, green: 0.05, blue: 0.25), .black])
             case .ringed:
                 sphere(colors: [Color.yellow, Color(red: 0.65, green: 0.35, blue: 0.1), .black])
                 ring
             case .earthlike:
-                sphere(colors: [Theme.sage, Color(red: 0.05, green: 0.25, blue: 0.55), .black])
+                sphere(colors: [Sky.sage, Color(red: 0.05, green: 0.25, blue: 0.55), .black])
             case .comet:
                 cometBody
                     .rotationEffect(heading)
@@ -263,7 +299,7 @@ struct PlanetView: View {
     private var ring: some View {
         Ellipse()
             .strokeBorder(
-                LinearGradient(colors: [.white.opacity(0.9), Theme.textTertiary],
+                LinearGradient(colors: [.white.opacity(0.9), Sky.inkFaint],
                                startPoint: .leading, endPoint: .trailing),
                 lineWidth: max(size * 0.045, 1.5)
             )
@@ -280,7 +316,7 @@ struct PlanetView: View {
                 path.addLine(to: CGPoint(x: size * 0.78, y: size * 0.64))
                 path.closeSubpath()
             }
-            .fill(LinearGradient(colors: [Theme.sage.opacity(0.95), Theme.sage.opacity(0.45), .clear],
+            .fill(LinearGradient(colors: [Sky.sage.opacity(0.95), Sky.sage.opacity(0.45), .clear],
                                  startPoint: .bottomLeading, endPoint: .topTrailing))
             // A hot inner streak so the tail reads at a glance.
             Path { path in
@@ -292,7 +328,7 @@ struct PlanetView: View {
             .fill(LinearGradient(colors: [Color.white.opacity(0.85), .clear],
                                  startPoint: .bottomLeading, endPoint: .topTrailing))
             Circle()
-                .fill(RadialGradient(colors: [.white, Theme.sage, .clear],
+                .fill(RadialGradient(colors: [.white, Sky.sage, .clear],
                                      center: .center, startRadius: 0, endRadius: size * 0.3))
                 .frame(width: size * 0.55, height: size * 0.55)
                 .offset(x: -size * 0.08, y: size * 0.1)
@@ -424,27 +460,27 @@ struct PlanetView: View {
     private var wireGlobeBody: some View {
         ZStack {
             Circle()
-                .fill(RadialGradient(colors: [Theme.accent.opacity(0.22), .black.opacity(0.85)],
+                .fill(RadialGradient(colors: [Sky.accent.opacity(0.22), .black.opacity(0.85)],
                                      center: UnitPoint(x: 0.35, y: 0.3),
                                      startRadius: 0, endRadius: size * 0.6))
             // Longitudes.
             ForEach(0..<4, id: \.self) { i in
                 Ellipse()
-                    .strokeBorder(Theme.accent.opacity(0.55), lineWidth: max(size * 0.014, 0.6))
+                    .strokeBorder(Sky.accent.opacity(0.55), lineWidth: max(size * 0.014, 0.6))
                     .frame(width: size * (1.0 - CGFloat(i) * 0.28), height: size)
             }
             // Latitudes.
             ForEach(0..<3, id: \.self) { i in
                 Ellipse()
-                    .strokeBorder(Theme.accent.opacity(0.4), lineWidth: max(size * 0.012, 0.5))
+                    .strokeBorder(Sky.accent.opacity(0.4), lineWidth: max(size * 0.012, 0.5))
                     .frame(width: size * (0.99 - CGFloat(i) * 0.22),
                            height: size * (0.30 + CGFloat(i) * 0.001))
                     .offset(y: size * (CGFloat(i) - 1) * 0.26)
             }
             Circle()
-                .strokeBorder(Theme.accent.opacity(0.75), lineWidth: max(size * 0.016, 0.7))
+                .strokeBorder(Sky.accent.opacity(0.75), lineWidth: max(size * 0.016, 0.7))
         }
-        .shadow(color: Theme.accent.opacity(0.4), radius: size * 0.1)
+        .shadow(color: Sky.accent.opacity(0.4), radius: size * 0.1)
     }
 
     /// The moon as it is tonight. The lit side is the shaded sphere with a
@@ -527,44 +563,6 @@ struct PlanetView: View {
         (0.02, -0.04, 0.34), (-0.26, 0.10, 0.22), (0.24, -0.22, 0.20), (0.30, 0.18, 0.17),
         (-0.14, -0.28, 0.15), (-0.34, -0.14, 0.12), (0.08, 0.30, 0.13),
     ]
-}
-
-/// A slow-spinning tie-dye spiral: our original nod to the psychedelic
-/// centerpiece of the old site (no trademarked art).
-struct SpiralMandala: View {
-    var size: CGFloat = 120
-    @State private var spin = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Theme.cosmicGradient)
-                .blur(radius: size * 0.04)
-                .rotationEffect(.degrees(spin ? 360 : 0))
-            ForEach(0..<5, id: \.self) { i in
-                Circle()
-                    .strokeBorder(Color.black.opacity(0.55), lineWidth: size * 0.02)
-                    .frame(width: size * (1 - CGFloat(i) * 0.18),
-                           height: size * (1 - CGFloat(i) * 0.18))
-            }
-            Image(systemName: "bolt.fill")
-                .font(.system(size: size * 0.34, weight: .black))
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.7), radius: 2)
-        }
-        .frame(width: size, height: size)
-        .accessibilityHidden(true)
-        // The animation is started inside `withAnimation` rather than declared
-        // as `.animation(_:value:)`, which would also capture this view's first
-        // placement and send it drifting across the screen for 24 seconds.
-        .onAppear {
-            guard !spin, !reduceMotion else { return }
-            withAnimation(.linear(duration: 24).repeatForever(autoreverses: false)) {
-                spin = true
-            }
-        }
-    }
 }
 
 /// Tiny deterministic pseudo-random generator: the same seed lays the same

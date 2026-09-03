@@ -14,11 +14,11 @@ struct MiniPlayerBar: View {
                 HStack(spacing: 12) {
                     Image(systemName: "recordingtape")
                         .font(.title3)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(engine.currentTrack?.title ?? "")
-                            .font(Theme.mono(13, weight: .semibold))
+                        Text(engine.currentTrack?.displayTitle ?? "")
+                            .font(Theme.subheadline.weight(.semibold))
                             .foregroundStyle(Theme.textPrimary)
                             .lineLimit(1)
                         Text(engine.currentShow?.shortName ?? "")
@@ -29,7 +29,7 @@ struct MiniPlayerBar: View {
                     Spacer()
 
                     if engine.state == .loading {
-                        ProgressView().tint(Theme.accent)
+                        ProgressView().tint(Theme.textSecondary)
                     } else {
                         Button {
                             engine.togglePlayPause()
@@ -44,25 +44,18 @@ struct MiniPlayerBar: View {
                         .accessibilityLabel(engine.isPlaying ? "Pause" : "Play")
                     }
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.screenPadding)
                 .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Theme.surfaceRaised)
-                        .overlay(
-                            GeometryReader { geo in
-                                Rectangle()
-                                    .fill(Theme.accent.opacity(0.18))
-                                    .frame(width: geo.size.width * engine.progress)
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .strokeBorder(Theme.stroke, lineWidth: 1)
-                        )
-                )
-                .padding(.horizontal, 10)
+                .background(Theme.surface)
+                .overlay(alignment: .top) { HairlineDivider() }
+                .overlay(alignment: .bottomLeading) {
+                    GeometryReader { geo in
+                        Rectangle()
+                            .fill(Theme.accent)
+                            .frame(width: geo.size.width * engine.progress, height: 2)
+                    }
+                    .frame(height: 2)
+                }
             }
             .buttonStyle(.plain)
         }
@@ -74,7 +67,6 @@ struct MiniPlayerInset: ViewModifier {
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom, spacing: 0) {
             MiniPlayerBar()
-                .padding(.bottom, 4)
         }
     }
 }
@@ -93,15 +85,12 @@ struct PlayerScreen: View {
     @State private var skipCount = 0
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-
-            VStack(spacing: 24) {
+        VStack(spacing: 24) {
                 if let show = engine.currentShow {
                     VStack(spacing: 4) {
                         Text(show.displayDate)
-                            .font(Theme.mono(14, weight: .semibold))
-                            .foregroundStyle(Theme.accent)
+                            .font(Theme.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
                         Text(show.displayVenue)
                             .font(Theme.title)
                             .foregroundStyle(Theme.textPrimary)
@@ -135,14 +124,14 @@ struct PlayerScreen: View {
                             }
                         }
                     )
-                    .tint(Theme.accent)
+                    .tint(Theme.textPrimary)
 
                     HStack {
                         Text(timeString(scrubbing ? scrubValue : engine.elapsed))
                         Spacer()
                         Text(timeString(engine.duration))
                     }
-                    .font(Theme.mono(11))
+                    .font(Theme.timecode)
                     .foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, Theme.screenPadding)
@@ -158,14 +147,14 @@ struct PlayerScreen: View {
                     Button { engine.togglePlayPause() } label: {
                         ZStack {
                             Circle()
-                                .fill(Theme.accentGradient)
+                                .fill(Theme.textPrimary)
                                 .frame(width: 74, height: 74)
                             if engine.state == .loading {
-                                ProgressView().tint(.black)
+                                ProgressView().tint(Theme.background)
                             } else {
                                 Image(systemName: engine.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.title)
-                                    .foregroundStyle(Color.black.opacity(0.8))
+                                    .foregroundStyle(Theme.background)
                             }
                         }
                     }
@@ -201,13 +190,13 @@ struct PlayerScreen: View {
                                 .font(.system(size: 17))
                             if let deadline = engine.sleepDeadline {
                                 Text(deadline, style: .timer)
-                                    .font(Theme.mono(11))
+                                    .font(Theme.timecode)
                             } else if engine.sleepTimer == .endOfTrack {
                                 Text("track end")
-                                    .font(Theme.mono(11))
+                                    .font(Theme.caption)
                             }
                         }
-                        .foregroundStyle(engine.sleepTimer == .off ? Theme.textTertiary : Theme.accent)
+                        .foregroundStyle(engine.sleepTimer == .off ? Theme.textTertiary : Theme.textPrimary)
                         .frame(minWidth: 30, minHeight: 30)
                         .contentShape(Rectangle())
                     }
@@ -216,7 +205,7 @@ struct PlayerScreen: View {
 
                 if case .failed(let message) = engine.state {
                     Text(message)
-                        .font(Theme.caption)
+                        .font(Theme.footnote)
                         .foregroundStyle(Theme.rose)
                         .padding(.horizontal)
                 }
@@ -231,35 +220,35 @@ struct PlayerScreen: View {
                                     Button { engine.jump(to: index) } label: {
                                         HStack {
                                             Text("\(index + 1)")
-                                                .font(Theme.mono(11))
+                                                .font(Theme.timecode)
                                                 .foregroundStyle(Theme.textTertiary)
                                                 .frame(width: 24)
                                             VStack(alignment: .leading, spacing: 1) {
-                                                Text(entry.track.title)
-                                                    .font(index == engine.currentIndex ? Theme.mono(13, weight: .bold) : Theme.mono(13))
-                                                    .foregroundStyle(index == engine.currentIndex ? Theme.accent : Theme.textSecondary)
+                                                Text(entry.track.displayTitle)
+                                                    .font(index == engine.currentIndex ? Theme.subheadline.weight(.semibold) : Theme.subheadline)
+                                                    .foregroundStyle(index == engine.currentIndex ? Theme.textPrimary : Theme.textSecondary)
                                                     .lineLimit(1)
                                                 if spansShows {
                                                     Text(entry.show.displayDate)
-                                                        .font(Theme.mono(10))
+                                                        .font(.caption2)
                                                         .foregroundStyle(Theme.textTertiary)
                                                         .lineLimit(1)
                                                 }
                                             }
                                             Spacer()
                                             Text(entry.track.displayDuration)
-                                                .font(Theme.mono(11))
+                                                .font(Theme.timecode)
                                                 .foregroundStyle(Theme.textTertiary)
                                         }
                                         .padding(.vertical, 7)
                                         .padding(.horizontal, 10)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .fill(index == engine.currentIndex ? Theme.surfaceRaised : .clear)
+                                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                                .fill(index == engine.currentIndex ? Theme.surface : .clear)
                                         )
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel("Play \(entry.track.title)")
+                                    .accessibilityLabel("Play \(entry.track.displayTitle)")
                                     .id(index)
                                 }
                             }
@@ -269,9 +258,11 @@ struct PlayerScreen: View {
                     }
                 }
                 Spacer(minLength: 0)
-            }
-            .padding(.top, 26)
         }
+        .padding(.top, 26)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
+        .presentationBackground(Theme.background)
         .overlay(alignment: .topLeading) {
             Button {
                 dismiss()
@@ -317,8 +308,8 @@ struct PlayerScreen: View {
 struct AirPlayRoutePicker: UIViewRepresentable {
     func makeUIView(context: Context) -> AVRoutePickerView {
         let view = AVRoutePickerView()
-        view.activeTintColor = UIColor(Theme.accent)
-        view.tintColor = UIColor(Theme.textTertiary)
+        view.activeTintColor = Theme.accentUIColor
+        view.tintColor = .secondaryLabel
         view.backgroundColor = .clear
         return view
     }

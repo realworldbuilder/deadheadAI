@@ -7,6 +7,8 @@ final class ChatModel {
         let id: UUID
         var role: ChatTurn.Role
         var text: String
+        /// Tapes the reply recommended, rendered as playable cards beneath it.
+        var shows: [Show] = []
     }
 
     var messages: [DisplayMessage] = []
@@ -38,7 +40,7 @@ final class ChatModel {
             thread = existing
             messages = existing.messages
                 .sorted { $0.createdAt < $1.createdAt }
-                .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text) }
+                .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text, shows: $0.shows) }
         } else {
             let fresh = ChatThread(title: "TapeTree")
             context.insert(fresh)
@@ -86,34 +88,38 @@ final class ChatModel {
             }
         }
         if let index = messages.firstIndex(where: { $0.id == replyID }) {
-            var final = messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
-            final = await verifyLinks(in: final)
-            messages[index].text = final
-            persist(role: "assistant", text: final)
+            let raw = messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let verified = await verifyLinks(in: raw)
+            messages[index].text = verified.text
+            messages[index].shows = verified.shows
+            persist(role: "assistant", text: verified.text, shows: verified.shows)
         }
         isReplying = false
     }
 
     /// Every show link is checked against the archive before it's presented:
-    /// confirmed tapes get a ▶ marker, misses become plain text that says so.
-    /// Lookups hit the SwiftData cache first, so repeats are free.
-    private func verifyLinks(in text: String) async -> String {
+    /// confirmed tapes get a ▶ marker and a playable card, misses become
+    /// plain text that says so. Lookups hit the catalog / SwiftData cache
+    /// first, so repeats are free.
+    private func verifyLinks(in raw: String) async -> ChatLink.ShowVerification {
+        let text = ChatLink.normalizingShowDates(raw)
         let dates = ChatLink.showDates(in: text).prefix(8)
-        guard !dates.isEmpty else { return text }
-        var availability: [String: Bool] = [:]
+        guard !dates.isEmpty else { return ChatLink.ShowVerification(text: text, shows: []) }
+        var lookups: [String: [Show]] = [:]
         for date in dates {
             if let recordings = try? await env.recordingProvider.recordings(forDate: date) {
-                availability[date] = !recordings.isEmpty
+                lookups[date] = recordings
             }
             // A failed lookup (network hiccup) leaves the link untouched
             // rather than wrongly declaring the show missing.
         }
-        return ChatLink.verifyShowTokens(text, availability: availability)
+        return ChatLink.verifyShows(in: text, lookups: lookups)
     }
 
-    private func persist(role: String, text: String) {
+    private func persist(role: String, text: String, shows: [Show] = []) {
         guard let thread else { return }
         let record = ChatMessageRecord(role: role, text: text)
+        record.shows = shows
         record.thread = thread
         context.insert(record)
         try? context.save()
@@ -123,23 +129,7 @@ final class ChatModel {
     /// to the question so even the remote model stays anchored in real data.
     /// "5/8/77", "1977-05-08", "may 8 1977" → "1977-05-08" for catalog lookups.
     static func mentionedDates(in text: String) -> [String] {
-        var dates: [String] = []
-        let iso = /\b(19[6-9]\d)-(\d{1,2})-(\d{1,2})\b/
-        for match in text.matches(of: iso) {
-            if let m = Int(match.2), let d = Int(match.3), (1...12).contains(m), (1...31).contains(d) {
-                dates.append(String(format: "%@-%02d-%02d", String(match.1), m, d))
-            }
-        }
-        let slashes = /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/
-        for match in text.matches(of: slashes) {
-            guard let m = Int(match.1), let d = Int(match.2), var y = Int(match.3),
-                  (1...12).contains(m), (1...31).contains(d) else { continue }
-            if y < 100 { y += 1900 }
-            if (1965...1995).contains(y) {
-                dates.append(String(format: "%04d-%02d-%02d", y, m, d))
-            }
-        }
-        return Array(Set(dates)).sorted()
+        ChatLink.isoDates(in: text)
     }
 
     private func buildGrounding(for question: String) async -> GroundingContext {
@@ -214,15 +204,14 @@ struct ChatScreen: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            ZStack {
-                SpaceBackground()
-                VStack(spacing: 0) {
-                    if let model {
-                        messagesList(model)
-                        inputBar(model)
-                    }
+            VStack(spacing: 0) {
+                if let model {
+                    messagesList(model)
+                    inputBar(model)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.background)
             .navigationTitle("TapeTree")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -264,7 +253,7 @@ struct ChatScreen: View {
                 EraDetailScreen(era: era)
             }
         }
-        .tint(Theme.accent)
+        .tint(Theme.textPrimary)
         // Chat link taps route inside the app instead of Safari.
         .environment(\.openURL, OpenURLAction { url in
             if let destination = ChatLink.destination(for: url) {
@@ -319,11 +308,10 @@ struct ChatScreen: View {
     }
 
     private func missingScreen(_ message: String) -> some View {
-        ZStack {
-            SpaceBackground()
-            ErrorCard(message: message, retry: nil)
-                .padding(Theme.screenPadding)
-        }
+        ErrorCard(message: message, retry: nil)
+            .padding(Theme.screenPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.background)
     }
 
     private func messagesList(_ model: ChatModel) -> some View {
@@ -347,13 +335,18 @@ struct ChatScreen: View {
             .onChange(of: model.messages.last?.text) {
                 proxy.scrollTo("bottom", anchor: .bottom)
             }
+            // Cards attach after the final text lands (often unchanged), so
+            // they need their own nudge to keep the reply in view.
+            .onChange(of: model.messages.last?.shows.count) {
+                proxy.scrollTo("bottom", anchor: .bottom)
+            }
         }
     }
 
     private func emptyState(_ model: ChatModel) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Your lifelong Deadhead, riding shotgun.")
-                .font(Theme.display(26))
+                .font(Theme.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
             Text("I've heard every tape and read every review. Ask me anything — or tell me how tonight feels.")
                 .font(Theme.body)
@@ -380,17 +373,19 @@ struct ChatScreen: View {
                 .focused($focused)
                 .submitLabel(.send)
                 .onSubmit { Task { await model.send() } }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Capsule().fill(Theme.surfaceRaised))
-                .overlay(Capsule().strokeBorder(Theme.stroke))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 11)
+                .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Theme.stroke))
 
                 Button {
                     Task { await model.send() }
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(model.draft.isEmpty || model.isReplying ? Theme.textTertiary : Theme.accent)
+                    Image(systemName: "arrow.up")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Theme.background)
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(model.draft.isEmpty || model.isReplying ? Theme.textTertiary : Theme.textPrimary))
                 }
                 .disabled(model.draft.isEmpty || model.isReplying)
                 .accessibilityLabel("Send")
@@ -405,31 +400,42 @@ struct ChatScreen: View {
 private struct MessageBubble: View {
     let message: ChatModel.DisplayMessage
 
-    private var renderedText: AttributedString {
-        message.role == .assistant
-            ? ChatLink.render(message.text.isEmpty ? " " : message.text, linkColor: Theme.rose)
-            : AttributedString(message.text.isEmpty ? " " : message.text)
-    }
-
     var body: some View {
-        HStack {
-            if message.role == .user { Spacer(minLength: 40) }
-            Text(renderedText)
-                .font(message.role == .user ? Theme.body : .system(.body, design: .serif))
-                .foregroundStyle(message.role == .user ? Color.black.opacity(0.85) : Theme.textPrimary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(message.role == .user
-                              ? AnyShapeStyle(Theme.accentGradient)
-                              : AnyShapeStyle(Theme.surface))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(message.role == .user ? Color.clear : Theme.stroke)
-                )
-            if message.role == .assistant { Spacer(minLength: 40) }
+        if message.role == .user {
+            HStack {
+                Spacer(minLength: 56)
+                Text(message.text.isEmpty ? " " : message.text)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.surfaceRaised))
+            }
+        } else {
+            // Cards sit inline where the reply names each show; prose runs
+            // between them keep their song/era links.
+            let showsByDate = Dictionary(message.shows.compactMap { show in
+                show.dateString.map { ($0, show) }
+            }, uniquingKeysWith: { first, _ in first })
+            let segments = ChatLink.segments(in: message.text.isEmpty ? " " : message.text,
+                                             cardDates: Set(showsByDate.keys))
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                    switch segment {
+                    case .text(let text):
+                        Text(ChatLink.render(text, linkColor: Theme.accent))
+                            .font(Theme.body)
+                            .foregroundStyle(Theme.textPrimary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    case .show(let date, let note):
+                        if let show = showsByDate[date] {
+                            ChatShowCard(show: show, note: note)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
 }

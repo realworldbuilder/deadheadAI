@@ -12,39 +12,39 @@ struct ShowListScreen: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 10) {
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textSecondary)
-                            .padding(.bottom, 4)
-                    }
-                    if isLoading && shows.isEmpty {
-                        LoadingLampView(text: "Searching the vault…")
-                    } else if let errorMessage, shows.isEmpty {
-                        ErrorCard(message: errorMessage) { Task { await load() } }
-                    } else {
-                        ForEach(shows) { show in
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 10) {
+                if let subtitle {
+                    Text(subtitle)
+                        .font(Theme.body)
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(.bottom, 4)
+                }
+                if isLoading && shows.isEmpty {
+                    LoadingLampView(text: "Searching the vault…")
+                } else if let errorMessage, shows.isEmpty {
+                    ErrorCard(message: errorMessage) { Task { await load() } }
+                } else {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(shows.enumerated()), id: \.element.id) { index, show in
                             NavigationLink(value: show) {
-                                ShowRow(show: show)
+                                ShowRow(show: show, divider: index < shows.count - 1)
                             }
                             .buttonStyle(.plain)
                         }
-                        if shows.isEmpty && !isLoading {
-                            Text("Nothing surfaced. The vault is deep — try another angle.")
-                                .font(Theme.body)
-                                .foregroundStyle(Theme.textSecondary)
-                                .padding(.top, 30)
-                        }
+                    }
+                    if shows.isEmpty && !isLoading {
+                        Text("Nothing surfaced. The vault is deep — try another angle.")
+                            .font(Theme.body)
+                            .foregroundStyle(Theme.textSecondary)
+                            .padding(.top, 30)
                     }
                 }
-                .padding(Theme.screenPadding)
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.large)
         .task { await load() }

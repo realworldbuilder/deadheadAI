@@ -22,7 +22,7 @@ import songcanon
 import sourcetype
 from util import CACHE, OUT, read_json
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 ERAS = [
     ("primal", 1965, 1967), ("anthem", 1968, 1970), ("europe-wall", 1971, 1974),
@@ -53,6 +53,14 @@ CREATE TABLE shows(
 CREATE INDEX idx_shows_ymd ON shows(year, month, day);
 CREATE INDEX idx_shows_monthday ON shows(month, day);
 CREATE INDEX idx_shows_venue ON shows(venue);
+CREATE TABLE show_images(
+  date TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  url TEXT NOT NULL,
+  width INTEGER, height INTEGER,
+  PRIMARY KEY(date, position)
+);
 CREATE TABLE recordings(
   identifier TEXT PRIMARY KEY,
   show_id TEXT NOT NULL REFERENCES shows(show_id),
@@ -175,8 +183,19 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
     t0 = time.time()
     items = read_json(OUT / "items.json")
     setlists = read_json(OUT / "setlists.json") if (OUT / "setlists.json").exists() else {}
-    images_path = CACHE / "jgimages" / "index.json"
-    cover_images = read_json(images_path) if images_path.exists() else {}
+    # jerrygarcia.com memorabilia (see stage_images.py): every scan per
+    # date, cover first. The legacy one-URL index is only a fallback so a
+    # checkout without gallery.json still builds (with no show_images).
+    gallery_path = CACHE / "jgimages" / "gallery.json"
+    index_path = CACHE / "jgimages" / "index.json"
+    if gallery_path.exists():
+        gallery = read_json(gallery_path)
+        legacy_covers = {}
+    else:
+        print("stage4: cache/jgimages/gallery.json missing — run stage_images.py; "
+              "show_images will be empty", file=sys.stderr)
+        gallery = {}
+        legacy_covers = read_json(index_path) if index_path.exists() else {}
 
     if fixture_dates:
         items = [it for it in items if it["date"] in fixture_dates]
@@ -193,7 +212,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
     # shows that exist only in the setlist archive (no recordings) are skipped:
     # the app can't play them, and best_identifier would be null.
 
-    show_rows, rec_rows, entry_rows = [], [], []
+    show_rows, rec_rows, entry_rows, image_rows = [], [], [], []
+    image_dates: set[str] = set()
     song_agg: dict[str, dict] = {}
     fts_inputs = []
     setlist_full = 0
@@ -325,8 +345,15 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
             "avg_rating": round(avg_rating, 2) if avg_rating else None,
             "total_reviews": total_reviews,
             "total_downloads": show_downloads[show_id],
-            "cover_image_url": cover_images.get(date) or None,
+            "cover_image_url": (gallery.get(date) or [{}])[0].get("url")
+                               or legacy_covers.get(date) or None,
         })
+        # Early/late rows share a night's scans: one set of rows per date.
+        if date not in image_dates:
+            image_dates.add(date)
+            for position, scan in enumerate(gallery.get(date) or []):
+                image_rows.append((date, position, scan["kind"], scan["url"],
+                                   scan.get("width"), scan.get("height")))
         fts_inputs.append(fts.build_blob(
             year=year, month=month, day=day, venue=venue, city=city, state=state,
             era_id=era_for(year),
@@ -357,6 +384,7 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
         "INSERT INTO shows VALUES(:show_id,:date,:year,:month,:day,:era_id,:venue,:city,:state,"
         ":setlist_status,:recording_count,:best_identifier,:best_source_type,:avg_rating,"
         ":total_reviews,:total_downloads,:cover_image_url)", show_rows)
+    db.executemany("INSERT INTO show_images VALUES(?,?,?,?,?,?)", image_rows)
     db.executemany(
         "INSERT INTO recordings VALUES(:identifier,:show_id,:title,:source_type,:source_text,"
         ":lineage,:taper,:avg_rating,:num_reviews,:downloads,:quality_score)", rec_rows)
@@ -389,6 +417,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
         "setlist_full": str(setlist_full),
         "setlist_partial": str(setlist_partial),
         "digest_count": str(len(digest_rows)),
+        "image_count": str(len(image_rows)),
+        "shows_with_images": str(len({r[0] for r in image_rows})),
     }
     db.executemany("INSERT INTO catalog_meta VALUES(?,?)", meta.items())
     db.commit()
@@ -410,6 +440,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
         full72 = [r for r in post72 if r["setlist_status"] == "full"]
         if post72 and len(full72) / len(post72) < 0.85:
             errors.append(f"setlist coverage 1972+ is {len(full72)}/{len(post72)} < 85%")
+        if len(image_rows) < 2000:
+            errors.append(f"image count {len(image_rows)} < 2000 (gallery.json missing?)")
         if size_mb > 14:
             errors.append(f"size {size_mb:.1f}MB > 14MB budget")
         if errors:

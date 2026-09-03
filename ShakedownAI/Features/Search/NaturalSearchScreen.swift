@@ -115,28 +115,26 @@ struct NaturalSearchScreen: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    searchField
-                    if let model {
-                        if model.isSearching {
-                            LoadingLampView(text: "Reading your mind…")
-                        } else if model.searched {
-                            resultsSection(model)
-                        } else {
-                            if !model.directHits.isEmpty {
-                                directHitsSection(model)
-                            }
-                            promptIdeas(model)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                searchField
+                if let model {
+                    if model.isSearching {
+                        LoadingLampView(text: "Reading your mind…")
+                    } else if model.searched {
+                        resultsSection(model)
+                    } else {
+                        if !model.directHits.isEmpty {
+                            directHitsSection(model)
                         }
+                        promptIdeas(model)
                     }
                 }
-                .padding(Theme.screenPadding)
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle("Ask the Archive")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
@@ -154,17 +152,21 @@ struct NaturalSearchScreen: View {
     private func directHitsSection(_ model: NaturalSearchModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Direct Hits").sectionHeaderStyle()
-            ForEach(model.directHits) { show in
-                NavigationLink(value: show) { ShowRow(show: show) }
+            VStack(spacing: 0) {
+                ForEach(Array(model.directHits.enumerated()), id: \.element.id) { index, show in
+                    NavigationLink(value: show) {
+                        ShowRow(show: show, divider: index < model.directHits.count - 1)
+                    }
                     .buttonStyle(.plain)
+                }
             }
         }
     }
 
     private var searchField: some View {
         HStack(spacing: 10) {
-            Image(systemName: "sparkle.magnifyingglass")
-                .foregroundStyle(Theme.accent)
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Theme.textSecondary)
             TextField("Describe what you want to hear…", text: Binding(
                 get: { model?.query ?? "" },
                 set: { model?.query = $0 }
@@ -185,8 +187,8 @@ struct NaturalSearchScreen: View {
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(14)
-        .cardStyle(raised: true)
+        .padding(12)
+        .cardStyle()
     }
 
     private func promptIdeas(_ model: NaturalSearchModel) -> some View {
@@ -219,9 +221,13 @@ struct NaturalSearchScreen: View {
         if !extraHits.isEmpty {
             directHitsSection(model)
         }
-        ForEach(model.results) { show in
-            NavigationLink(value: show) { ShowRow(show: show) }
+        VStack(spacing: 0) {
+            ForEach(Array(model.results.enumerated()), id: \.element.id) { index, show in
+                NavigationLink(value: show) {
+                    ShowRow(show: show, divider: index < model.results.count - 1)
+                }
                 .buttonStyle(.plain)
+            }
         }
         if !model.kbSuggestions.isEmpty {
             Text("From the Curator's Shelf")
@@ -249,16 +255,8 @@ struct FlowingChips: View {
     var body: some View {
         FlowLayout(spacing: 8) {
             ForEach(prompts, id: \.self) { prompt in
-                Button { action(prompt) } label: {
-                    Text(prompt)
-                        .font(Theme.mono(12, weight: .medium))
-                        .foregroundStyle(Theme.textPrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(Theme.surfaceRaised))
-                        .overlay(Capsule().strokeBorder(Theme.stroke))
-                }
-                .buttonStyle(.plain)
+                Button(prompt) { action(prompt) }
+                    .buttonStyle(.chip)
             }
         }
     }

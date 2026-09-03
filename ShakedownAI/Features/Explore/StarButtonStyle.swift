@@ -4,7 +4,7 @@ import SwiftUI
 /// brighter halo, and a light tap of haptic on the way down. Under Reduce
 /// Motion only the halo changes.
 struct StarButtonStyle: ButtonStyle {
-    var glow: Color = Theme.textPrimary
+    var glow: Color = Sky.ink
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {

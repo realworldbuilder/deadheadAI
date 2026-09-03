@@ -7,37 +7,33 @@ struct JourneysScreen: View {
     @State private var refreshToken = 0
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("LONG STRANGE TRIP")
-                        .font(Theme.mono(11, weight: .bold))
-                        .foregroundStyle(Theme.accent)
-                        .tracking(2)
-                    Text("Guided listening courses, taught by the archive itself. One show at a time, with context, focus tracks, and a place to write.")
-                        .font(Theme.body)
-                        .foregroundStyle(Theme.textSecondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Long strange trip")
+                    .eyebrowStyle()
+                Text("Guided listening courses, taught by the archive itself. One show at a time, with context, focus tracks, and a place to write.")
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
 
-                    let _ = refreshToken
-                    ForEach(env.knowledgeBase.journeys) { journey in
-                        NavigationLink(value: journey) {
-                            JourneyCard(journey: journey, progress: env.journeys.progress(for: journey))
-                        }
-                        .buttonStyle(.plain)
+                let _ = refreshToken
+                ForEach(env.knowledgeBase.journeys) { journey in
+                    NavigationLink(value: journey) {
+                        JourneyCard(journey: journey, progress: env.journeys.progress(for: journey))
                     }
-                    if env.knowledgeBase.journeys.isEmpty {
-                        LoadingLampView(text: "Journeys load with the knowledge base.")
-                    }
-
-                    if !env.knowledgeBase.runs.isEmpty {
-                        epicRunsSection
-                    }
+                    .buttonStyle(.plain)
                 }
-                .padding(Theme.screenPadding)
+                if env.knowledgeBase.journeys.isEmpty {
+                    LoadingLampView(text: "Journeys load with the knowledge base.")
+                }
+
+                if !env.knowledgeBase.runs.isEmpty {
+                    epicRunsSection
+                }
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle("Journeys")
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: Journey.self) { journey in
@@ -52,40 +48,41 @@ struct JourneysScreen: View {
     /// The canon of runs — single sequences inside one night that fans measure
     /// everything else against. Each row opens the show whose tape holds it.
     private var epicRunsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("EPIC RUNS")
-                .font(Theme.mono(11, weight: .bold))
-                .foregroundStyle(Theme.accent)
-                .tracking(2)
+        let runs = env.knowledgeBase.runs.sorted { $0.date < $1.date }
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("Epic runs")
+                .eyebrowStyle()
                 .padding(.top, 10)
             Text("Not whole shows — the sequences inside them that people never stop talking about.")
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
-            ForEach(env.knowledgeBase.runs.sorted { $0.date < $1.date }) { run in
-                NavigationLink(value: run) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "flame.fill")
-                            .font(.caption)
-                            .foregroundStyle(Theme.accent)
-                            .frame(width: 22)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(run.title)
-                                .font(Theme.headline)
-                                .foregroundStyle(Theme.textPrimary)
-                                .lineLimit(1)
-                            Text(LocalKnowledgeAI.prettyDate(run.date))
-                                .font(Theme.mono(11))
+            VStack(spacing: 0) {
+                ForEach(Array(runs.enumerated()), id: \.element.id) { index, run in
+                    NavigationLink(value: run) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "flame.fill")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                                .frame(width: 22)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(run.title)
+                                    .font(Theme.headline)
+                                    .foregroundStyle(Theme.textPrimary)
+                                    .lineLimit(1)
+                                Text(LocalKnowledgeAI.prettyDate(run.date))
+                                    .font(Theme.caption)
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
                                 .foregroundStyle(Theme.textTertiary)
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(Theme.textTertiary)
+                        .listRowStyle(divider: index < runs.count - 1)
+                        .contentShape(Rectangle())
                     }
-                    .padding(12)
-                    .cardStyle()
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -103,21 +100,18 @@ struct FamousRunShowScreen: View {
         Group {
             if let resolvedShow {
                 ShowDetailScreen(show: resolvedShow)
-            } else {
-                ZStack {
-                    SpaceBackground()
-                    if failed {
-                        ErrorCard(message: "Couldn't reach the archive for this night's tape. Check your connection and try again.") {
-                            failed = false
-                            Task { await resolve() }
-                        }
-                        .padding(Theme.screenPadding)
-                    } else {
-                        LoadingLampView(text: "Finding the tape with this run…")
-                    }
+            } else if failed {
+                ErrorCard(message: "Couldn't reach the archive for this night's tape. Check your connection and try again.") {
+                    failed = false
+                    Task { await resolve() }
                 }
+                .padding(Theme.screenPadding)
+            } else {
+                LoadingLampView(text: "Finding the tape with this run…")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
         .navigationBarTitleDisplayMode(.inline)
         .task { await resolve() }
     }
@@ -137,7 +131,7 @@ private struct JourneyCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(journey.title)
-                    .font(Theme.display(22))
+                    .font(Theme.title)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 if progress.isFinished {
@@ -152,24 +146,24 @@ private struct JourneyCard: View {
             HStack(spacing: 10) {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(Theme.surfaceRaised)
+                        Capsule().fill(Theme.stroke)
                         Capsule()
-                            .fill(Theme.accentGradient)
+                            .fill(Theme.accent)
                             .frame(width: progress.total > 0
                                    ? geo.size.width * CGFloat(progress.completed) / CGFloat(progress.total)
                                    : 0)
                     }
                     .animation(.snappy, value: progress.completed)
                 }
-                .frame(height: 7)
+                .frame(height: 4)
                 Text(progress.isStarted ? "\(progress.completed)/\(progress.total)" : "\(progress.total) nights")
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
         }
         .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle(raised: true)
+        .cardStyle()
     }
 }
 
@@ -181,50 +175,47 @@ struct JourneyDetailScreen: View {
     @State private var refreshToken = 0
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(journey.subtitle)
-                        .font(.system(.callout, design: .serif).italic())
-                        .foregroundStyle(Theme.textSecondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(journey.subtitle)
+                    .font(.callout)
+                    .foregroundStyle(Theme.textSecondary)
 
-                    let _ = refreshToken
-                    let state = env.journeys.state(for: journey.id)
-                    let completed = Set(state?.completedDayIndices ?? [])
+                let _ = refreshToken
+                let state = env.journeys.state(for: journey.id)
+                let completed = Set(state?.completedDayIndices ?? [])
 
-                    if state == nil {
-                        Button {
-                            env.journeys.start(journeyID: journey.id)
-                            refreshToken += 1
-                        } label: {
-                            HStack {
-                                Image(systemName: "figure.walk")
-                                Text("Begin the Journey")
-                                    .font(Theme.mono(14, weight: .bold))
-                            }
-                            .foregroundStyle(Color.black.opacity(0.85))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(RoundedRectangle(cornerRadius: Theme.cornerRadius).fill(Theme.accentGradient))
+                if state == nil {
+                    Button {
+                        env.journeys.start(journeyID: journey.id)
+                        refreshToken += 1
+                    } label: {
+                        HStack {
+                            Image(systemName: "figure.walk")
+                            Text("Begin the Journey")
                         }
                     }
+                    .buttonStyle(.primary(fullWidth: true))
+                }
 
+                VStack(spacing: 0) {
                     ForEach(Array(journey.days.enumerated()), id: \.offset) { index, day in
                         let unlocked = state != nil && (index == 0 || completed.contains(index - 1) || completed.contains(index))
                         NavigationLink(value: JourneyDayRoute(journey: journey, dayIndex: index)) {
                             dayRow(index: index, day: day,
                                    done: completed.contains(index),
-                                   unlocked: unlocked)
+                                   unlocked: unlocked,
+                                   divider: index < journey.days.count - 1)
                         }
                         .buttonStyle(.plain)
                         .disabled(!unlocked)
                     }
                 }
-                .padding(Theme.screenPadding)
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle(journey.title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: JourneyDayRoute.self) { route in
@@ -233,7 +224,7 @@ struct JourneyDetailScreen: View {
         .onAppear { refreshToken += 1 }
     }
 
-    private func dayRow(index: Int, day: Journey.JourneyDay, done: Bool, unlocked: Bool) -> some View {
+    private func dayRow(index: Int, day: Journey.JourneyDay, done: Bool, unlocked: Bool, divider: Bool) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -245,8 +236,8 @@ struct JourneyDetailScreen: View {
                         .foregroundStyle(Theme.sage)
                 } else if unlocked {
                     Text("\(index + 1)")
-                        .font(Theme.mono(13, weight: .bold))
-                        .foregroundStyle(Theme.accent)
+                        .font(Theme.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
                 } else {
                     Image(systemName: "lock.fill")
                         .font(.caption)
@@ -259,7 +250,7 @@ struct JourneyDetailScreen: View {
                     .foregroundStyle(unlocked ? Theme.textPrimary : Theme.textTertiary)
                     .lineLimit(1)
                 Text(LocalKnowledgeAI.prettyDate(day.showDate))
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
@@ -267,8 +258,8 @@ struct JourneyDetailScreen: View {
                 .font(.caption)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .padding(12)
-        .cardStyle()
+        .listRowStyle(divider: divider)
+        .contentShape(Rectangle())
         .opacity(unlocked ? 1 : 0.6)
     }
 }
@@ -295,98 +286,93 @@ struct JourneyDayScreen: View {
     private var focusRun: FamousRun? { day.focusRunID.flatMap(env.knowledgeBase.run(id:)) }
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("NIGHT \(dayIndex + 1) OF \(journey.days.count)")
-                            .font(Theme.mono(10, weight: .bold))
-                            .foregroundStyle(Theme.accent)
-                            .tracking(1.5)
-                        Text(day.title)
-                            .font(Theme.display(26))
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(LocalKnowledgeAI.prettyDate(day.showDate))
-                            .font(Theme.mono(13))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-
-                    Text(day.essay)
-                        .font(.system(.body, design: .serif))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Night \(dayIndex + 1) of \(journey.days.count)")
+                        .eyebrowStyle()
+                    Text(day.title)
+                        .font(Theme.largeTitle)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(LocalKnowledgeAI.prettyDate(day.showDate))
+                        .font(Theme.subheadline)
                         .foregroundStyle(Theme.textSecondary)
-                        .lineSpacing(4)
-
-                    if let resolvedShow {
-                        NavigationLink(value: resolvedShow) {
-                            HStack {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(Theme.accent)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Tonight's tape")
-                                        .font(Theme.mono(10, weight: .bold))
-                                        .foregroundStyle(Theme.textTertiary)
-                                    Text(resolvedShow.displayVenue)
-                                        .font(Theme.headline)
-                                        .foregroundStyle(Theme.textPrimary)
-                                        .lineLimit(1)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(14)
-                            .cardStyle(raised: true)
-                        }
-                        .buttonStyle(.plain)
-                    } else {
-                        LoadingLampView(text: "Finding tonight's tape…")
-                    }
-
-                    if let run = focusRun {
-                        runCard(run)
-                    }
-
-                    if !day.focusTracks.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Listen for").sectionHeaderStyle()
-                            ForEach(day.focusTracks, id: \.self) { track in
-                                HStack(spacing: 8) {
-                                    Image(systemName: "waveform")
-                                        .font(.caption)
-                                        .foregroundStyle(Theme.accent)
-                                    Text(track)
-                                        .font(Theme.body)
-                                        .foregroundStyle(Theme.textSecondary)
-                                }
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Tonight's prompt").sectionHeaderStyle()
-                        Text(day.journalPrompt)
-                            .font(.system(.callout, design: .serif).italic())
-                            .foregroundStyle(Theme.textSecondary)
-                        Button {
-                            showingJournal = true
-                        } label: {
-                            Label("Write about it", systemImage: "book.closed")
-                                .font(Theme.mono(13, weight: .semibold))
-                                .foregroundStyle(Theme.accent)
-                        }
-                    }
-                    .padding(Theme.cardPadding)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .cardStyle()
-
-                    completeButton
                 }
-                .padding(Theme.screenPadding)
+
+                Text(day.essay)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineSpacing(4)
+
+                if let resolvedShow {
+                    NavigationLink(value: resolvedShow) {
+                        HStack {
+                            Image(systemName: "play.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(Theme.textSecondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Tonight's tape")
+                                    .font(Theme.caption)
+                                    .foregroundStyle(Theme.textTertiary)
+                                Text(resolvedShow.displayVenue)
+                                    .font(Theme.headline)
+                                    .foregroundStyle(Theme.textPrimary)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .padding(14)
+                        .contentShape(Rectangle())
+                        .cardStyle()
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    LoadingLampView(text: "Finding tonight's tape…")
+                }
+
+                if let run = focusRun {
+                    runCard(run)
+                }
+
+                if !day.focusTracks.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Listen for").sectionHeaderStyle()
+                        ForEach(day.focusTracks, id: \.self) { track in
+                            HStack(spacing: 8) {
+                                Image(systemName: "waveform")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.textSecondary)
+                                Text(track)
+                                    .font(Theme.body)
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Tonight's prompt").sectionHeaderStyle()
+                    Text(day.journalPrompt)
+                        .font(.callout)
+                        .foregroundStyle(Theme.textSecondary)
+                    Button {
+                        showingJournal = true
+                    } label: {
+                        Label("Write about it", systemImage: "book.closed")
+                            .font(Theme.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                completeButton
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.success, trigger: refreshToken)
         .task {
@@ -404,11 +390,10 @@ struct JourneyDayScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "flame.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.accent)
-                Text("THE FAMOUS RUN")
-                    .font(Theme.mono(11, weight: .bold))
-                    .foregroundStyle(Theme.accent)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                Text("The famous run")
+                    .eyebrowStyle()
             }
             Text(run.title)
                 .font(Theme.headline)
@@ -420,7 +405,7 @@ struct JourneyDayScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
             if runUnavailable {
                 Text("This tape splits the run differently — open tonight's tape to explore it.")
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             } else {
                 Button {
@@ -428,21 +413,21 @@ struct JourneyDayScreen: View {
                 } label: {
                     HStack(spacing: 6) {
                         if isStartingRun {
-                            ProgressView().tint(Theme.accent).scaleEffect(0.7)
+                            ProgressView().tint(Theme.textSecondary).scaleEffect(0.7)
                         } else {
                             Image(systemName: "play.circle.fill")
                         }
                         Text("Play the run")
-                            .font(Theme.mono(12, weight: .semibold))
+                            .font(Theme.subheadline.weight(.semibold))
                     }
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                 }
                 .disabled(isStartingRun || resolvedShow == nil)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle(raised: true)
+        .cardStyle()
     }
 
     private func playRun(_ run: FamousRun) async {
@@ -458,26 +443,35 @@ struct JourneyDayScreen: View {
         engine.isPresentingFullPlayer = true
     }
 
+    @ViewBuilder
     private var completeButton: some View {
         let _ = refreshToken
         let done = env.journeys.state(for: journey.id)?.completedDayIndices.contains(dayIndex) ?? false
-        return Button {
-            env.journeys.completeDay(journeyID: journey.id, dayIndex: dayIndex, totalDays: journey.days.count)
-            refreshToken += 1
-        } label: {
-            HStack {
-                Image(systemName: done ? "checkmark.seal.fill" : "checkmark.circle")
-                Text(done ? "Night complete" : "Mark tonight complete")
-                    .font(Theme.mono(14, weight: .bold))
+        if done {
+            Button {
+                env.journeys.completeDay(journeyID: journey.id, dayIndex: dayIndex, totalDays: journey.days.count)
+                refreshToken += 1
+            } label: {
+                HStack {
+                    Image(systemName: "checkmark.seal.fill")
+                    Text("Night complete")
+                }
+                .foregroundStyle(Theme.sage)
+                .frame(maxWidth: .infinity)
             }
-            .foregroundStyle(done ? Theme.sage : Color.black.opacity(0.85))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 13)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius)
-                    .fill(done ? AnyShapeStyle(Theme.sage.opacity(0.15)) : AnyShapeStyle(Theme.accentGradient))
-            )
+            .buttonStyle(.secondary)
+            .disabled(true)
+        } else {
+            Button {
+                env.journeys.completeDay(journeyID: journey.id, dayIndex: dayIndex, totalDays: journey.days.count)
+                refreshToken += 1
+            } label: {
+                HStack {
+                    Image(systemName: "checkmark.circle")
+                    Text("Mark tonight complete")
+                }
+            }
+            .buttonStyle(.primary(fullWidth: true))
         }
-        .disabled(done)
     }
 }

@@ -1,168 +1,241 @@
 import SwiftUI
+import UIKit
 
-/// TapeTree design language: a tape trader's den after dark — walnut
-/// shelving and lamplight, cream Maxell labels, ferric-oxide rust and
-/// forest green where the old palette ran gold and lapis. The light is
-/// still warm, but now it comes off a VU meter instead of gold leaf.
+/// TapeTree design language: a baseline, near-monochrome system. Neutral
+/// surfaces that follow the appearance setting, one sans typeface set in
+/// Dynamic Type styles, hairline dividers instead of boxes, and black-on-
+/// white (or white-on-charcoal) for every control. The tape-trader colours
+/// survive only as small highlights: rust for progress and what's playing
+/// now, forest green for a soundboard tag, denim for a segue mark. Real
+/// ticket and poster scans are the only decoration.
 enum Theme {
 
     // MARK: - Colors
 
-    /// The dark of the den. Backdrop haze and dust draw on top of this.
-    static let background = Color.black
-    /// Barely-lifted espresso panel, like a shelf in shadow.
-    static let surface = Color(red: 0.078, green: 0.058, blue: 0.040)
-    /// Raised walnut card surface, catching a little lamplight.
-    static let surfaceRaised = Color(red: 0.125, green: 0.094, blue: 0.066)
-    /// Thin cream tape-label strokes.
-    static let stroke = Color(red: 0.85, green: 0.76, blue: 0.60).opacity(0.26)
+    /// Page background. White by day, ChatGPT's warm charcoal at night.
+    static let background = Color(light: rgb(1.00, 1.00, 1.00), dark: rgb(0.129, 0.129, 0.129))
+    /// Flat card / bar surface, one step off the page.
+    static let surface = Color(light: rgb(0.976, 0.976, 0.976), dark: rgb(0.184, 0.184, 0.184))
+    /// Selected rows, chips, and the user's chat bubble.
+    static let surfaceRaised = Color(light: rgb(0.937, 0.937, 0.937), dark: rgb(0.220, 0.220, 0.220))
+    /// Hairline dividers and card borders. Opaque, so it never muddies.
+    static let stroke = Color(light: rgb(0.925, 0.925, 0.925), dark: rgb(0.259, 0.259, 0.259))
 
-    /// Ferric-oxide rust-amber. Primary accent — tape coating, not glitter.
-    static let accent = Color(red: 0.86, green: 0.50, blue: 0.24)
-    /// Deep oxide for gradients and pressed states.
-    static let accentDeep = Color(red: 0.44, green: 0.21, blue: 0.09)
-    /// Red rust, a shade redder than the accent. Links, alerts.
-    static let rose = Color(red: 0.76, green: 0.25, blue: 0.14)
-    /// Forest-leaf green for SBD tags and cool highlights.
-    static let sage = Color(red: 0.44, green: 0.72, blue: 0.42)
-    /// Faded workshirt denim for segues/links to songs.
-    static let denim = Color(red: 0.52, green: 0.62, blue: 0.78)
+    /// Ferric-oxide rust. Darkened by day so it holds contrast on white.
+    static let accent = Color(light: rgb(0.66, 0.36, 0.14), dark: rgb(0.86, 0.50, 0.24))
+    /// Text and glyphs drawn on a flat accent fill.
+    static let onAccent = Color(light: rgb(1, 1, 1), dark: rgb(0.051, 0.051, 0.051))
+    /// Red rust for errors and destructive actions.
+    static let rose = Color(light: rgb(0.70, 0.23, 0.12), dark: rgb(0.85, 0.36, 0.24))
+    /// Forest green for soundboard tags and success states.
+    static let sage = Color(light: rgb(0.24, 0.50, 0.26), dark: rgb(0.44, 0.72, 0.42))
+    /// Faded denim for segues and song links.
+    static let denim = Color(light: rgb(0.28, 0.40, 0.60), dark: rgb(0.52, 0.62, 0.78))
 
-    /// Cream label white, like a J-card catching lamplight.
-    static let textPrimary = Color(red: 0.96, green: 0.92, blue: 0.80)
-    /// Warm oat body copy — warm grey, not phosphor.
-    static let textSecondary = Color(red: 0.76, green: 0.69, blue: 0.55)
-    /// Dusty-kraft captions and metadata.
-    static let textTertiary = Color(red: 0.54, green: 0.47, blue: 0.36)
+    static let textPrimary = Color(light: rgb(0.051, 0.051, 0.051), dark: rgb(0.925, 0.925, 0.925))
+    static let textSecondary = Color(light: rgb(0.365, 0.365, 0.365), dark: rgb(0.706, 0.706, 0.706))
+    static let textTertiary = Color(light: rgb(0.459, 0.459, 0.459), dark: rgb(0.557, 0.557, 0.557))
 
-    static let accentGradient = LinearGradient(
-        colors: [accent, accentDeep],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-    )
-
-    /// Translucent hull for hero surfaces, so the backdrop reads through.
-    static let heroGradient = LinearGradient(
-        colors: [
-            Color(red: 0.14, green: 0.10, blue: 0.065).opacity(0.82),
-            Color(red: 0.082, green: 0.058, blue: 0.038).opacity(0.90),
-            Color(red: 0.045, green: 0.030, blue: 0.020).opacity(0.86),
-        ],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-    )
-
-    /// Oxide wash for large surfaces that want depth behind them — lamplight
-    /// pooling on a reel of tape.
-    static let nebulaGradient = RadialGradient(
-        colors: [
-            Color(red: 0.50, green: 0.24, blue: 0.08).opacity(0.42),
-            Color(red: 0.20, green: 0.11, blue: 0.06).opacity(0.32),
-            .clear,
-        ],
-        center: .center, startRadius: 0, endRadius: 260
-    )
-
-    /// Burnished cream-brass lettering, top to bottom.
-    static let chromeGradient = LinearGradient(
-        colors: [
-            Color(red: 0.99, green: 0.95, blue: 0.84),
-            Color(red: 0.80, green: 0.70, blue: 0.53),
-            Color(red: 0.95, green: 0.89, blue: 0.74),
-            Color(red: 0.56, green: 0.45, blue: 0.30),
-        ],
-        startPoint: .top, endPoint: .bottom
-    )
-
-    /// Analog spectrum — rust, amber, cream, leaf, denim, walnut — used
-    /// sparingly for special borders.
-    static let cosmicGradient = AngularGradient(
-        colors: [rose, Color(red: 0.90, green: 0.52, blue: 0.18), accent,
-                 Color(red: 0.98, green: 0.92, blue: 0.72), sage, denim,
-                 Color(red: 0.30, green: 0.18, blue: 0.10), rose],
-        center: .center
-    )
+    /// The accent as a dynamic UIColor, for UIKit views (AirPlay picker).
+    static let accentUIColor = UIColor(light: rgb(0.66, 0.36, 0.14), dark: rgb(0.86, 0.50, 0.24))
 
     // MARK: - Typography
 
-    /// Big serif display, like the hand-inked logotype.
-    static func display(_ size: CGFloat) -> Font {
-        .system(size: size, weight: .bold, design: .serif)
-    }
-
+    static let largeTitle = Font.largeTitle.weight(.semibold)
     /// Section titles.
-    static let title = Font.system(.title2, design: .serif).weight(.semibold)
-    static let headline = Font.system(.headline, design: .serif)
-    /// Body reads like Times on a black page.
-    static let body = Font.system(.body, design: .serif)
-    static let caption = Font.system(.caption, design: .default)
-
-    /// Monospaced, for dates and that starlit-instrument glow.
-    static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-        .system(size: size, weight: weight, design: .monospaced)
-    }
-
-    /// Letter-spacing. Type in space should drift apart a little.
-    static let titleTracking: CGFloat = 1.1
-    static let capsTracking: CGFloat = 2.4
+    static let title = Font.title3.weight(.semibold)
+    static let headline = Font.headline
+    static let body = Font.body
+    static let subheadline = Font.subheadline
+    static let footnote = Font.footnote
+    static let caption = Font.caption
+    /// Player timecodes: tabular digits, the only place figures must line up.
+    static let timecode = Font.footnote.monospacedDigit()
 
     // MARK: - Metrics
 
-    static let cornerRadius: CGFloat = 20
-    static let cardPadding: CGFloat = 20
-    static let screenPadding: CGFloat = 24
+    static let cornerRadius: CGFloat = 14
+    static let cardPadding: CGFloat = 16
+    static let screenPadding: CGFloat = 16
     /// Gap between major sections on a screen.
-    static let sectionSpacing: CGFloat = 28
+    static let sectionSpacing: CGFloat = 24
     /// Gap between sibling cards inside a section.
-    static let itemSpacing: CGFloat = 14
+    static let itemSpacing: CGFloat = 12
     /// Leading between stacked lines of body copy.
-    static let lineSpacing: CGFloat = 3
+    static let lineSpacing: CGFloat = 2
+}
+
+// MARK: - Adaptive colour helpers
+
+private func rgb(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat) -> UIColor {
+    UIColor(red: r, green: g, blue: b, alpha: 1)
+}
+
+private extension UIColor {
+    convenience init(light: UIColor, dark: UIColor) {
+        self.init { $0.userInterfaceStyle == .dark ? dark : light }
+    }
+}
+
+private extension Color {
+    init(light: UIColor, dark: UIColor) {
+        self.init(uiColor: UIColor(light: light, dark: dark))
+    }
 }
 
 // MARK: - Reusable modifiers
 
 struct CardBackground: ViewModifier {
     var raised = false
+    var bordered = true
     func body(content: Content) -> some View {
         content
-            .background(raised ? Theme.surfaceRaised.opacity(0.72) : Theme.surface.opacity(0.66))
-            .background(.ultraThinMaterial.opacity(0.35))
-            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Theme.stroke, Theme.stroke.opacity(0.25)],
-                            startPoint: .top, endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-            )
+            .background(raised ? Theme.surfaceRaised : Theme.surface,
+                        in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+            .overlay {
+                if bordered {
+                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                        .strokeBorder(Theme.stroke, lineWidth: 1)
+                }
+            }
+    }
+}
+
+/// A half-point rule in the stroke colour.
+struct HairlineDivider: View {
+    var body: some View {
+        Rectangle().fill(Theme.stroke).frame(height: 0.5)
+    }
+}
+
+/// The app mark: the rooted-stealie emblem, clipped to a circle so the
+/// square icon tile never shows.
+struct AppMark: View {
+    var size: CGFloat = 28
+    var body: some View {
+        Image("NowPlayingMark")
+            .resizable()
+            .scaledToFill()
+            .frame(width: size, height: size)
+            .clipShape(Circle())
+            .accessibilityHidden(true)
     }
 }
 
 extension View {
-    func cardStyle(raised: Bool = false) -> some View {
-        modifier(CardBackground(raised: raised))
+    func cardStyle(raised: Bool = false, bordered: Bool = true) -> some View {
+        modifier(CardBackground(raised: raised, bordered: bordered))
     }
 
     /// Section header used across feature screens.
     func sectionHeaderStyle() -> some View {
         font(Theme.title)
-            .tracking(Theme.titleTracking)
             .foregroundStyle(Theme.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Widely-tracked small caps, for labels that should read as signage.
-    func spacedCaps() -> some View {
-        font(Theme.mono(11, weight: .semibold))
-            .tracking(Theme.capsTracking)
-            .textCase(.uppercase)
+    /// Small sentence-case label above a section or field.
+    func eyebrowStyle() -> some View {
+        font(Theme.footnote.weight(.semibold))
+            .foregroundStyle(Theme.textSecondary)
     }
 
-    /// Cream-brass wordmark treatment.
-    func chromeText() -> some View {
-        foregroundStyle(Theme.chromeGradient)
-            .tracking(Theme.titleTracking)
-            .shadow(color: Color(red: 1.0, green: 0.94, blue: 0.78).opacity(0.30), radius: 1, y: 0.5)
+    /// Stacked row: full width, breathing room, hairline below.
+    func listRowStyle(divider: Bool = true) -> some View {
+        frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .overlay(alignment: .bottom) {
+                if divider { HairlineDivider() }
+            }
     }
+}
+
+// MARK: - Button styles
+
+/// The one filled button: ink capsule, page-coloured label — black on white
+/// by day, white on charcoal by night.
+struct PrimaryButtonStyle: ButtonStyle {
+    var fullWidth = false
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Theme.headline)
+            .foregroundStyle(Theme.background)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .background(Capsule().fill(Theme.textPrimary))
+            .opacity(configuration.isPressed ? 0.75 : (isEnabled ? 1 : 0.45))
+    }
+}
+
+/// Quiet text button for secondary actions beside a primary one.
+struct SecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Theme.subheadline.weight(.medium))
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+            .opacity(configuration.isPressed ? 0.6 : (isEnabled ? 1 : 0.45))
+    }
+}
+
+/// Outlined capsule for suggestion chips.
+struct ChipButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Theme.subheadline)
+            .foregroundStyle(Theme.textPrimary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Capsule().fill(configuration.isPressed ? Theme.surfaceRaised : .clear))
+            .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 1))
+    }
+}
+
+extension ButtonStyle where Self == PrimaryButtonStyle {
+    static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }
+    static func primary(fullWidth: Bool) -> PrimaryButtonStyle { PrimaryButtonStyle(fullWidth: fullWidth) }
+}
+
+extension ButtonStyle where Self == SecondaryButtonStyle {
+    static var secondary: SecondaryButtonStyle { SecondaryButtonStyle() }
+}
+
+extension ButtonStyle where Self == ChipButtonStyle {
+    static var chip: ChipButtonStyle { ChipButtonStyle() }
+}
+
+// MARK: - Appearance
+
+/// The reader's choice of light or dark, persisted under `appearance`.
+/// Dark is the default — the den after dark — and `.system` follows the
+/// device for anyone who'd rather it did.
+enum Appearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+
+    static let storageKey = "appearance"
 }

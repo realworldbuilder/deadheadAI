@@ -5,27 +5,25 @@ struct EraExplorerScreen: View {
     @Environment(AppEnvironment.self) private var env
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    Text("Thirty years, seven bands wearing the same name.")
-                        .font(Theme.body)
-                        .foregroundStyle(Theme.textSecondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("Thirty years, seven bands wearing the same name.")
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
 
-                    timeline
+                timeline
 
-                    ForEach(env.knowledgeBase.eras) { era in
-                        NavigationLink(value: era) {
-                            EraCard(era: era)
-                        }
-                        .buttonStyle(.plain)
+                ForEach(env.knowledgeBase.eras) { era in
+                    NavigationLink(value: era) {
+                        EraCard(era: era)
                     }
+                    .buttonStyle(.plain)
                 }
-                .padding(Theme.screenPadding)
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle("Eras")
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: EraInfo.self) { era in
@@ -38,12 +36,11 @@ struct EraExplorerScreen: View {
             HStack(alignment: .bottom, spacing: 0) {
                 ForEach(env.knowledgeBase.eras) { era in
                     VStack(spacing: 6) {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Theme.accentGradient)
-                            .frame(width: CGFloat(era.endYear - era.startYear + 1) * 14, height: 8)
-                            .opacity(0.85)
+                        Capsule()
+                            .fill(Theme.accent)
+                            .frame(width: CGFloat(era.endYear - era.startYear + 1) * 14, height: 4)
                         Text("’\(String(era.startYear).suffix(2))")
-                            .font(Theme.mono(10))
+                            .font(Theme.caption)
                             .foregroundStyle(Theme.textTertiary)
                     }
                     .padding(.trailing, 4)
@@ -61,15 +58,15 @@ struct EraCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(era.years)
-                    .font(Theme.mono(13, weight: .bold))
-                    .foregroundStyle(Theme.accent)
+                    .font(Theme.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
             Text(era.name)
-                .font(Theme.display(24))
+                .font(Theme.title)
                 .foregroundStyle(Theme.textPrimary)
             Text(era.style)
                 .font(Theme.body)
@@ -78,7 +75,8 @@ struct EraCard: View {
         }
         .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle(raised: true)
+        .contentShape(Rectangle())
+        .cardStyle()
     }
 }
 
@@ -87,30 +85,28 @@ struct EraDetailScreen: View {
     let era: EraInfo
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    header
-                    infoBlock(title: "The Sound", text: era.style)
-                    infoBlock(title: "The Story", text: era.summary)
-                    infoBlock(title: "Context", text: era.context)
-                    infoBlock(title: "On Stage", text: era.lineup)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                header
+                infoBlock(title: "The sound", text: era.style)
+                infoBlock(title: "The story", text: era.summary)
+                infoBlock(title: "Context", text: era.context)
+                infoBlock(title: "On stage", text: era.lineup)
 
-                    if !beginnerShows.isEmpty {
-                        shelf(title: "Start Here", shows: beginnerShows)
-                    }
-                    if !mustHear.isEmpty {
-                        shelf(title: "Must-Hear Nights", shows: mustHear)
-                    }
-                    if !eraShows.isEmpty {
-                        shelf(title: "Deeper In", shows: eraShows)
-                    }
+                if !beginnerShows.isEmpty {
+                    shelf(title: "Start Here", shows: beginnerShows)
                 }
-                .padding(Theme.screenPadding)
+                if !mustHear.isEmpty {
+                    shelf(title: "Must-Hear Nights", shows: mustHear)
+                }
+                if !eraShows.isEmpty {
+                    shelf(title: "Deeper In", shows: eraShows)
+                }
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle(era.name)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -118,10 +114,10 @@ struct EraDetailScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(era.years)
-                .font(Theme.mono(15, weight: .bold))
-                .foregroundStyle(Theme.accent)
+                .font(Theme.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textSecondary)
             Text(era.name)
-                .font(Theme.display(30))
+                .font(Theme.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
         }
     }
@@ -142,17 +138,13 @@ struct EraDetailScreen: View {
 
     private func infoBlock(title: String, text: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased())
-                .font(Theme.mono(10, weight: .bold))
-                .foregroundStyle(Theme.textTertiary)
-                .tracking(1.5)
+            Text(title)
+                .eyebrowStyle()
             Text(text)
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
     }
 
     private func shelf(title: String, shows: [NotableShow]) -> some View {

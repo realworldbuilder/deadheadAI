@@ -6,6 +6,7 @@ struct ShakedownAIApp: App {
     // Catches background-download session relaunches.
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var environment: AppEnvironment
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.dark
 
     init() {
         _environment = State(initialValue: AppEnvironment.live())
@@ -16,8 +17,8 @@ struct ShakedownAIApp: App {
             RootView()
                 .environment(environment)
                 .modelContainer(environment.modelContainer)
-                .preferredColorScheme(.dark)
-                .tint(Theme.accent)
+                .tint(Theme.textPrimary)
+                .preferredColorScheme(appearance.colorScheme)
                 // Sign-in/out changes which mode the cloud store opens in, and
                 // that's fixed at container creation — so rebuild the whole
                 // environment. Same store file either way; no data moves.

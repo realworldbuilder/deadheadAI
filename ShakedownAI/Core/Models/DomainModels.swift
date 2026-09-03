@@ -111,6 +111,20 @@ nonisolated struct Track: Codable, Hashable, Identifiable, Sendable {
         return String(format: "%d:%02d", m, s)
     }
 
+    /// The title with any leading track number stripped ("01 Shakedown
+    /// Street" → "Shakedown Street"), for display next to an index column.
+    /// Four-digit years ("1999") and bare numbers are left alone.
+    var displayTitle: String {
+        Track.stripLeadingTrackNumber(title)
+    }
+
+    nonisolated static func stripLeadingTrackNumber(_ title: String) -> String {
+        let stripped = title.replacingOccurrences(
+            of: #"^\s*\d{1,3}\s*[.\-–:)]?\s+"#, with: "", options: .regularExpression)
+        let trimmed = stripped.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty ? title : trimmed
+    }
+
     /// Normalized song key for taste aggregation: lowercase, no punctuation,
     /// stripped of segue arrows and leading track junk.
     var songKey: String {

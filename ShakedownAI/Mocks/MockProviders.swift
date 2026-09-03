@@ -156,7 +156,6 @@ final class MockAuthProvider: AuthProvider {
 
     func signOut() async {
         currentAccount = nil
-        KeychainStore.lockAI()
     }
 }
 
@@ -165,8 +164,11 @@ final class MockAuthProvider: AuthProvider {
 /// In-memory ShowCatalog for previews/tests. Empty by default; tests seed
 /// the stored properties directly.
 final class MockShowCatalog: ShowCatalog {
+    func nearestCovers(toDate date: String, limit: Int) async -> [String] { [] }
+    func images(onDate date: String) async -> [CatalogImage] { imagesByDate[date] ?? [] }
     var isAvailable = true
-    var metaValues: [String: String] = ["schema_version": "1"]
+    var metaValues: [String: String] = ["schema_version": "2"]
+    var imagesByDate: [String: [CatalogImage]] = [:]
     var showsByID: [String: CatalogShow] = [:]
     var recordingsByShow: [String: [CatalogRecording]] = [:]
     var setlistsByShow: [String: Setlist] = [:]

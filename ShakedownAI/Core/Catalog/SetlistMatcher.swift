@@ -50,9 +50,7 @@ nonisolated enum SetlistMatcher {
         return result
     }
 
-    /// Same containment rule as RunResolver.matches.
     private static func matches(_ trackKey: String, key: String) -> Bool {
-        if trackKey == key { return true }
-        return (" " + trackKey + " ").contains(" " + key + " ")
+        SongKeyMatch.matches(trackKey, key: key)
     }
 }

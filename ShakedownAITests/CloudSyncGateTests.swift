@@ -235,17 +235,6 @@ struct LibraryDedupTests {
     }
 }
 
-// MARK: - AI gate
-
-struct AIGateTests {
-    @Test func gateTruthTable() {
-        #expect(KeychainStore.resolveAPIKey(bundled: "sk-test", unlocked: true) == "sk-test")
-        #expect(KeychainStore.resolveAPIKey(bundled: "sk-test", unlocked: false) == nil)
-        #expect(KeychainStore.resolveAPIKey(bundled: nil, unlocked: true) == nil)
-        #expect(KeychainStore.resolveAPIKey(bundled: nil, unlocked: false) == nil)
-    }
-}
-
 // MARK: - Persistent auth
 
 struct PersistentAuthProviderTests {
@@ -278,17 +267,15 @@ struct PersistentAuthProviderTests {
         #expect(PersistentAuthProvider(defaults: defaults).currentAccount?.displayName == "Deadhead")
     }
 
-    @Test func signOutClearsAccountAndAIUnlock() async throws {
+    @Test func signOutClearsAccount() async throws {
         let (defaults, suite) = try makeDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
 
         let provider = PersistentAuthProvider(defaults: defaults)
         _ = try await provider.signInWithApple(userID: "apple-123", displayName: "Jerry")
-        KeychainStore.unlockAI()
         await provider.signOut()
 
         #expect(provider.currentAccount == nil)
         #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == nil)
-        #expect(!UserDefaults.standard.bool(forKey: "aiAccessUnlocked"))
     }
 }

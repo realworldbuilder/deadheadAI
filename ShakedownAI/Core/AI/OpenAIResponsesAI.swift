@@ -7,11 +7,18 @@ final class OpenAIResponsesAI: AIProvider {
     let name = "OpenAI"
     private let kb: KnowledgeBase
     private let archive: ArchiveAPIClient
+    /// The app's catalog-first provider, when wired: chat tools answer from
+    /// the bundled catalog (one best tape per night, no network) and fall
+    /// back to the live archive only when it can't. Nil → live archive.
+    private let recordingProvider: (any LiveRecordingProvider)?
     private let model = "gpt-4o-mini"
 
-    init(knowledgeBase: KnowledgeBase, archive: ArchiveAPIClient = ArchiveAPIClient()) {
+    init(knowledgeBase: KnowledgeBase,
+         archive: ArchiveAPIClient = ArchiveAPIClient(),
+         recordingProvider: (any LiveRecordingProvider)? = nil) {
         self.kb = knowledgeBase
         self.archive = archive
+        self.recordingProvider = recordingProvider
     }
 
     private static let systemVoice = """
@@ -379,7 +386,14 @@ final class OpenAIResponsesAI: AIProvider {
     Availability matters: before recommending a specific show, confirm a tape \
     exists with best_recording_for_date. If no recording exists in the archive, \
     say so plainly and suggest a nearby night that IS available instead of \
-    linking it. Keep replies conversational, 2-6 sentences unless asked for depth.
+    linking it.
+    Format: plain conversational prose, 2-6 sentences unless asked for depth. \
+    Never use markdown — no headers, bold, bullets, or numbered lists. When you \
+    recommend shows, give one or two sentences of context, then put each show \
+    on its own line as its token followed by a short reason, e.g. \
+    [[show:1973-11-11|Winterland 11/11/73]] — the Dark Star that goes fully weightless. \
+    The app renders every show token as a card with its date, venue, and rating, \
+    so never restate those next to the token. Recommend at most six shows per reply.
     """
 
     private var chatTools: JSONValue {
@@ -431,11 +445,16 @@ final class OpenAIResponsesAI: AIProvider {
             filters.minRating = args["minRating"] as? Double
             filters.soundboardOnly = args["soundboardOnly"] as? Bool
             filters.sortByRating = true
-            let shows = (try? await archive.search(filters: filters, rows: 30)) ?? []
-            let ranked = RecordingRanker.rank(shows).prefix(6)
-            if ranked.isEmpty { return "No shows found. Broaden the search." }
-            return ranked.map { show in
-                "date=\(show.dateString ?? "?") venue=\(show.displayVenue) rating=\(show.avgRating.map { String(format: "%.1f", $0) } ?? "n/a") sbd=\(show.isSoundboard)"
+            let shows: [Show]
+            if let recordingProvider {
+                shows = (try? await recordingProvider.shows(matching: filters)) ?? []
+            } else {
+                shows = (try? await archive.search(filters: filters, rows: 30)) ?? []
+            }
+            let nights = Self.bestTapePerNight(shows).prefix(6)
+            if nights.isEmpty { return "No shows found. Broaden the search." }
+            return nights.map { show in
+                "date=\(show.dateString ?? "?") venue=\(show.venue ?? show.title) location=\(show.location ?? "?") rating=\(show.avgRating.map { String(format: "%.1f", $0) } ?? "n/a") sbd=\(show.isSoundboard)"
             }.joined(separator: "\n")
         case "lookup_song":
             guard let title = args["title"] as? String,
@@ -455,17 +474,33 @@ final class OpenAIResponsesAI: AIProvider {
             return lines.joined(separator: "\n")
         case "best_recording_for_date":
             guard let date = args["date"] as? String else { return "Missing date." }
-            let recordings = (try? await archive.recordings(forDate: date)) ?? []
-            guard let best = RecordingRanker.rank(recordings).first else {
+            let recordings: [Show]
+            if let recordingProvider {
+                // Already best-first, and the same tape the reply's card will show.
+                recordings = (try? await recordingProvider.recordings(forDate: date)) ?? []
+            } else {
+                recordings = RecordingRanker.rank((try? await archive.recordings(forDate: date)) ?? [])
+            }
+            guard let best = recordings.first else {
                 return "No archive recordings found for \(date)."
             }
-            var line = "date=\(date) venue=\(best.displayVenue) identifier=\(best.identifier) sources=\(recordings.count)"
+            // No identifier: the reply's card resolves the tape itself, and an
+            // id in the tool output only invites the model to print it.
+            var line = "date=\(date) venue=\(best.displayVenue) sbd=\(best.isSoundboard) sources=\(recordings.count)"
             if let rating = best.avgRating { line += String(format: " rating=%.1f", rating) }
             if let notable = kb.notableShow(on: date) { line += " curatorNote=\(notable.blurb)" }
             return line
         default:
             return "Unknown tool."
         }
+    }
+
+    /// Archive searches return tapes, not nights, so the same show can appear
+    /// several times. Keep the ranker's order and the first (best) tape of
+    /// each date — the model recommends nights, and the card resolves the tape.
+    nonisolated static func bestTapePerNight(_ shows: [Show]) -> [Show] {
+        var seen = Set<String>()
+        return RecordingRanker.rank(shows).filter { seen.insert($0.dateString ?? $0.identifier).inserted }
     }
 
     func chatReply(messages: [ChatTurn], grounding: GroundingContext) async throws -> AsyncThrowingStream<String, any Error> {
@@ -517,8 +552,13 @@ final class OpenAIResponsesAI: AIProvider {
                     "output": .string(String(result.prefix(3000))),
                 ]))
             }
+            // `instructions` are per-request and do NOT carry over with
+            // previous_response_id — without them here, every answer that
+            // followed a tool call was written with no system prompt at all
+            // (hence markdown lists and pasted identifiers).
             body = .object([
                 "model": .string(model),
+                "instructions": .string(Self.chatInstructions),
                 "previous_response_id": .string(reply.id ?? ""),
                 "input": .array(outputs),
                 "tools": chatTools,
@@ -585,9 +625,9 @@ final class CompositeAIProvider: AIProvider {
     /// Held as an existential so this class stays available back to iOS 18.
     private let onDevice: (any AIProvider)?
 
-    init(knowledgeBase: KnowledgeBase) {
+    init(knowledgeBase: KnowledgeBase, recordingProvider: (any LiveRecordingProvider)? = nil) {
         self.local = LocalKnowledgeAI(knowledgeBase: knowledgeBase)
-        self.remote = OpenAIResponsesAI(knowledgeBase: knowledgeBase)
+        self.remote = OpenAIResponsesAI(knowledgeBase: knowledgeBase, recordingProvider: recordingProvider)
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
             self.onDevice = AppleOnDeviceAI(knowledgeBase: knowledgeBase)

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.colorScheme) private var colorScheme
     @State private var aiActive = KeychainStore.hasUsableKey
     @State private var cacheSize = 0
     @State private var displayName = ""
@@ -10,24 +11,22 @@ struct SettingsScreen: View {
     @State private var confirmingSignOut = false
     @State private var confirmingDeleteDownloads = false
     @State private var catalogStamp: String?
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.dark
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                SpaceBackground()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
-                        accountSection
-                        aiSection
-                        providerSection
-                        downloadsSection
-                        cacheSection
-                        aboutSection
-                    }
-                    .padding(Theme.screenPadding)
-                }
-                .withMiniPlayer()
+            Form {
+                appearanceSection
+                accountSection
+                aiSection
+                providerSection
+                downloadsSection
+                cacheSection
+                aboutSection
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
+            .withMiniPlayer()
             .navigationTitle("Settings")
             .confirmationDialog(
                 "Clear the metadata cache?",
@@ -66,14 +65,40 @@ struct SettingsScreen: View {
                     }
                 }
             } message: {
-                Text("AI goes back to the offline brain and iCloud syncing stops. Your shelves and journal stay on this device, and the copies already in iCloud stay there too.")
+                Text("iCloud syncing stops. Your shelves and journal stay on this device, and the copies already in iCloud stay there too.")
             }
         }
-        .tint(Theme.accent)
+        .tint(Theme.textPrimary)
         .onAppear {
             cacheSize = env.cache.approximateSizeBytes
             aiActive = KeychainStore.hasUsableKey
         }
+        .task {
+            guard env.catalog.isAvailable else { return }
+            let meta = await env.catalog.meta()
+            if let shows = meta["show_count"], let generated = meta["generated_at"] {
+                catalogStamp = "Show catalog: \(shows) shows · data as of \(String(generated.prefix(10)))"
+            }
+        }
+    }
+
+    // MARK: - Appearance
+
+    private var appearanceSection: some View {
+        Section {
+            Picker("Appearance", selection: $appearance) {
+                ForEach(Appearance.allCases) { choice in
+                    Text(choice.title).tag(choice)
+                }
+            }
+            .pickerStyle(.segmented)
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+        } header: {
+            Text("Appearance")
+        } footer: {
+            Text("System follows your device's light and dark setting.")
+        }
+        .listRowBackground(Theme.surface)
     }
 
     // MARK: - Account
@@ -83,112 +108,85 @@ struct SettingsScreen: View {
     }
 
     private var accountSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Account").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: signedInWithApple
-                          ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
-                        .foregroundStyle(signedInWithApple ? Theme.sage : Theme.accent)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(env.authProvider.currentAccount?.displayName ?? "Not signed in")
-                            .font(Theme.headline)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(signedInWithApple ? "Signed in with Apple" : "Local, this device only")
-                            .font(Theme.caption)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                }
-                Text(signedInWithApple
-                     ? "Your shelves and journal sync to iCloud."
-                     : "Sign in with Apple to keep your shelves and journal in iCloud.")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
-                if signedInWithApple {
-                    Button("Sign Out") {
-                        confirmingSignOut = true
-                    }
-                    .font(Theme.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.rose)
-                } else {
-                    // Independent of the AI-gate card below, which only
-                    // renders while a bundled key sits locked.
-                    SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName]
-                    } onCompletion: { result in
-                        if case .success(let auth) = result,
-                           let credential = auth.credential as? ASAuthorizationAppleIDCredential {
-                            unlockAI(credential: credential)
-                        }
-                    }
-                    .signInWithAppleButtonStyle(.white)
-                    .frame(height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+        Section {
+            HStack(spacing: 12) {
+                Image(systemName: signedInWithApple
+                      ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
+                    .font(.title3)
+                    .foregroundStyle(signedInWithApple ? Theme.sage : Theme.textSecondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(env.authProvider.currentAccount?.displayName ?? "Not signed in")
+                        .font(Theme.body)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(signedInWithApple ? "Signed in with Apple" : "Local, this device only")
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
+            if signedInWithApple {
+                Button("Sign Out", role: .destructive) {
+                    confirmingSignOut = true
+                }
+            } else {
+                signInWithAppleRow
+            }
+        } header: {
+            Text("Account")
+        } footer: {
+            Text(signedInWithApple
+                 ? "Your shelves and journal sync to iCloud."
+                 : "Sign in with Apple to keep your shelves and journal in iCloud.")
         }
+        .listRowBackground(Theme.surface)
+    }
+
+    private var signInWithAppleRow: some View {
+        SignInWithAppleButton(.signIn) { request in
+            request.requestedScopes = [.fullName]
+        } onCompletion: { result in
+            if case .success(let auth) = result,
+               let credential = auth.credential as? ASAuthorizationAppleIDCredential {
+                signInWithApple(credential: credential)
+            }
+        }
+        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+        .frame(height: 44)
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
     }
 
     // MARK: - AI
 
     private var aiSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Intelligence").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: aiActive ? "brain.filled.head.profile" : "brain.head.profile")
-                        .foregroundStyle(aiActive ? Theme.sage : Theme.accent)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(aiStatusTitle)
-                            .font(Theme.headline)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(aiStatusDetail)
-                            .font(Theme.caption)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                }
-                if KeychainStore.keyAwaitingUnlock {
-                    SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName]
-                    } onCompletion: { result in
-                        if case .success(let auth) = result,
-                           let credential = auth.credential as? ASAuthorizationAppleIDCredential {
-                            unlockAI(credential: credential)
-                        }
-                    }
-                    .signInWithAppleButtonStyle(.white)
-                    .frame(height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
+        Section {
+            HStack(spacing: 12) {
+                Image(systemName: aiActive ? "brain.filled.head.profile" : "brain.head.profile")
+                    .font(.title3)
+                    .foregroundStyle(aiActive ? Theme.sage : Theme.textSecondary)
+                Text(aiStatusTitle)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textPrimary)
             }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
+        } header: {
+            Text("Intelligence")
+        } footer: {
+            Text(aiStatusDetail)
         }
+        .listRowBackground(Theme.surface)
     }
 
     private var aiStatusTitle: String {
-        if aiActive { return "TapeTree AI connected" }
-        if KeychainStore.keyAwaitingUnlock { return "Full AI brain locked" }
-        return "Offline brain active"
+        aiActive ? "TapeTree AI connected" : "Offline brain active"
     }
 
     private var aiStatusDetail: String {
         if aiActive {
             return "AI is on the house. Recommendations and chat are grounded in real archive data, with the offline brain as backup."
         }
-        if KeychainStore.keyAwaitingUnlock {
-            return "Sign in with Apple to unlock free AI recommendations and chat, and to keep your shelves and journal in iCloud. Until then, everything runs on the offline brain."
-        }
         return "Everything works offline from the curated knowledge base. This build shipped without an AI key, so free-form chat runs locally."
     }
 
-    private func unlockAI(credential: ASAuthorizationAppleIDCredential) {
-        KeychainStore.unlockAI()
-        aiActive = KeychainStore.hasUsableKey
+    private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
         let fallbackName = displayName.isEmpty ? "Deadhead" : displayName
         Task {
             _ = try? await env.authProvider.signInWithApple(
@@ -202,135 +200,117 @@ struct SettingsScreen: View {
     // MARK: - Providers
 
     private var providerSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Providers").sectionHeaderStyle()
-            VStack(spacing: 0) {
-                providerRow(name: "Recordings", value: "Internet Archive", icon: "building.columns")
-                Divider().overlay(Theme.stroke.opacity(0.5))
-                providerRow(name: "Streaming", value: "Direct from archive.org", icon: "dot.radiowaves.left.and.right")
-                Divider().overlay(Theme.stroke.opacity(0.5))
-                providerRow(name: "AI", value: env.aiProvider.name, icon: "sparkles")
-            }
-            .cardStyle()
+        Section {
+            providerRow(name: "Recordings", value: "Internet Archive", icon: "building.columns")
+            providerRow(name: "Streaming", value: "Direct from archive.org", icon: "dot.radiowaves.left.and.right")
+            providerRow(name: "AI", value: env.aiProvider.name, icon: "sparkles")
+        } header: {
+            Text("Providers")
+        } footer: {
             Text("Provider-based architecture: future versions can plug in official releases, Apple Music, or Relisten-compatible APIs.")
-                .font(Theme.caption)
-                .foregroundStyle(Theme.textTertiary)
         }
+        .listRowBackground(Theme.surface)
     }
 
     private func providerRow(name: String, value: String, icon: String) -> some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundStyle(Theme.accent)
-                .frame(width: 26)
-            Text(name)
-                .font(Theme.body)
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
+        LabeledContent {
             Text(value)
-                .font(Theme.mono(12))
+                .font(Theme.footnote)
                 .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.trailing)
+        } label: {
+            Label {
+                Text(name)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textPrimary)
+            } icon: {
+                Image(systemName: icon)
+                    .foregroundStyle(Theme.textSecondary)
+            }
         }
-        .padding(13)
     }
 
     // MARK: - Downloads
 
     private var downloadsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Downloads").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Downloaded shows are stored on this device for offline listening. The audio still comes straight from the archive — nothing is re-hosted.")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                Toggle(isOn: Binding(get: { env.downloads.wifiOnly },
-                                     set: { env.downloads.wifiOnly = $0 })) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Wi-Fi only")
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text("Shows run hundreds of megabytes — keep them off cellular.")
-                            .font(Theme.caption)
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                }
-                .tint(Theme.accent)
-                HStack {
-                    let _ = env.downloads.store.changeToken
-                    Text(ByteCountFormatter.string(fromByteCount: env.downloads.store.totalBytes, countStyle: .file))
-                        .font(Theme.mono(13, weight: .semibold))
+        Section {
+            Toggle(isOn: Binding(get: { env.downloads.wifiOnly },
+                                 set: { env.downloads.wifiOnly = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Wi-Fi only")
+                        .font(Theme.body)
                         .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Button("Delete All Downloads") {
-                        confirmingDeleteDownloads = true
-                    }
-                    .font(Theme.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.rose)
+                    Text("Shows run hundreds of megabytes — keep them off cellular.")
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
-            .padding(Theme.cardPadding)
-            .cardStyle()
+            downloadsSizeRow
+            Button("Delete All Downloads", role: .destructive) {
+                confirmingDeleteDownloads = true
+            }
+        } header: {
+            Text("Downloads")
+        } footer: {
+            Text("Downloaded shows are stored on this device for offline listening. The audio still comes straight from the archive — nothing is re-hosted.")
         }
+        .listRowBackground(Theme.surface)
+    }
+
+    private var downloadsSizeRow: some View {
+        // Reading the change token re-renders the row as downloads land.
+        let _ = env.downloads.store.changeToken
+        return LabeledContent("On this device",
+                              value: ByteCountFormatter.string(fromByteCount: env.downloads.store.totalBytes,
+                                                               countStyle: .file))
+            .font(Theme.body)
+            .foregroundStyle(Theme.textPrimary)
     }
 
     // MARK: - Cache
 
     private var cacheSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Metadata Cache").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive.")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                HStack {
-                    Text(ByteCountFormatter.string(fromByteCount: Int64(cacheSize), countStyle: .file))
-                        .font(Theme.mono(13, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Button("Clear Cache") {
-                        confirmingClearCache = true
-                    }
-                    .font(Theme.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.rose)
-                }
+        Section {
+            LabeledContent("Cache size",
+                           value: ByteCountFormatter.string(fromByteCount: Int64(cacheSize), countStyle: .file))
+                .font(Theme.body)
+                .foregroundStyle(Theme.textPrimary)
+            Button("Clear Cache", role: .destructive) {
+                confirmingClearCache = true
             }
-            .padding(Theme.cardPadding)
-            .cardStyle()
+        } header: {
+            Text("Metadata cache")
+        } footer: {
+            Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive.")
         }
+        .listRowBackground(Theme.surface)
     }
 
     // MARK: - About
 
     private var aboutSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("About").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 8) {
-                Text("TAPETREE")
-                    .font(Theme.display(22))
-                    .kerning(1)
-                    .chromeText()
-                Text("The music never stopped. Neither should discovering it.")
-                    .font(.system(.callout, design: .serif).italic())
-                    .foregroundStyle(Theme.textSecondary)
-                Text("Recordings come directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app re-hosts no music — it streams (and saves for offline) straight from the archive, adding the intelligence layer.")
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
-                if let stamp = catalogStamp {
-                    Text(stamp)
-                        .font(Theme.mono(10))
-                        .foregroundStyle(Theme.textTertiary)
+        Section {
+            HStack(spacing: 10) {
+                AppMark(size: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("TapeTree")
+                        .font(Theme.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("The music never stopped. Neither should discovering it.")
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
-        }
-        .task {
-            guard env.catalog.isAvailable else { return }
-            let meta = await env.catalog.meta()
-            if let shows = meta["show_count"], let generated = meta["generated_at"] {
-                catalogStamp = "Show catalog: \(shows) shows · data as of \(String(generated.prefix(10)))"
+        } header: {
+            Text("About")
+        } footer: {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Recordings come directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app re-hosts no music — it streams (and saves for offline) straight from the archive, adding the intelligence layer.")
+                if let stamp = catalogStamp {
+                    Text(stamp)
+                }
             }
         }
+        .listRowBackground(Theme.surface)
     }
 }

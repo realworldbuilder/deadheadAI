@@ -316,11 +316,19 @@ final class ChatMessageRecord {
     var text: String
     var createdAt: Date
     var thread: ChatThread?
+    /// JSON-encoded `[Show]` the reply recommended (assistant rows only);
+    /// nil for user turns and for rows written before cards existed.
+    var showsData: Data?
 
     init(role: String, text: String, createdAt: Date = .now) {
         self.role = role
         self.text = text
         self.createdAt = createdAt
+    }
+
+    var shows: [Show] {
+        get { showsData.flatMap { try? JSONDecoder().decode([Show].self, from: $0) } ?? [] }
+        set { showsData = newValue.isEmpty ? nil : try? JSONEncoder().encode(newValue) }
     }
 }
 

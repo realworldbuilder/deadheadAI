@@ -54,12 +54,8 @@ nonisolated enum RunResolver {
         return start...last
     }
 
-    /// Exact key or whole-word containment, so "caution" matches both
-    /// "caution do not stop on tracks" and a combined "truckin' caution" file
-    /// without letting fragments create false anchors.
     private static func matches(_ trackKey: String, key: String) -> Bool {
-        if trackKey == key { return true }
-        return (" " + trackKey + " ").contains(" " + key + " ")
+        SongKeyMatch.matches(trackKey, key: key)
     }
 }
 

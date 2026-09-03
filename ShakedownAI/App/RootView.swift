@@ -11,6 +11,7 @@ struct RootView: View {
     @AppStorage("didOnboard") private var didOnboard = false
     @State private var showingOnboarding = false
     @State private var stagedShow: Show?
+    @State private var stagedYear: StagedYear?
     @State private var selectedTab: AppTab = {
         // Debug hook: `--tab explore` opens on a given tab (used by CLI verification).
         let args = ProcessInfo.processInfo.arguments
@@ -66,6 +67,23 @@ struct RootView: View {
                 }
                 .environment(env.playerEngine)
             }
+            .fullScreenCover(item: $stagedYear) { staged in
+                NavigationStack {
+                    YearScreen(year: staged.year, count: staged.count)
+                        .navigationDestination(for: Show.self) { ShowDetailScreen(show: $0) }
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    stagedYear = nil
+                                } label: {
+                                    Image(systemName: "xmark")
+                                }
+                                .accessibilityLabel("Close staged year")
+                            }
+                        }
+                }
+                .environment(env.playerEngine)
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { env.library.dedupAfterSync() }
             }
@@ -107,14 +125,34 @@ struct RootView: View {
             || ((old == .paused || old == .finished) && new == .playing)
     }
 
+    private struct StagedYear: Identifiable {
+        let year: Int
+        let count: Int
+        var id: Int { year }
+    }
+
     /// Debug hooks for CLI screenshot staging: `--stage-show` opens the best
     /// Cornell '77 source's show page; `--stage-player` starts it streaming
-    /// and presents the full-screen player. Both drive the real UI so
-    /// captures show live data.
+    /// and presents the full-screen player; `--stage-year 1977` opens that
+    /// year's month-by-month browse; `--stage-show 1972-05-04` picks another
+    /// night, and `--stage-scans` opens the scan viewer on top. All drive
+    /// the real UI so captures show live data.
     private func stageForScreenshotsIfRequested() async {
         let args = ProcessInfo.processInfo.arguments
+        if let index = args.firstIndex(of: "--stage-year"), index + 1 < args.count,
+           let year = Int(args[index + 1]) {
+            let count = await env.catalog.yearCounts().first { $0.year == year }?.count ?? 0
+            stagedYear = StagedYear(year: year, count: count)
+            return
+        }
         guard args.contains("--stage-show") || args.contains("--stage-player") else { return }
-        guard let best = (try? await env.recordingProvider.recordings(forDate: "1977-05-08"))?.first else { return }
+        // `--stage-show 1972-05-04` stages another night (say, one with no scans).
+        var date = "1977-05-08"
+        if let index = args.firstIndex(of: "--stage-show"), index + 1 < args.count,
+           args[index + 1].count == 10, args[index + 1].hasPrefix("19") {
+            date = args[index + 1]
+        }
+        guard let best = (try? await env.recordingProvider.recordings(forDate: date))?.first else { return }
         if args.contains("--stage-show") {
             stagedShow = best
             return
@@ -187,5 +225,4 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(AppEnvironment.mock())
-        .preferredColorScheme(.dark)
 }

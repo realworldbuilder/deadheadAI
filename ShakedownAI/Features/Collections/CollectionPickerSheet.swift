@@ -10,15 +10,15 @@ struct CollectionPickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                SpaceBackground()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(show.shortName)
-                            .font(Theme.mono(13, weight: .semibold))
-                            .foregroundStyle(Theme.accent)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(show.shortName)
+                        .font(Theme.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.textPrimary)
 
-                        ForEach(env.library.collections, id: \.persistentModelID) { collection in
+                    let collections = env.library.collections
+                    VStack(spacing: 0) {
+                        ForEach(Array(collections.enumerated()), id: \.element.persistentModelID) { index, collection in
                             let alreadyIn = (collection.items ?? []).contains { $0.showIdentifier == show.identifier }
                             let saved = alreadyIn || savedTo == collection.name
                             Button {
@@ -27,7 +27,7 @@ struct CollectionPickerSheet: View {
                             } label: {
                                 HStack {
                                     Image(systemName: collection.iconName)
-                                        .foregroundStyle(Theme.accent)
+                                        .foregroundStyle(Theme.textSecondary)
                                         .frame(width: 28)
                                     Text(collection.name)
                                         .font(Theme.body)
@@ -37,36 +37,37 @@ struct CollectionPickerSheet: View {
                                         .foregroundStyle(saved ? Theme.sage : Theme.textTertiary)
                                         .contentTransition(.symbolEffect(.replace))
                                 }
-                                .padding(13)
-                                .cardStyle()
+                                .listRowStyle(divider: index < collections.count - 1)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .disabled(alreadyIn)
                         }
-
-                        HStack(spacing: 10) {
-                            TextField("New collection…", text: $newName)
-                                .font(Theme.body)
-                                .padding(12)
-                                .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
-                            Button {
-                                let collection = env.library.createCollection(name: newName)
-                                env.library.add(show: show, to: collection)
-                                withAnimation(.snappy) { savedTo = collection.name }
-                                newName = ""
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(Theme.accent)
-                            }
-                            .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
-                            .accessibilityLabel("Create collection and save")
-                        }
-                        .padding(.top, 6)
                     }
-                    .padding(Theme.screenPadding)
+
+                    HStack(spacing: 10) {
+                        TextField("New collection…", text: $newName)
+                            .font(Theme.body)
+                            .padding(12)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
+                        Button {
+                            let collection = env.library.createCollection(name: newName)
+                            env.library.add(show: show, to: collection)
+                            withAnimation(.snappy) { savedTo = collection.name }
+                            newName = ""
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                        .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .accessibilityLabel("Create collection and save")
+                    }
+                    .padding(.top, 6)
                 }
+                .padding(Theme.screenPadding)
             }
+            .background(Theme.background)
             .navigationTitle("Save Show")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -76,6 +77,7 @@ struct CollectionPickerSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .presentationBackground(Theme.background)
         .sensoryFeedback(.success, trigger: savedTo)
     }
 }

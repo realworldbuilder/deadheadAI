@@ -20,6 +20,9 @@ final class ShowDetailModel {
     var songAliases: [String: String] = [:]
     /// Ticket stub / poster scan URL for this night, from the catalog.
     var coverImageURL: String?
+    /// Every memorabilia scan for this night, cover first (see `ScanGallery`).
+    var images: [CatalogImage] = []
+    var gallery: ScanGallery { ScanGallery(images: images) }
 
     private let metadata: any MetadataProvider
     private let recordings: any LiveRecordingProvider
@@ -49,6 +52,9 @@ final class ShowDetailModel {
         }
         if songAliases.isEmpty {
             songAliases = await catalog.songAliases()
+        }
+        if images.isEmpty {
+            images = await catalog.images(onDate: day)
         }
         if catalogRecordings.isEmpty {
             for night in await catalog.shows(onDate: day) {
@@ -109,6 +115,14 @@ final class ShowDetailModel {
     }
 }
 
+/// What the full-screen viewer opens on. Carrying the pages keeps the
+/// cover independent of the optional model.
+private struct ScanViewerSelection: Identifiable {
+    let pages: [ImageViewerPage]
+    let index: Int
+    var id: Int { index }
+}
+
 struct ShowDetailScreen: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(PlayerEngine.self) private var engine
@@ -122,29 +136,37 @@ struct ShowDetailScreen: View {
     @State private var isSelectingTracks = false
     @State private var selectedTrackIDs: Set<String> = []
     @State private var playlistSheetPayload: PlaylistSheetPayload?
+    @State private var viewerSelection: ScanViewerSelection?
 
     let show: Show
 
     var body: some View {
+        // A ZStack, not a Group: with `model` nil a Group has no children,
+        // so the `.task` below would never run to create it.
         ZStack {
-            SpaceBackground()
             if let model {
                 content(model)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
         .task {
             if model == nil {
-                model = ShowDetailModel(show: show,
-                                        metadata: env.metadataProvider,
-                                        recordings: env.recordingProvider,
-                                        ai: env.aiProvider,
-                                        downloads: env.downloads,
-                                        catalog: env.catalog)
+                let fresh = ShowDetailModel(show: show,
+                                            metadata: env.metadataProvider,
+                                            recordings: env.recordingProvider,
+                                            ai: env.aiProvider,
+                                            downloads: env.downloads,
+                                            catalog: env.catalog)
+                // The catalog is local SQLite: resolve it before the first
+                // paint so the hero doesn't pop in above the header.
+                await fresh.loadCatalogContext()
+                model = fresh
+                stageScansIfRequested(fresh)
             }
             await model?.load()
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Theme.background, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 ShareLink(
@@ -183,44 +205,79 @@ struct ShowDetailScreen: View {
         }) { payload in
             PlaylistPickerSheet(show: model?.show ?? show, tracks: payload.tracks)
         }
+        .fullScreenCover(item: $viewerSelection) { selection in
+            ImageViewer(pages: selection.pages, initialIndex: selection.index,
+                        credit: "Scan courtesy jerrygarcia.com")
+        }
+    }
+
+    private func openViewer(_ model: ShowDetailModel, scan: CatalogImage) {
+        openViewer(model, at: model.gallery.pageIndex(of: scan, dateText: model.show.displayDate))
+    }
+
+    private func openViewer(_ model: ShowDetailModel, at index: Int) {
+        let pages = model.gallery.viewerPages(dateText: model.show.displayDate)
+        guard !pages.isEmpty else { return }
+        viewerSelection = ScanViewerSelection(pages: pages, index: index)
+    }
+
+    /// Debug hook: `--stage-scans` opens the viewer on the first scan for
+    /// CLI screenshot capture (simctl can't tap).
+    private func stageScansIfRequested(_ model: ShowDetailModel) {
+        guard ProcessInfo.processInfo.arguments.contains("--stage-scans") else { return }
+        openViewer(model, at: 0)
     }
 
     @ViewBuilder
     private func content(_ model: ShowDetailModel) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                header(model)
+            VStack(alignment: .leading, spacing: 0) {
+                if let lead = model.gallery.lead {
+                    ScanHero(image: lead, show: model.show) { openViewer(model, at: 0) }
+                }
+                VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
+                    if model.gallery.showsStrip {
+                        ScanStrip(gallery: model.gallery, dateText: model.show.displayDate) { scan in
+                            openViewer(model, scan: scan)
+                        }
+                    }
+                    header(model, showsArtwork: !model.gallery.hasScans)
 
-                if model.isLoading && model.detail == nil {
-                    LoadingLampView(text: "Tuning in from the archive…")
-                } else if let error = model.errorMessage {
-                    ErrorCard(message: error) {
-                        Task { await model.load() }
-                    }
-                } else if let detail = model.detail {
-                    playButton(model, detail: detail)
-                    downloadButton(model, detail: detail)
-                    famousRunSection(model, detail: detail)
-                    guideSection(model)
-                    if let setlist = model.setlist {
-                        setlistSection(setlist, detail: detail, model: model)
-                    }
-                    trackList(detail, model: model)
-                    if !model.otherRecordings.isEmpty {
-                        sourcesSection(model)
-                    }
-                    if let notes = detail.notes ?? detail.lineage {
-                        notesSection(notes: detail.notes, lineage: detail.lineage, fallback: notes)
-                    }
-                    if let digest = model.digest {
-                        digestCard(digest)
-                    }
-                    if !detail.reviews.isEmpty {
-                        reviewsSection(detail)
+                    if model.isLoading && model.detail == nil {
+                        LoadingLampView(text: "Tuning in from the archive…")
+                    } else if let error = model.errorMessage {
+                        ErrorCard(message: error) {
+                            Task { await model.load() }
+                        }
+                    } else if let detail = model.detail {
+                        VStack(spacing: 10) {
+                            playButton(model, detail: detail)
+                            downloadButton(model, detail: detail)
+                        }
+                        famousRunSection(model, detail: detail)
+                        guideSection(model)
+                        let marks = model.guide.map {
+                            GuideTrackMarks.marks(for: $0, tracks: detail.tracks, aliases: model.songAliases)
+                        } ?? [:]
+                        trackList(detail, model: model, marks: marks)
+                        if !model.otherRecordings.isEmpty {
+                            sourcesSection(model)
+                        }
+                        if let notes = detail.notes ?? detail.lineage {
+                            notesSection(notes: detail.notes, lineage: detail.lineage, fallback: notes)
+                        }
+                        if let digest = model.digest {
+                            digestCard(digest)
+                        }
+                        if !detail.reviews.isEmpty {
+                            reviewsSection(detail)
+                        }
                     }
                 }
+                .padding(.horizontal, Theme.screenPadding)
+                .padding(.bottom, Theme.screenPadding)
+                .padding(.top, model.gallery.hasScans ? Theme.itemSpacing : Theme.screenPadding)
             }
-            .padding(Theme.screenPadding)
         }
         .safeAreaInset(edge: .bottom) {
             if isSelectingTracks, let detail = model.detail {
@@ -239,8 +296,7 @@ struct ShowDetailScreen: View {
                     selectedTrackIDs = []
                 }
             }
-            .font(Theme.mono(13, weight: .semibold))
-            .foregroundStyle(Theme.textSecondary)
+            .buttonStyle(.secondary)
             Spacer()
             Button {
                 // Setlist order, not tap order.
@@ -250,49 +306,49 @@ struct ShowDetailScreen: View {
                 Text(selectedTrackIDs.isEmpty
                      ? "Select tracks"
                      : "Add \(selectedTrackIDs.count) to Playlist")
-                    .font(Theme.mono(13, weight: .bold))
-                    .foregroundStyle(Color.black.opacity(0.85))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Capsule().fill(Theme.accentGradient))
             }
+            .buttonStyle(.primary)
             .disabled(selectedTrackIDs.isEmpty)
-            .opacity(selectedTrackIDs.isEmpty ? 0.6 : 1)
         }
         .padding(.horizontal, Theme.screenPadding)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
+        .background(.bar)
+        .overlay(alignment: .top) { HairlineDivider() }
     }
 
-    private func header(_ model: ShowDetailModel) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+    /// `showsArtwork` keeps the 92pt art (and its borrowed-scan fallbacks)
+    /// for nights without scans; under a hero, the header is just words.
+    private func header(_ model: ShowDetailModel, showsArtwork: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 14) {
-                ShowArtworkView(show: model.show, coverURL: model.coverImageURL, size: 92)
-                VStack(alignment: .leading, spacing: 6) {
+                if showsArtwork {
+                    ShowArtworkView(show: model.show, coverURL: model.coverImageURL, size: 92)
+                }
+                VStack(alignment: .leading, spacing: 4) {
                     Text(model.show.displayDate)
-                        .font(Theme.mono(15, weight: .bold))
-                        .foregroundStyle(Theme.accent)
+                        .font(Theme.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
                     Text(model.show.venue ?? model.show.title)
-                        .font(Theme.display(28))
+                        .font(.title2.weight(.semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
+                    if let location = model.show.location {
+                        Text(location)
+                            .font(Theme.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
                 }
-            }
-            if let location = model.show.location {
-                Text(location)
-                    .font(Theme.body)
-                    .foregroundStyle(Theme.textSecondary)
             }
             HStack(spacing: 8) {
                 // Prefer the pipeline's source detection over the old
                 // identifier substring sniff, which stays as the fallback.
                 if let sourceType = model.sourceType, sourceType != .unknown {
-                    TagPill(text: sourceType.displayName.uppercased(),
+                    TagPill(text: sourceType.displayName,
                             tint: sourceType == .audience ? Theme.denim : Theme.sage)
                 } else if model.show.isSoundboard {
-                    TagPill(text: "SOUNDBOARD", tint: Theme.sage)
+                    TagPill(text: "Soundboard", tint: Theme.sage)
                 }
-                if model.show.isMillerTransfer { TagPill(text: "MILLER", tint: Theme.denim) }
+                if model.show.isMillerTransfer { TagPill(text: "Miller", tint: Theme.denim) }
                 if let rating = model.show.avgRating, rating > 0 {
                     RatingDots(rating: rating)
                 }
@@ -313,20 +369,13 @@ struct ShowDetailScreen: View {
             HStack {
                 Image(systemName: "play.fill")
                 Text(detail.tracks.isEmpty ? "No streamable tracks" : "Play Show")
-                    .font(Theme.mono(15, weight: .bold))
                 Spacer()
                 Text("\(detail.tracks.count) tracks")
-                    .font(Theme.mono(12))
-                    .opacity(0.75)
+                    .font(Theme.footnote)
+                    .opacity(0.8)
             }
-            .foregroundStyle(Color.black.opacity(0.85))
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .fill(Theme.accentGradient)
-            )
         }
+        .buttonStyle(.primary(fullWidth: true))
         .disabled(detail.tracks.isEmpty)
     }
 
@@ -352,24 +401,14 @@ struct ShowDetailScreen: View {
                     Spacer()
                 }
                 if case .inProgress(let progress) = state {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(Theme.stroke.opacity(0.6))
-                            Capsule()
-                                .fill(Theme.accent)
-                                .frame(width: max(4, geo.size.width * progress.fraction))
-                        }
-                    }
-                    .frame(height: 3)
-                    .animation(.snappy, value: progress.fraction)
+                    ProgressView(value: progress.fraction)
+                        .tint(Theme.accent)
+                        .animation(.snappy, value: progress.fraction)
                 }
             }
             .padding(.horizontal, 18)
-            .padding(.vertical, 13)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .stroke(Theme.stroke, lineWidth: 1)
-            )
+            .padding(.vertical, 12)
+            .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 1))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -393,23 +432,23 @@ struct ShowDetailScreen: View {
         switch state {
         case .notDownloaded:
             Label("Download Show", systemImage: "arrow.down.circle")
-                .font(Theme.mono(13, weight: .semibold))
+                .font(Theme.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.textPrimary)
         case .inProgress(let progress):
             Label("Downloading… \(min(progress.completedTracks + 1, progress.totalTracks)) of \(progress.totalTracks)",
                   systemImage: "arrow.down.circle.dotted")
-                .font(Theme.mono(13, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .font(Theme.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textSecondary)
         case .downloaded(let bytes):
             Label(bytes > 0
                     ? "Downloaded · \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))"
                     : "Downloaded",
                   systemImage: "checkmark.circle.fill")
-                .font(Theme.mono(13, weight: .semibold))
+                .font(Theme.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.sage)
         case .failed(let done, let total):
             Label("Download incomplete (\(done) of \(total)) — Retry", systemImage: "exclamationmark.arrow.circlepath")
-                .font(Theme.mono(13, weight: .semibold))
+                .font(Theme.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.textPrimary)
         }
     }
@@ -438,94 +477,31 @@ struct ShowDetailScreen: View {
             Button {
                 Task { await model.loadGuide() }
             } label: {
-                HStack {
+                HStack(spacing: 12) {
                     Image(systemName: "sparkles")
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Listening Guide")
                             .font(Theme.headline)
                             .foregroundStyle(Theme.textPrimary)
                         Text("Mood, history, transitions, and what to listen for.")
-                            .font(Theme.caption)
+                            .font(Theme.footnote)
                             .foregroundStyle(Theme.textSecondary)
                     }
                     Spacer()
                     if model.isLoadingGuide {
-                        ProgressView().tint(Theme.accent)
+                        ProgressView().tint(Theme.textSecondary)
                     } else {
-                        Image(systemName: "chevron.down.circle")
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
-                .padding(14)
-                .cardStyle(raised: true)
+                .padding(Theme.cardPadding)
+                .cardStyle()
             }
             .buttonStyle(.plain)
             .disabled(model.isLoadingGuide)
-        }
-    }
-
-    /// The real setlist (sets, encores, segues) from the catalog, aligned
-    /// against this tape so every song the taper caught is one tap away.
-    private func setlistSection(_ setlist: Setlist, detail: RecordingDetail,
-                                model: ShowDetailModel) -> some View {
-        let matched = SetlistMatcher.align(setlist.sets.flatMap(\.entries), with: detail.tracks,
-                                           aliases: model.songAliases)
-        let indexByPosition = Dictionary(uniqueKeysWithValues: matched.map { ($0.entry.position, $0.trackIndex) })
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("Setlist").sectionHeaderStyle()
-            VStack(alignment: .leading, spacing: 14) {
-                ForEach(setlist.sets) { set in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(set.label.uppercased())
-                            .font(Theme.mono(11, weight: .bold))
-                            .foregroundStyle(Theme.accent)
-                        ForEach(set.entries, id: \.position) { entry in
-                            let trackIndex = indexByPosition[entry.position] ?? nil
-                            Button {
-                                if let trackIndex {
-                                    engine.play(show: model.show, tracks: detail.tracks, startAt: trackIndex)
-                                }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Text(entry.songTitle)
-                                        .font(Theme.body)
-                                        .foregroundStyle(trackIndex == nil ? Theme.textTertiary : Theme.textPrimary)
-                                        .lineLimit(1)
-                                    if entry.seguesIntoNext {
-                                        Text(">")
-                                            .font(Theme.mono(12, weight: .bold))
-                                            .foregroundStyle(Theme.accent)
-                                    }
-                                    Spacer()
-                                    if trackIndex != nil {
-                                        Image(systemName: "play.circle")
-                                            .font(.system(size: 13))
-                                            .foregroundStyle(Theme.textTertiary)
-                                    }
-                                }
-                                .padding(.vertical, 5)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(trackIndex == nil)
-                        }
-                    }
-                }
-                if setlist.status == .partial {
-                    Text("Partial setlist — reconstructed from taper notes.")
-                        .font(Theme.caption)
-                        .foregroundStyle(Theme.textTertiary)
-                }
-                if matched.contains(where: { $0.trackIndex == nil }) {
-                    Text("Dimmed songs aren't on this tape.")
-                        .font(Theme.caption)
-                        .foregroundStyle(Theme.textTertiary)
-                }
-            }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
         }
     }
 
@@ -537,8 +513,8 @@ struct ShowDetailScreen: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     RatingDots(rating: digest.derivedRating)
-                    Text(digest.sentiment.uppercased())
-                        .font(Theme.mono(10, weight: .bold))
+                    Text(digest.sentiment)
+                        .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Text(digest.consensusSummary)
@@ -547,82 +523,139 @@ struct ShowDetailScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
                 if !digest.standoutSongs.isEmpty {
                     Text("Standouts: " + digest.standoutSongs.joined(separator: " · "))
-                        .font(Theme.mono(11))
-                        .foregroundStyle(Theme.accent)
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(digest.ratingRationale)
-                    .font(Theme.mono(10))
+                    .font(.caption2)
                     .foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle(raised: true)
         }
     }
 
-    private func trackList(_ detail: RecordingDetail, model: ShowDetailModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(model.setlist == nil ? "Setlist" : "On This Tape").sectionHeaderStyle()
+    /// One list for the whole night: the tape's tracks in order, shaped by
+    /// the catalog setlist — set headings where the sets break, segue marks
+    /// on the matched tracks, and songs the tape is missing dimmed in place.
+    private func trackList(_ detail: RecordingDetail, model: ShowDetailModel,
+                           marks: [Int: GuideMarks]) -> some View {
+        let rows = TapeSetlist.rows(setlist: model.setlist, tracks: detail.tracks,
+                                    aliases: model.songAliases)
+        return VStack(alignment: .leading, spacing: 4) {
+            Text("Setlist").sectionHeaderStyle()
             VStack(spacing: 0) {
-                ForEach(Array(detail.tracks.enumerated()), id: \.element.id) { index, track in
-                    Button {
-                        if isSelectingTracks {
-                            toggleSelection(track)
-                        } else {
-                            engine.play(show: model.show, tracks: detail.tracks, startAt: index)
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            if isSelectingTracks {
-                                Image(systemName: selectedTrackIDs.contains(track.id)
-                                      ? "checkmark.circle.fill" : "circle")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(selectedTrackIDs.contains(track.id)
-                                                     ? Theme.accent : Theme.textTertiary)
-                                    .contentTransition(.symbolEffect(.replace))
-                            } else {
-                                Text(String(format: "%02d", index + 1))
-                                    .font(Theme.mono(12))
-                                    .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textTertiary)
-                            }
-                            Text(track.title)
-                                .font(Theme.body)
-                                .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textPrimary)
-                                .lineLimit(1)
-                            Spacer()
-                            Text(track.displayDuration)
-                                .font(Theme.mono(12))
-                                .foregroundStyle(Theme.textTertiary)
-                        }
-                        .padding(.vertical, 11)
-                        .padding(.horizontal, 12)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        Button {
-                            playlistSheetPayload = PlaylistSheetPayload(tracks: [track])
-                        } label: {
-                            Label("Add to Playlist…", systemImage: "music.note.list")
-                        }
-                        Button {
-                            withAnimation(.snappy) {
-                                isSelectingTracks = true
-                                selectedTrackIDs = [track.id]
-                            }
-                        } label: {
-                            Label("Select Tracks…", systemImage: "checklist")
-                        }
-                    }
-                    if index < detail.tracks.count - 1 {
-                        Divider().overlay(Theme.stroke.opacity(0.5)).padding(.leading, 34)
+                ForEach(Array(rows.enumerated()), id: \.element.id) { position, row in
+                    let isLast = position == rows.count - 1
+                    let divider = !isLast && !rows[position + 1].isHeading
+                    switch row {
+                    case .heading(let label):
+                        Text(label)
+                            .eyebrowStyle()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, position == 0 ? 0 : 16)
+                            .padding(.bottom, 4)
+                    case .track(let index, let segues):
+                        trackRow(detail.tracks[index], index: index, segues: segues,
+                                 divider: divider, detail: detail, model: model, marks: marks)
+                    case .missing(let entry):
+                        missingRow(entry, divider: divider)
                     }
                 }
             }
-            .cardStyle()
+            if model.setlist?.status == .partial {
+                Text("Partial setlist — reconstructed from taper notes.")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.top, 8)
+            }
+            if rows.contains(where: \.isMissing) {
+                Text("Dimmed songs aren't on this tape.")
+                    .font(Theme.caption)
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.top, 8)
+            }
+            let used = marks.values.reduce(GuideMarks()) { $0.union($1) }
+            if !used.isEmpty {
+                GuideMarkLegend(marks: used)
+            }
         }
+    }
+
+    private func trackRow(_ track: Track, index: Int, segues: Bool, divider: Bool,
+                          detail: RecordingDetail, model: ShowDetailModel,
+                          marks: [Int: GuideMarks]) -> some View {
+        Button {
+            if isSelectingTracks {
+                toggleSelection(track)
+            } else {
+                engine.play(show: model.show, tracks: detail.tracks, startAt: index)
+            }
+        } label: {
+            HStack(spacing: 12) {
+                if isSelectingTracks {
+                    Image(systemName: selectedTrackIDs.contains(track.id)
+                          ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 16))
+                        .foregroundStyle(selectedTrackIDs.contains(track.id)
+                                         ? Theme.accent : Theme.textTertiary)
+                        .contentTransition(.symbolEffect(.replace))
+                        .frame(width: 24)
+                } else {
+                    Text(String(format: "%02d", index + 1))
+                        .font(Theme.timecode)
+                        .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textTertiary)
+                        .frame(width: 24, alignment: .leading)
+                }
+                Text(track.displayTitle)
+                    .font(isCurrent(track, model) ? Theme.body.weight(.semibold) : Theme.body)
+                    .foregroundStyle(isCurrent(track, model) ? Theme.accent : Theme.textPrimary)
+                    .lineLimit(1)
+                GuideMarkGlyphs(marks: marks[index] ?? [])
+                if segues {
+                    SegueMark()
+                }
+                Spacer()
+                Text(track.displayDuration)
+                    .font(Theme.timecode)
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .listRowStyle(divider: divider)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                playlistSheetPayload = PlaylistSheetPayload(tracks: [track])
+            } label: {
+                Label("Add to Playlist…", systemImage: "music.note.list")
+            }
+            Button {
+                withAnimation(.snappy) {
+                    isSelectingTracks = true
+                    selectedTrackIDs = [track.id]
+                }
+            } label: {
+                Label("Select Tracks…", systemImage: "checklist")
+            }
+        }
+    }
+
+    /// A setlist song this tape doesn't carry: dimmed, unnumbered, inert.
+    private func missingRow(_ entry: SetlistEntry, divider: Bool) -> some View {
+        HStack(spacing: 12) {
+            Color.clear.frame(width: 24, height: 1)
+            Text(entry.songTitle)
+                .font(Theme.body)
+                .foregroundStyle(Theme.textTertiary)
+                .lineLimit(1)
+            if entry.seguesIntoNext {
+                SegueMark()
+            }
+            Spacer()
+        }
+        .listRowStyle(divider: divider)
+        .accessibilityLabel("\(entry.songTitle), not on this tape")
     }
 
     private func isCurrent(_ track: Track, _ model: ShowDetailModel) -> Bool {
@@ -639,59 +672,65 @@ struct ShowDetailScreen: View {
     }
 
     private func sourcesSection(_ model: ShowDetailModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let visible = Array(model.otherRecordings.prefix(showingSources ? 30 : 3))
+        return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("Other Sources").sectionHeaderStyle()
                 Spacer()
                 Text("\(model.otherRecordings.count)")
-                    .font(Theme.mono(12))
+                    .font(Theme.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
             Text("Same night, different tapes — soundboards, audience mics, and matrix mixes each hear the room differently.")
-                .font(Theme.caption)
+                .font(Theme.footnote)
                 .foregroundStyle(Theme.textSecondary)
-            ForEach(model.otherRecordings.prefix(showingSources ? 30 : 3)) { other in
-                Button {
-                    Task { await model.switchSource(to: other) }
-                } label: {
-                    sourceRow(other, model: model)
+                .padding(.bottom, 4)
+            VStack(spacing: 0) {
+                ForEach(Array(visible.enumerated()), id: \.element.id) { index, other in
+                    Button {
+                        Task { await model.switchSource(to: other) }
+                    } label: {
+                        sourceRow(other, model: model, divider: index < visible.count - 1)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             if model.otherRecordings.count > 3 {
                 Button(showingSources ? "Show fewer" : "Show all \(model.otherRecordings.count) sources") {
                     withAnimation(.snappy) { showingSources.toggle() }
                 }
-                .font(Theme.mono(12, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .font(Theme.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
             }
         }
     }
 
     /// "SBD · ★4.8 (156 reviews) · Betty Cantor" when the catalog knows this
     /// tape; identifier + rating dots otherwise.
-    private func sourceRow(_ other: Show, model: ShowDetailModel) -> some View {
+    private func sourceRow(_ other: Show, model: ShowDetailModel, divider: Bool) -> some View {
         let info = model.catalogRecordings[other.identifier]
         let sourceType = info?.sourceType ?? (other.isSoundboard ? .soundboard : .unknown)
+        let tint = sourceType == .audience || sourceType == .unknown ? Theme.denim : Theme.sage
         let isDownloaded: Bool = {
             if case .downloaded = env.downloads.displayState(for: other.identifier) { return true }
             return false
         }()
-        return HStack(spacing: 10) {
+        return HStack(spacing: 12) {
             Image(systemName: sourceType.systemImage)
-                .foregroundStyle(sourceType == .audience || sourceType == .unknown ? Theme.denim : Theme.sage)
-                .frame(width: 22)
+                .foregroundStyle(tint)
+                .frame(width: 24)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(sourceType.badge)
-                        .font(Theme.mono(10, weight: .bold))
-                        .foregroundStyle(sourceType == .audience || sourceType == .unknown ? Theme.denim : Theme.sage)
+                        .font(Theme.caption.weight(.semibold))
+                        .foregroundStyle(tint)
                     if let rating = other.avgRating, rating > 0 {
                         RatingDots(rating: rating, showValue: true)
                     }
                     if let reviews = other.numReviews, reviews > 0 {
                         Text("(\(reviews))")
-                            .font(Theme.mono(10))
+                            .font(Theme.caption)
                             .foregroundStyle(Theme.textTertiary)
                     }
                     if isDownloaded {
@@ -701,16 +740,17 @@ struct ShowDetailScreen: View {
                     }
                 }
                 Text(info?.taper.map { "Taper: \($0)" } ?? other.identifier)
-                    .font(Theme.mono(11))
+                    .font(Theme.footnote)
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
             }
             Spacer()
-            Image(systemName: "arrow.right.circle")
+            Image(systemName: "chevron.right")
+                .font(.caption)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .padding(10)
-        .cardStyle()
+        .listRowStyle(divider: divider)
+        .contentShape(Rectangle())
     }
 
     private func notesSection(notes: String?, lineage: String?, fallback: String) -> some View {
@@ -725,22 +765,22 @@ struct ShowDetailScreen: View {
                 }
                 if let lineage {
                     Text(lineage)
-                        .font(Theme.mono(10))
+                        .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(4)
                 }
             }
-            .padding(Theme.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
         }
     }
 
     private func reviewsSection(_ detail: RecordingDetail) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let reviews = Array(detail.reviews.prefix(visibleReviewCount))
+        return VStack(alignment: .leading, spacing: 4) {
             Text("From the Community").sectionHeaderStyle()
-            ForEach(Array(detail.reviews.prefix(visibleReviewCount).enumerated()), id: \.offset) { _, review in
-                ReviewCard(review: review)
+            VStack(spacing: 0) {
+                ForEach(Array(reviews.enumerated()), id: \.offset) { index, review in
+                    ReviewCard(review: review, divider: index < reviews.count - 1)
+                }
             }
             if detail.reviews.count > 5 {
                 HStack(spacing: 16) {
@@ -755,8 +795,9 @@ struct ShowDetailScreen: View {
                         }
                     }
                 }
-                .font(Theme.mono(12, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .font(Theme.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
             }
         }
     }
@@ -789,33 +830,32 @@ struct FamousRunCard: View {
                 HStack(spacing: 6) {
                     Image(systemName: "flame.fill")
                         .font(.system(size: 12))
-                        .foregroundStyle(Theme.accent)
-                    Text("FAMOUS RUN")
-                        .font(Theme.mono(11, weight: .bold))
-                        .foregroundStyle(Theme.accent)
+                    Text("Famous run")
+                        .font(Theme.footnote.weight(.semibold))
                     Spacer()
                     Text(runLength)
-                        .font(Theme.mono(11))
+                        .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                 }
+                .foregroundStyle(Theme.textSecondary)
                 Text(run.title)
                     .font(Theme.headline)
                     .foregroundStyle(Theme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(run.blurb)
-                    .font(Theme.caption)
+                    .font(Theme.footnote)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 6) {
                     Image(systemName: "play.circle.fill")
                     Text("Play the run")
-                        .font(Theme.mono(12, weight: .semibold))
+                        .font(Theme.subheadline.weight(.semibold))
                 }
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.textSecondary)
             }
-            .padding(14)
+            .padding(Theme.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle(raised: true)
+            .cardStyle()
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -824,6 +864,7 @@ struct FamousRunCard: View {
 
 private struct ReviewCard: View {
     let review: Review
+    var divider = true
     @State private var isExpanded = false
 
     private var isLongBody: Bool {
@@ -853,17 +894,24 @@ private struct ReviewCard: View {
                 Button(isExpanded ? "Show less" : "Read more") {
                     withAnimation(.snappy) { isExpanded.toggle() }
                 }
-                .font(Theme.mono(12, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .font(Theme.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textSecondary)
             }
             if let reviewer = review.reviewer {
                 Text("— \(reviewer)")
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
         }
-        .padding(Theme.cardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
+        .listRowStyle(divider: divider)
+    }
+}
+
+/// The setlist's segue marker, shown after a song that runs into the next.
+private struct SegueMark: View {
+    var body: some View {
+        Text(">")
+            .font(Theme.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.denim)
     }
 }

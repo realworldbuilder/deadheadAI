@@ -44,6 +44,50 @@ nonisolated enum SourceType: String, Codable, Sendable, CaseIterable {
     }
 }
 
+/// One memorabilia scan for a night — ticket stub, backstage pass or
+/// poster — hotlinked from jerrygarcia.com. Ordered per date, cover first.
+nonisolated struct CatalogImage: Sendable, Hashable, Identifiable {
+    nonisolated enum Kind: String, Sendable, CaseIterable {
+        case ticket
+        case backstagePass = "backstage_pass"
+        case poster
+        case other
+
+        var label: String {
+            switch self {
+            case .ticket: "Ticket"
+            case .backstagePass: "Backstage pass"
+            case .poster: "Poster"
+            case .other: "Scan"
+            }
+        }
+
+        /// Fits under a thumbnail.
+        var shortLabel: String {
+            self == .backstagePass ? "Pass" : label
+        }
+    }
+
+    /// Plain "yyyy-MM-dd"; scans belong to the night, not an early/late row.
+    var date: String
+    var position: Int
+    var kind: Kind
+    var url: String
+    /// Pixel size of the rendition the page served — trustworthy as an
+    /// aspect ratio, not as the original's resolution. Nil for posters,
+    /// whose page thumbnails are square crops.
+    var width: Int?
+    var height: Int?
+
+    var id: String { url }
+
+    /// width / height when both are known and positive.
+    var aspectRatio: Double? {
+        guard let width, let height, width > 0, height > 0 else { return nil }
+        return Double(width) / Double(height)
+    }
+}
+
 /// One night (or one early/late show) in the catalog.
 nonisolated struct CatalogShow: Sendable, Hashable, Identifiable {
     /// "1977-05-08", with "-early"/"-late" suffix for double-show dates.
@@ -64,7 +108,8 @@ nonisolated struct CatalogShow: Sendable, Hashable, Identifiable {
     var avgRating: Double?
     var totalReviews: Int
     var totalDownloads: Int
-    /// Ticket stub / poster scan from jerrygarcia.com, hotlinked.
+    /// The night's lead memorabilia scan from jerrygarcia.com, hotlinked —
+    /// always `show_images` position 0 (see `CatalogImage`).
     var coverImageURL: String?
 
     var id: String { showID }

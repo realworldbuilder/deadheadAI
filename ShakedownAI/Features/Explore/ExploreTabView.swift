@@ -11,10 +11,11 @@ struct ExploreTabView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.scenePhase) private var scenePhase
     @State private var sky = ExploreSkyModel()
+    @State private var motion = SkyMotion()
 
     private enum Destination: Hashable {
         case search, topShelf, eras, songs, journeys, darkStar, onThisDay,
-             journal, taste, vault
+             journal, taste, years
     }
 
     /// One labelled body in the map. `position` is where the *body* sits in
@@ -27,7 +28,7 @@ struct ExploreTabView: View {
         var bodySize: CGFloat = 46
         let position: UnitPoint
         let side: LabelSide
-        var tint: Color = Theme.textPrimary
+        var tint: Color = Sky.ink
         /// Rotation of the body's art — only the comet listens, so its tail
         /// can stream away from the sun.
         var heading: Angle = .zero
@@ -40,42 +41,47 @@ struct ExploreTabView: View {
     private static let labelGap: CGFloat = 10
     private static let amber = Color(red: 1.0, green: 0.86, blue: 0.42)
 
-    /// A scatter, not a system. No rings, no mirrored pairs — every body
-    /// hangs at its own height and drift, the way stars actually fall across
-    /// a sky. Positions are hand-jittered: nothing shares a row or column
-    /// with its neighbour, and everything steers clear of the emblem and
-    /// wordmark in the middle. Sizes run 40–60 so the sky has near and far.
+    /// A ring around the emblem, the way dead.net hung its sections around
+    /// the stealie: one body at the top, one at the foot, and four pairs
+    /// mirrored left and right at matched heights. Not ruler-straight —
+    /// the drift keeps it breathing — but balanced, so the eye reads the
+    /// whole sky at once. Sizes run 40–60 so there's still near and far.
     private let stars: [Star] = [
+        // Crown
         Star(id: "darkStar", destination: .darkStar, title: "Dark Star",
-             style: .galaxy, bodySize: 40, position: UnitPoint(x: 0.62, y: 0.10),
+             style: .galaxy, bodySize: 40, position: UnitPoint(x: 0.50, y: 0.13),
              side: .top, tint: Color(red: 0.64, green: 0.74, blue: 1.0)),
+        // First pair: the sun and the ringed planet
         Star(id: "search", destination: .search, title: "Ask the\nArchive",
-             style: .sun, bodySize: 58, position: UnitPoint(x: 0.18, y: 0.19),
+             style: .sun, bodySize: 58, position: UnitPoint(x: 0.17, y: 0.27),
              side: .trailing, tint: amber),
         Star(id: "eras", destination: .eras, title: "Eras",
-             style: .ringed, bodySize: 50, position: UnitPoint(x: 0.83, y: 0.22),
-             side: .bottom),
+             style: .ringed, bodySize: 50, position: UnitPoint(x: 0.83, y: 0.27),
+             side: .leading),
+        // Second pair, level with the emblem's shoulders
         Star(id: "onThisDay", destination: .onThisDay, title: "On This\nDay",
-             style: .moon, bodySize: 40, position: UnitPoint(x: 0.17, y: 0.38),
+             style: .moon, bodySize: 40, position: UnitPoint(x: 0.17, y: 0.45),
              side: .bottom),
         Star(id: "taste", destination: .taste, title: "Your\nTaste",
-             style: .starburst, bodySize: 40, position: UnitPoint(x: 0.84, y: 0.45),
-             side: .top),
+             style: .starburst, bodySize: 40, position: UnitPoint(x: 0.83, y: 0.45),
+             side: .bottom),
+        // Third pair, level with the wordmark
+        Star(id: "years", destination: .years, title: "Years",
+             style: .nebula, bodySize: 50, position: UnitPoint(x: 0.16, y: 0.64),
+             side: .bottom),
         Star(id: "songs", destination: .songs, title: "Songs",
-             style: .spiral, bodySize: 60, position: UnitPoint(x: 0.78, y: 0.60),
+             style: .spiral, bodySize: 60, position: UnitPoint(x: 0.84, y: 0.64),
              side: .bottom),
-        Star(id: "vault", destination: .vault, title: "The\nVault",
-             style: .nebula, bodySize: 50, position: UnitPoint(x: 0.10, y: 0.53),
-             side: .trailing),
-        // The sun sits up at (0.18, 0.19); the comet's tail streams away from it.
+        // Fourth pair; the comet's tail streams away from the sun above it.
         Star(id: "journeys", destination: .journeys, title: "Long\nStrange Trip",
-             style: .comet, bodySize: 52, position: UnitPoint(x: 0.21, y: 0.655),
-             side: .trailing, heading: .degrees(125)),
+             style: .comet, bodySize: 52, position: UnitPoint(x: 0.25, y: 0.79),
+             side: .bottom, heading: .degrees(120)),
         Star(id: "journal", destination: .journal, title: "Journal",
-             style: .wireGlobe, bodySize: 40, position: UnitPoint(x: 0.42, y: 0.74),
+             style: .wireGlobe, bodySize: 40, position: UnitPoint(x: 0.75, y: 0.79),
              side: .bottom),
+        // Foot
         Star(id: "topShelf", destination: .topShelf, title: "Top Shelf",
-             style: .cluster, bodySize: 56, position: UnitPoint(x: 0.68, y: 0.82),
+             style: .cluster, bodySize: 56, position: UnitPoint(x: 0.50, y: 0.84),
              side: .bottom, tint: amber),
     ]
 
@@ -91,9 +97,14 @@ struct ExploreTabView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                SpaceBackground()
-                TwinkleLayer()
-                    .ignoresSafeArea()
+                // Far layer: the field itself barely moves with the phone.
+                ZStack {
+                    StarfieldBackground()
+                    TwinkleLayer()
+                        .ignoresSafeArea()
+                }
+                .scaleEffect(1.05)
+                .offset(parallax(depth: 4))
                 GeometryReader { proxy in
                     let w = proxy.size.width
                     let h = proxy.size.height
@@ -102,21 +113,27 @@ struct ExploreTabView: View {
                             let (style, size, point) = scenery[i]
                             PlanetView(style: style, size: size)
                                 .opacity(0.75)
+                                .modifier(SkyDrift(seed: 100 + i, amplitude: 3))
                                 .position(x: point.x * w, y: point.y * h)
+                                .offset(parallax(depth: 8))
                                 .allowsHitTesting(false)
                                 .accessibilityHidden(true)
                         }
 
                         emblem
+                            .modifier(SkyDrift(seed: 7, amplitude: 2))
                             .position(x: 0.5 * w, y: 0.50 * h)
+                            .offset(parallax(depth: 18))
 
-                        ForEach(stars) { star in
+                        ForEach(Array(stars.enumerated()), id: \.element.id) { index, star in
                             NavigationLink(value: star.destination) {
                                 starLabel(star)
                             }
                             .buttonStyle(StarButtonStyle(glow: star.tint))
+                            .modifier(SkyDrift(seed: index, amplitude: 5))
                             .position(x: star.position.x * w + offset(star).width,
                                       y: star.position.y * h + offset(star).height)
+                            .offset(parallax(depth: 12))
                         }
                     }
                     .frame(width: w, height: h)
@@ -126,7 +143,11 @@ struct ExploreTabView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .task { await sky.refresh(env: env) }
-            .onAppear { Task { await sky.refresh(env: env) } }
+            .onAppear {
+                motion.start()
+                Task { await sky.refresh(env: env) }
+            }
+            .onDisappear { motion.stop() }
             .onChange(of: scenePhase) { _, phase in
                 guard phase == .active else { return }
                 Task { await sky.refresh(env: env) }
@@ -151,7 +172,7 @@ struct ExploreTabView: View {
                     )
                 case .darkStar:
                     DarkStarScreen()
-                case .vault:
+                case .years:
                     BrowseScreen()
                 case .journal:
                     JournalListScreen()
@@ -166,24 +187,29 @@ struct ExploreTabView: View {
                 NotableShowResolverScreen(notable: notable)
             }
         }
-        .tint(Theme.accent)
+        .tint(Theme.textPrimary)
     }
 
-    /// The centrepiece: our spiral over the wordmark, the way the old page
-    /// hung its logo in the middle of the solar system. It's the biggest
-    /// thing on the map, so it goes somewhere: tonight's show.
+    /// The centrepiece: the wordmark over the rooted-stealie mark, the way
+    /// the old page hung GRATEFUL DEAD over the stealie in the middle of the
+    /// solar system, with tonight's moon named beneath. It's the biggest thing on
+    /// the map, so it goes somewhere: tonight's show.
     @ViewBuilder
     private var emblem: some View {
-        let art = VStack(spacing: 6) {
-            SpiralMandala(size: 116)
-                .shadow(color: Theme.denim.opacity(0.5), radius: 26)
+        let art = VStack(spacing: 8) {
             Text("TapeTree")
-                .font(Theme.display(21))
-                .chromeText()
+                .font(.system(size: 22, weight: .bold, design: .serif))
+                .skyChrome()
+            AppMark(size: 124)
+                .overlay(Circle().strokeBorder(Sky.accent.opacity(0.35), lineWidth: 1))
+                .shadow(color: Sky.accent.opacity(0.45), radius: 28)
+            Text(MoonPhase.name(for: sky.moonPhase))
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundStyle(Sky.inkFaint)
         }
         if let hero = sky.hero {
             NavigationLink(value: hero) { art }
-                .buttonStyle(StarButtonStyle(glow: Theme.denim))
+                .buttonStyle(StarButtonStyle(glow: Sky.accent))
                 .accessibilityLabel("Tonight's show")
         } else {
             art.allowsHitTesting(false)
@@ -242,8 +268,8 @@ struct ExploreTabView: View {
         if let line = captionText(for: star) {
             let lines = CGFloat(star.title.split(separator: "\n").count)
             Text(line)
-                .font(Theme.mono(10))
-                .foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundStyle(Sky.inkSoft)
                 .shadow(color: .black, radius: 3)
                 .lineLimit(1)
                 .fixedSize()
@@ -255,8 +281,14 @@ struct ExploreTabView: View {
         switch star.id {
         case "onThisDay": sky.onThisDayCaption
         case "journal": sky.journalCaption
+        case "years": sky.yearsCaption
         default: nil
         }
+    }
+
+    /// Parallax: nearer layers slide further with the phone's tilt.
+    private func parallax(depth: CGFloat) -> CGSize {
+        CGSize(width: motion.tilt.width * depth, height: motion.tilt.height * depth)
     }
 
     private func offset(_ star: Star) -> CGSize {
@@ -282,7 +314,6 @@ struct DarkStarScreen: View {
 
     var body: some View {
         ZStack {
-            SpaceBackground()
             if let show {
                 ShowDetailScreen(show: show)
             } else if failed {
@@ -297,6 +328,8 @@ struct DarkStarScreen: View {
                 LoadingLampView(text: "Following the Dark Star…")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
         .task { await resolve() }
     }
 
@@ -311,5 +344,4 @@ struct DarkStarScreen: View {
 #Preview {
     ExploreTabView()
         .environment(AppEnvironment.mock())
-        .preferredColorScheme(.dark)
 }

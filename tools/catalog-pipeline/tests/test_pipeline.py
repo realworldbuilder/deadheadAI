@@ -8,6 +8,7 @@ import songcanon  # noqa: E402
 import sourcetype  # noqa: E402
 from stage3_setlists import parse_show_file  # noqa: E402
 from stage4_build import parse_archive_setlist, quality_score, recover_segues, set_labels  # noqa: E402
+from stage_images import classify, gallery_items, memorabilia, pick_image  # noqa: E402
 
 
 # --- songcanon -----------------------------------------------------------
@@ -173,3 +174,53 @@ def test_blob_tags():
         downloads_percentile=0.99)
     assert "soundboard" in blob and "top-rated" in blob and "popular" in blob
     assert "Scarlet Begonias" in blob
+
+
+# --- jerrygarcia.com galleries -------------------------------------------
+
+GALLERY_PAGE = """
+<div class="photos">
+<a class="fancybox-show" rel="show_images" data-link="https://jerrygarcia.com/image/grateful-dead-poster-1990-03-24/" title="" href="https://cdn.jerrygarcia.com/u/19900324.jpeg">
+    <img width="360" height="360" src="https://cdn.jerrygarcia.com/u/19900324.jpeg" class="attachment-360x360" />
+</a>
+<a class="fancybox-show" rel="show_images" data-link="https://jerrygarcia.com/image/nassau-coliseum-1990-03-29/" href="https://cdn.jerrygarcia.com/u/fanphoto.jpeg">
+    <img width="360" height="360" src="https://cdn.jerrygarcia.com/u/fanphoto.jpeg" />
+</a>
+</div>
+<div class="tickets">
+<a class="fancybox-show" rel="ticket_gallery"  data-link="https://jerrygarcia.com/image/1990-03-29-grateful-dead-backstage-pass/" href="https://cdn.jerrygarcia.com/u/b900329.jpeg"><img width="324" height="216" src="https://cdn.jerrygarcia.com/u/b900329.jpeg" /></a><a href="https://cdn.jerrygarcia.com/u/t900329.jpeg" rel="ticket_gallery" class="fancybox-show" data-link="https://jerrygarcia.com/image/1990-03-29-grateful-dead-ticket/"><img height="157" width="319" src="https://cdn.jerrygarcia.com/u/t900329.jpeg" /></a>
+</div>
+"""
+
+
+def test_classify_slugs():
+    assert classify("https://jerrygarcia.com/image/1989-07-07-grateful-dead-ticket/") == "ticket"
+    assert classify("https://jerrygarcia.com/image/1989-07-07-grateful-dead-backstage-pass/") == "backstage_pass"
+    assert classify("https://jerrygarcia.com/image/grateful-dead-poster-1990-03-24/") == "poster"
+    # odd Ticket Archive slugs the old "-ticket" suffix test missed
+    assert classify("https://jerrygarcia.com/image/9-5-79-stub/") == "ticket"
+    assert classify("https://jerrygarcia.com/image/1988-06-28-grateful-deadticket/") == "ticket"
+    assert classify("https://jerrygarcia.com/image/ticket1993/") == "ticket"
+    assert classify("https://jerrygarcia.com/image/nassau-coliseum-1990-03-29/") == "other"
+
+
+def test_gallery_items_reads_both_carousels_in_document_order():
+    items = gallery_items(GALLERY_PAGE)
+    assert [i["rel"] for i in items] == ["show_images", "show_images", "ticket_gallery", "ticket_gallery"]
+    # attribute order doesn't matter
+    assert items[3]["url"] == "https://cdn.jerrygarcia.com/u/t900329.jpeg"
+    assert (items[3]["width"], items[3]["height"]) == (319, 157)
+
+
+def test_memorabilia_keeps_posters_drops_fan_photos_orders_ticket_first():
+    scans = memorabilia(gallery_items(GALLERY_PAGE))
+    assert [s["kind"] for s in scans] == ["ticket", "poster", "backstage_pass"]
+    assert all("fanphoto" not in s["url"] for s in scans)
+    # Ticket Archive keeps its aspect-true dimensions; Photos thumbs are crops
+    assert (scans[0]["width"], scans[0]["height"]) == (319, 157)
+    assert (scans[1]["width"], scans[1]["height"]) == (None, None)
+
+
+def test_cover_is_first_memorabilia_entry():
+    assert pick_image(GALLERY_PAGE) == memorabilia(gallery_items(GALLERY_PAGE))[0]["url"]
+    assert pick_image("<p>no gallery</p>") is None

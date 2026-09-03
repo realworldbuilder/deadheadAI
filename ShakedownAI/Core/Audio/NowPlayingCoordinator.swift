@@ -67,7 +67,7 @@ final class NowPlayingCoordinator {
             return
         }
         var info: [String: Any] = [
-            MPMediaItemPropertyTitle: track.title,
+            MPMediaItemPropertyTitle: track.displayTitle,
             MPMediaItemPropertyArtist: "Grateful Dead",
             MPMediaItemPropertyAlbumTitle: "\(show.displayDate) — \(show.venue ?? "Live")",
             MPNowPlayingInfoPropertyElapsedPlaybackTime: engine.elapsed,
@@ -110,7 +110,10 @@ final class NowPlayingCoordinator {
         }
     }
 
-    private static let stubAmber = UIColor(red: 0.90, green: 0.73, blue: 0.44, alpha: 1)
+    private static let stubPaper = UIColor(red: 0.96, green: 0.94, blue: 0.89, alpha: 1)
+    private static let stubRust = UIColor(red: 0.66, green: 0.36, blue: 0.14, alpha: 1)
+    private static let stubInk = UIColor(white: 0.10, alpha: 1)
+    private static let stubInkSoft = UIColor(white: 0.36, alpha: 1)
 
     static func renderStubImage(dateText: String, venueText: String,
                                 layout: StubLayout = .square) -> UIImage {
@@ -145,41 +148,17 @@ final class NowPlayingCoordinator {
         }
     }
 
-    /// Deep space with a scatter of stars, like the 1996 home page.
+    /// Cream ticket stock, flat, like a stub that never saw the rain.
     private static func drawStubSpace(in ctx: UIGraphicsImageRendererContext, size: CGSize) {
-        UIColor(red: 0.05, green: 0.04, blue: 0.11, alpha: 1).setFill()
+        stubPaper.setFill()
         ctx.fill(CGRect(origin: .zero, size: size))
-        var seed: UInt64 = 0x5EED
-        func rand() -> CGFloat {
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return CGFloat((seed >> 33) % 10_000) / 10_000
-        }
-        // Keep the star density constant as the canvas widens.
-        let count = Int(90 * (size.width * size.height) / (600 * 600))
-        for _ in 0..<count {
-            let alpha = 0.35 + 0.6 * rand()
-            UIColor(white: 1, alpha: alpha).setFill()
-            let r = rand() > 0.85 ? 2.2 : 1.3
-            ctx.cgContext.fillEllipse(in: CGRect(x: rand() * size.width,
-                                                 y: rand() * size.height,
-                                                 width: r, height: r))
-        }
     }
 
-    /// The mask, glowing amber. Clipped to a circle so the icon tile's
-    /// square corners never show.
+    /// The mark, like a foil seal on the stub. Clipped to a circle so the
+    /// icon tile's square corners never show.
     private static func drawStubMark(in ctx: UIGraphicsImageRendererContext,
                                      center: CGPoint, diameter: CGFloat) {
         guard let mark = UIImage(named: "NowPlayingMark") else { return }
-        let glow = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                              colors: [stubAmber.withAlphaComponent(0.28).cgColor,
-                                       UIColor.clear.cgColor] as CFArray,
-                              locations: [0, 1])
-        if let glow {
-            ctx.cgContext.drawRadialGradient(glow, startCenter: center, startRadius: 0,
-                                             endCenter: center, endRadius: diameter * 0.75,
-                                             options: [])
-        }
         let markRect = CGRect(x: center.x - diameter / 2, y: center.y - diameter / 2,
                               width: diameter, height: diameter)
         ctx.cgContext.saveGState()
@@ -201,23 +180,23 @@ final class NowPlayingCoordinator {
         ("GRATEFUL DEAD" as NSString).draw(
             in: titleRect,
             withAttributes: [
-                .font: UIFont.monospacedSystemFont(ofSize: titleSize, weight: .bold),
-                .foregroundColor: stubAmber,
+                .font: UIFont.systemFont(ofSize: titleSize, weight: .semibold),
+                .foregroundColor: stubRust,
                 .paragraphStyle: paragraph,
-                .kern: 3,
+                .kern: 1,
             ])
         (dateText as NSString).draw(
             in: dateRect,
             withAttributes: [
-                .font: UIFont.monospacedSystemFont(ofSize: dateSize, weight: .medium),
-                .foregroundColor: UIColor(white: 0.94, alpha: 1),
+                .font: UIFont.systemFont(ofSize: dateSize, weight: .semibold),
+                .foregroundColor: stubInk,
                 .paragraphStyle: paragraph,
             ])
         (venueText as NSString).draw(
             in: venueRect,
             withAttributes: [
                 .font: UIFont.systemFont(ofSize: venueSize, weight: .regular),
-                .foregroundColor: UIColor(white: 0.72, alpha: 1),
+                .foregroundColor: stubInkSoft,
                 .paragraphStyle: paragraph,
             ])
     }

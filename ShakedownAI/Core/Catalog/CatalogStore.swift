@@ -11,6 +11,10 @@ protocol ShowCatalog: AnyObject {
     func show(withID id: String) async -> CatalogShow?
     func shows(onDate date: String) async -> [CatalogShow]
     func shows(inYear year: Int) async -> [CatalogShow]
+    /// Cover scans from the nights nearest `date` (not `date` itself), nearest first.
+    func nearestCovers(toDate date: String, limit: Int) async -> [String]
+    /// Every memorabilia scan for a night (ticket, pass, poster), cover first.
+    func images(onDate date: String) async -> [CatalogImage]
     func shows(onMonthDay monthDay: String) async -> [CatalogShow]
     func topRated(yearRange: ClosedRange<Int>?, limit: Int) async -> [CatalogShow]
     func recordings(forShow showID: String) async -> [CatalogRecording]
@@ -72,6 +76,14 @@ final class CatalogStore: ShowCatalog {
 
     func shows(onDate date: String) async -> [CatalogShow] {
         await db?.shows(onDate: date) ?? []
+    }
+
+    func nearestCovers(toDate date: String, limit: Int) async -> [String] {
+        await db?.nearestCoverImageURLs(toDate: date, limit: limit) ?? []
+    }
+
+    func images(onDate date: String) async -> [CatalogImage] {
+        await db?.images(onDate: date) ?? []
     }
 
     func shows(inYear year: Int) async -> [CatalogShow] {

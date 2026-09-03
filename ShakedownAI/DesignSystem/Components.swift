@@ -2,13 +2,16 @@ import SwiftUI
 
 // MARK: - Cassette
 
-/// Vintage cassette with reels that spin while playing.
+/// Vintage cassette with reels that spin while playing. A physical object
+/// with its own palette, so it looks the same by day and by night.
 struct CassetteView: View {
     var isPlaying: Bool
     var labelTop: String
     var labelBottom: String
 
     @State private var spin = false
+
+    private let shellStroke = Color.white.opacity(0.12)
 
     var body: some View {
         ZStack {
@@ -21,18 +24,18 @@ struct CassetteView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Theme.stroke, lineWidth: 1.5)
+                        .strokeBorder(shellStroke, lineWidth: 1.5)
                 )
 
             VStack(spacing: 10) {
                 // Label
                 VStack(spacing: 3) {
                     Text(labelTop)
-                        .font(Theme.mono(13, weight: .bold))
+                        .font(.footnote.weight(.semibold))
                         .lineLimit(1)
                         .foregroundStyle(Color(red: 0.2, green: 0.17, blue: 0.13))
                     Text(labelBottom)
-                        .font(Theme.mono(10))
+                        .font(.caption2)
                         .lineLimit(1)
                         .foregroundStyle(Color(red: 0.35, green: 0.3, blue: 0.24))
                 }
@@ -59,7 +62,7 @@ struct CassetteView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.black.opacity(0.55))
-                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.stroke))
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(shellStroke))
                 )
                 .padding(.horizontal, 30)
 
@@ -105,7 +108,7 @@ struct CassetteView: View {
 
 // MARK: - Rating dots
 
-/// Five amber dots, like backlit meter lamps.
+/// Five dots, lit in the accent up to the rating.
 struct RatingDots: View {
     var rating: Double   // 0...5
     var showValue = true
@@ -114,13 +117,12 @@ struct RatingDots: View {
         HStack(spacing: 4) {
             ForEach(0..<5, id: \.self) { i in
                 Circle()
-                    .fill(Double(i) < rating.rounded() ? Theme.accent : Theme.surfaceRaised)
-                    .overlay(Circle().strokeBorder(Theme.stroke, lineWidth: 0.5))
+                    .fill(Double(i) < rating.rounded() ? Theme.accent : Theme.stroke)
                     .frame(width: 7, height: 7)
             }
             if showValue {
                 Text(String(format: "%.1f", rating))
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -131,43 +133,41 @@ struct RatingDots: View {
 
 // MARK: - Tags
 
+/// A quiet outlined chip. Neutral by default; pass a tint (sage for a
+/// soundboard, denim for an audience tape) when the tag carries meaning.
 struct TagPill: View {
     var text: String
-    var tint: Color = Theme.accent
+    var tint: Color? = nil
 
     var body: some View {
         Text(text)
-            .font(Theme.mono(11, weight: .semibold))
-            .foregroundStyle(tint)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(Capsule().fill(tint.opacity(0.14)))
-            .overlay(Capsule().strokeBorder(tint.opacity(0.35), lineWidth: 0.5))
+            .font(Theme.caption.weight(.medium))
+            .foregroundStyle(tint ?? Theme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .overlay(Capsule().strokeBorder(tint?.opacity(0.5) ?? Theme.stroke, lineWidth: 1))
     }
 }
 
 // MARK: - Show row (reused by lists everywhere)
 
+/// A show as a hairline row: its cover on the left, date, venue and
+/// location, then a chevron. Stack them in a `VStack(spacing: 0)`; each
+/// draws its own rule.
 struct ShowRow: View {
     var show: Show
+    var divider = true
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(spacing: 1) {
-                Text(monthDay)
-                    .font(Theme.mono(15, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                Text(yearText)
-                    .font(Theme.mono(11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            .frame(width: 56)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Theme.surfaceRaised))
+            ShowThumbnail(show: show, size: 56)
 
             VStack(alignment: .leading, spacing: 3) {
+                Text(show.displayDate)
+                    .font(Theme.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
                 Text(show.venue ?? show.title)
-                    .font(Theme.headline)
+                    .font(Theme.body)
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 HStack(spacing: 8) {
@@ -190,18 +190,9 @@ struct ShowRow: View {
                 .font(.caption)
                 .foregroundStyle(Theme.textTertiary)
         }
-        .padding(10)
-        .cardStyle()
+        .listRowStyle(divider: divider)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-    }
-
-    private var monthDay: String {
-        guard let ds = show.dateString, ds.count == 10 else { return "—" }
-        return String(ds.dropFirst(5)).replacingOccurrences(of: "-", with: "/")
-    }
-
-    private var yearText: String {
-        show.year.map(String.init) ?? String(show.dateString?.prefix(4) ?? "")
     }
 }
 
@@ -220,7 +211,7 @@ struct LoadingLampView: View {
                 .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: glow)
                 .onAppear { glow = true }
             Text(text)
-                .font(Theme.mono(12))
+                .font(Theme.footnote)
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
@@ -246,9 +237,9 @@ struct ArchiveOfflineBanner: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 9)
-                .background(Capsule().fill(Theme.surface))
-                .overlay(Capsule().strokeBorder(Theme.rose.opacity(0.5)))
-                .shadow(color: .black.opacity(0.4), radius: 8, y: 2)
+                .background(Capsule().fill(.regularMaterial))
+                .overlay(Capsule().strokeBorder(Theme.stroke))
+                .shadow(color: .black.opacity(0.12), radius: 8, y: 2)
                 .padding(.horizontal, Theme.screenPadding)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
@@ -273,8 +264,8 @@ struct ErrorCard: View {
                 .multilineTextAlignment(.center)
             if let retry {
                 Button("Try Again", action: retry)
-                    .font(Theme.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
+                    .font(Theme.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textPrimary)
             }
         }
         .frame(maxWidth: .infinity)

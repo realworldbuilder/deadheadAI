@@ -17,6 +17,11 @@ archive.org queries for anything the catalog doesn't know.
   cached under `cache/setlists/` (commit it, so the pipeline can rebuild
   forever without the origin). Pre-1972 setlists fall back to archive.org's
   per-item `setlist` field (`setlist_status = partial`).
+- **jerrygarcia.com** — the Ticket Archive (ticket scans, backstage passes)
+  and the poster entries of each show page's Photos carousel (fan venue
+  snapshots are skipped). URLs only, hotlinked at runtime — no scan is
+  redistributed. Every show page is cached under `cache/jgimages/`
+  (committed), so `make images` rebuilds `show_images` offline.
 
 We copy no third-party app's data or code; setlists are facts, ratings math
 and source detection are reimplemented here (see `sourcetype.py`,
@@ -29,6 +34,7 @@ make crawl      # stage 1: list the collection (minutes)
 make setlists   # stage 3: CMU setlists (cached after first run)
 make metadata   # stage 2: per-item metadata, 8 workers @ ~5 req/s (~1h cold, resume-safe)
 make build      # stage 4: emit out/catalog.sqlite + build report with regression gates
+make images     # jerrygarcia.com galleries -> cache/jgimages/gallery.json, then re-embeds (offline)
 make digests    # stage 5: AI review digests (needs OPENAI_API_KEY), then re-embeds
 make fixture    # small catalog for ShakedownAITests
 make install    # copy out/catalog.sqlite into the app bundle resources
@@ -48,4 +54,7 @@ uploads. Run it manually (monthly-ish); never wire it into CI on push.
 falls back to network-only), `generated_at`, counts, and the git commit.
 Settings → About surfaces the stamp. Bump `SCHEMA_VERSION` in
 `stage4_build.py` *and* `expectedSchemaVersion` in
-`ShakedownAI/Core/Catalog/CatalogDB.swift` together.
+`ShakedownAI/Core/Catalog/CatalogDB.swift` together. Schema 2 added
+`show_images` (every memorabilia scan per date, position 0 == the show's
+`cover_image_url`). The `git_commit` stamp is the HEAD the build ran on,
+i.e. the commit *before* the one that lands the rebuilt catalog.

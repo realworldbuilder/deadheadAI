@@ -292,16 +292,20 @@ final class LocalKnowledgeAI: AIProvider {
         if let song = kb.song(matching: question) ?? Self.songMention(in: question, kb: kb) {
             out.append("Ah, \(ChatLink.song(song.key, label: song.title)) — good taste.")
             out.append(song.evolution)
+            // One show per line: the chat renders each as a card carrying
+            // the note after the dash.
             if let first = song.famousVersions.first {
-                out.append("If you only hear one version, make it \(Self.showLink(first.date, kb: kb)): \(first.note)")
+                out.append("If you only hear one version, make it this one:\n\(Self.showLink(first.date, kb: kb)) — \(first.note)\n")
             }
             if song.famousVersions.count > 1 {
-                let rest = song.famousVersions.dropFirst().map { "\(Self.showLink($0.date, kb: kb)) (\($0.label ?? "essential"))" }
-                out.append("Then chase down \(rest.joined(separator: ", ")).")
+                let rest = song.famousVersions.dropFirst().map { "\(Self.showLink($0.date, kb: kb)) — \($0.label ?? "essential")" }
+                out.append("Then chase down:\n" + rest.joined(separator: "\n") + "\n")
             }
-            let runs = kb.runs(containing: song.key).prefix(2)
-            for run in runs {
-                out.append("It's also half the story of a famous run: \(run.title) from \(Self.showLink(run.date, kb: kb)).")
+            // Runs already covered as a famous version would just repeat the card.
+            let listed = Set(song.famousVersions.map(\.date))
+            let runs = kb.runs(containing: song.key).filter { !listed.contains($0.date) }.prefix(2)
+            if !runs.isEmpty {
+                out.append("It's also half the story of a famous run:\n" + runs.map { "\(Self.showLink($0.date, kb: kb)) — \($0.title)" }.joined(separator: "\n") + "\n")
             }
             return out
         }
@@ -313,7 +317,7 @@ final class LocalKnowledgeAI: AIProvider {
             out.append(era.context)
             let picks = kb.shows(inEra: era.id).prefix(3)
             if !picks.isEmpty {
-                out.append("Start with " + picks.map { "\(Self.showLink($0.date, kb: kb)) at \($0.venue)" }.joined(separator: ", then ") + ".")
+                out.append("Start with these:\n" + picks.map { "\(Self.showLink($0.date, kb: kb)) — \($0.blurb)" }.joined(separator: "\n") + "\n")
             }
             return out
         }
@@ -322,14 +326,14 @@ final class LocalKnowledgeAI: AIProvider {
             out.append(era.summary)
             let picks = kb.shows(inEra: era.id).prefix(3)
             if !picks.isEmpty {
-                out.append("Start with " + picks.map { Self.showLink($0.date, kb: kb) }.joined(separator: ", then ") + ".")
+                out.append("Start with these:\n" + picks.map { "\(Self.showLink($0.date, kb: kb)) — \($0.blurb)" }.joined(separator: "\n") + "\n")
             }
             return out
         }
         if lower.contains("wall of sound") {
             out.append("The Wall of Sound was the band's 1974 mega-PA: over 600 speakers, the band mixing themselves onstage, every instrument with its own column of sound.")
             out.append("It was glorious and unsustainable — hauling it broke the crew and the budget, and it pushed the band into the 1975 hiatus.")
-            out.append("To hear it: \(Self.showLink("1974-05-19", kb: kb)), \(Self.showLink("1974-06-18", kb: kb)), or the Winterland farewell \(Self.showLink("1974-10-18", kb: kb)) that October.")
+            out.append("To hear it:\n\(Self.showLink("1974-05-19", kb: kb)) — the Wall in full flight\n\(Self.showLink("1974-06-18", kb: kb)) — every instrument in its own column of air\n\(Self.showLink("1974-10-18", kb: kb)) — the Winterland farewell that October\n")
             return out
         }
 
@@ -339,12 +343,11 @@ final class LocalKnowledgeAI: AIProvider {
             if lower.contains(venueLower) || lower.contains(show.date) ||
                 (venueLower.contains("cornell") && lower.contains("cornell")) ||
                 (show.location.lowercased().contains("veneta") && lower.contains("veneta")) {
-                out.append("\(ChatLink.show(show.date, label: "\(Self.prettyDate(show.date)), \(show.venue)")), \(show.location).")
-                out.append(show.blurb)
+                out.append("\(ChatLink.show(show.date, label: "\(Self.prettyDate(show.date)), \(show.venue)")) — \(show.blurb)\n")
                 out.append("Listen for: \(show.standoutSongs.joined(separator: ", ")).")
                 let related = kb.related(to: show, limit: 2)
                 if !related.isEmpty {
-                    out.append("If that one lands, go next to " + related.map { Self.showLink($0.date, kb: kb) }.joined(separator: " or ") + ".")
+                    out.append("If that one lands, go next to:\n" + related.map { "\(Self.showLink($0.date, kb: kb)) — \($0.blurb)" }.joined(separator: "\n") + "\n")
                 }
                 return out
             }
@@ -357,7 +360,7 @@ final class LocalKnowledgeAI: AIProvider {
             if !picks.isEmpty {
                 out.append(Self.openingLine(forTags: tags))
                 for pick in picks {
-                    out.append("\(ChatLink.show(pick.date, label: "\(Self.prettyDate(pick.date)) at \(pick.venue)")): \(pick.blurb)")
+                    out.append("\n\(ChatLink.show(pick.date, label: "\(Self.prettyDate(pick.date)) at \(pick.venue)")) — \(pick.blurb)\n")
                 }
                 return out
             }

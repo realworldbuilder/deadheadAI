@@ -3,7 +3,7 @@ import Foundation
 /// Where the moon is in its month, as a fraction of a lunation: 0 is new,
 /// 0.5 is full, and it wraps back toward 0. Plain arithmetic from a reference
 /// new moon — no ephemeris — so it lands within a few hours of the truth,
-/// which is all a forty-point moon on the Explore sky needs.
+/// which is all a dateline needs.
 nonisolated enum MoonPhase {
     /// Mean length of a lunation, in days.
     static let synodicMonth: Double = 29.530588853
@@ -18,5 +18,16 @@ nonisolated enum MoonPhase {
         // `floor` already handles dates before the reference; clamp the
         // floating-point edge so the result is always in 0..<1.
         return fraction >= 1 ? 0 : max(fraction, 0)
+    }
+
+    /// The eight traditional phase names, by nearest eighth of the cycle.
+    static let names = [
+        "New moon", "Waxing crescent", "First quarter", "Waxing gibbous",
+        "Full moon", "Waning gibbous", "Last quarter", "Waning crescent",
+    ]
+
+    static func name(for fraction: Double) -> String {
+        let index = Int((fraction * 8).rounded()) % 8
+        return names[index]
     }
 }

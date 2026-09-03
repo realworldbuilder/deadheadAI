@@ -7,29 +7,28 @@ struct DownloadsScreen: View {
     @State private var confirmingDelete: String?
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    // changeToken re-runs the fetch after store mutations.
-                    let _ = env.downloads.store.changeToken
-                    let records = env.downloads.store.allRecords()
-                    if records.isEmpty {
-                        emptyState
-                    } else {
-                        summaryLine(records: records)
-                        ForEach(records, id: \.identifier) { record in
-                            row(record)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                // changeToken re-runs the fetch after store mutations.
+                let _ = env.downloads.store.changeToken
+                let records = env.downloads.store.allRecords()
+                if records.isEmpty {
+                    emptyState
+                } else {
+                    summaryLine(records: records)
+                    VStack(spacing: 0) {
+                        ForEach(Array(records.enumerated()), id: \.element.identifier) { index, record in
+                            row(record, divider: index < records.count - 1)
                         }
                     }
                 }
-                .padding(Theme.screenPadding)
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle("Downloads")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Theme.background, for: .navigationBar)
         .confirmationDialog("Remove this download?",
                             isPresented: Binding(get: { confirmingDelete != nil },
                                                  set: { if !$0 { confirmingDelete = nil } }),
@@ -54,20 +53,19 @@ struct DownloadsScreen: View {
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(Theme.cardPadding)
+        .padding(.vertical, Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
     }
 
     private func summaryLine(records: [DownloadedShowRecord]) -> some View {
         let total = records.reduce(Int64(0)) { $0 + $1.totalBytes }
         return Text("\(records.count) \(records.count == 1 ? "show" : "shows") · \(ByteCountFormatter.string(fromByteCount: total, countStyle: .file))")
-            .font(Theme.mono(12))
+            .font(Theme.caption)
             .foregroundStyle(Theme.textTertiary)
     }
 
     @ViewBuilder
-    private func row(_ record: DownloadedShowRecord) -> some View {
+    private func row(_ record: DownloadedShowRecord, divider: Bool) -> some View {
         let show = try? JSONDecoder().decode(Show.self, from: record.showPayload)
         let state = env.downloads.displayState(for: record.identifier)
         NavigationLink(value: show ?? Show(identifier: record.identifier, title: record.identifier,
@@ -94,27 +92,20 @@ struct DownloadsScreen: View {
                     } label: {
                         Image(systemName: "trash")
                             .font(.footnote)
-                            .foregroundStyle(Theme.textTertiary)
+                            .foregroundStyle(Theme.rose)
                             .padding(6)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Remove download")
                 }
                 if case .inProgress(let progress) = state {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(Theme.stroke.opacity(0.6))
-                            Capsule()
-                                .fill(Theme.accent)
-                                .frame(width: max(4, geo.size.width * progress.fraction))
-                        }
-                    }
-                    .frame(height: 3)
-                    .animation(.snappy, value: progress.fraction)
+                    ProgressView(value: progress.fraction)
+                        .tint(Theme.accent)
+                        .animation(.snappy, value: progress.fraction)
                 }
             }
-            .padding(14)
-            .cardStyle()
+            .listRowStyle(divider: divider)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -125,9 +116,9 @@ struct DownloadsScreen: View {
         case .downloaded:
             Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.sage)
         case .inProgress:
-            ProgressView().tint(Theme.accent)
+            ProgressView().tint(Theme.textSecondary)
         case .failed:
-            Image(systemName: "exclamationmark.circle").foregroundStyle(Theme.accent)
+            Image(systemName: "exclamationmark.circle").foregroundStyle(Theme.rose)
         case .notDownloaded:
             Image(systemName: "arrow.down.circle").foregroundStyle(Theme.textTertiary)
         }

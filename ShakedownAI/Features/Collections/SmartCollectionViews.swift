@@ -17,7 +17,7 @@ struct SmartShelfSection: View {
                 } label: {
                     Image(systemName: "arrow.clockwise")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                 }
                 .disabled(engine?.isRefreshing ?? true)
                 .accessibilityLabel("Refresh shelves")
@@ -74,7 +74,7 @@ struct SmartShelfStrip: View {
             if !collections.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                     Text("Shelves For Right Now").sectionHeaderStyle()
                 }
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -102,112 +102,107 @@ struct SmartCollectionCard: View {
     let collection: SmartCollection
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: collection.iconName)
                     .font(.footnote)
-                    .foregroundStyle(Theme.accent)
-                Text(collection.badge)
-                    .font(Theme.mono(10, weight: .bold))
-                    .tracking(1.6)
-                    .foregroundStyle(Theme.accent)
+                Text(collection.badge.sentenceCased)
+                    .font(Theme.footnote.weight(.semibold))
                 Spacer()
-                Text("\(collection.items.count)")
-                    .font(Theme.mono(11))
+                Text("\(collection.items.count) shows")
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
+            .foregroundStyle(Theme.textSecondary)
 
             Text(collection.title)
-                .font(Theme.display(24))
+                .font(Theme.title)
                 .foregroundStyle(Theme.textPrimary)
 
             Text(collection.blurb)
-                .font(Theme.body)
+                .font(Theme.subheadline)
                 .foregroundStyle(Theme.textSecondary)
-                .lineLimit(3)
+                .lineLimit(2)
 
+            // The shelf itself: the tapes, spine out.
             HStack(spacing: 6) {
-                ForEach(collection.items.prefix(3)) { item in
-                    Text(LocalKnowledgeAI.prettyDate(item.date))
-                        .font(Theme.mono(10, weight: .semibold))
-                        .foregroundStyle(Theme.textTertiary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Capsule().fill(Theme.surface))
+                ForEach(collection.items.prefix(5)) { item in
+                    ShowThumbnail(show: Self.thumbShow(item), size: 52)
                 }
-                if collection.items.count > 3 {
-                    Text("+\(collection.items.count - 3)")
-                        .font(Theme.mono(10))
+                if collection.items.count > 5 {
+                    Text("+\(collection.items.count - 5)")
+                        .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
+            .padding(.top, 2)
         }
-        .padding(16)
+        .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle(raised: true)
+        .cardStyle()
+    }
+
+    /// A show just complete enough for the artwork chain to find its cover.
+    static func thumbShow(_ item: SmartCollectionItem) -> Show {
+        let venue = SmartCollectionMiniCard.venueOnly(item.title)
+        return Show(identifier: item.identifier ?? "", title: venue, date: IADates.parse(item.date),
+                    dateString: item.date, venue: venue, location: nil,
+                    year: Int(item.date.prefix(4)), avgRating: nil, numReviews: nil,
+                    downloads: nil, source: nil)
     }
 }
 
-/// Compact variant for the Home shelf.
+/// Compact variant for the Home shelf: the first show's art on top, the
+/// shelf's name beneath it.
 struct SmartCollectionMiniCard: View {
     @Environment(AppEnvironment.self) private var env
     let collection: SmartCollection
 
     @State private var coverImage: UIImage?
 
+    /// Item titles arrive as "5/26/72 — Lyceum Theatre"; the tile already
+    /// sets the date, so keep only the venue.
+    static func venueOnly(_ title: String) -> String {
+        guard let range = title.range(of: " — ") else { return title }
+        return String(title[range.upperBound...])
+    }
+
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // The shelf's first show lends its poster or stub as the face;
-            // a scrim keeps the type readable over any scan.
-            Color.clear
-                .overlay {
-                    if let coverImage {
-                        Image(uiImage: coverImage)
-                            .resizable()
-                            .scaledToFill()
-                    } else if let first = collection.items.first {
-                        Image(uiImage: StubArtwork.image(
-                            for: .artworkPlaceholder(date: first.date, venue: first.title)))
-                            .resizable()
-                            .scaledToFill()
-                    }
+        VStack(alignment: .leading, spacing: 6) {
+            Group {
+                if let coverImage {
+                    Image(uiImage: coverImage)
+                        .resizable()
+                        .scaledToFill()
+                } else if let first = collection.items.first {
+                    ArtworkPlaceholder(date: LocalKnowledgeAI.prettyDate(first.date),
+                                       venue: Self.venueOnly(first.title))
+                } else {
+                    ArtworkPlaceholder(venue: collection.title)
                 }
-                .clipped()
-            LinearGradient(
-                stops: [
-                    .init(color: .black.opacity(0.25), location: 0),
-                    .init(color: .black.opacity(0.85), location: 1),
-                ],
-                startPoint: .top, endPoint: .bottom)
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 5) {
-                    Image(systemName: collection.iconName)
-                        .font(.caption2)
-                    Text(collection.badge)
-                        .font(Theme.mono(9, weight: .bold))
-                        .tracking(1.4)
-                        .lineLimit(1)
-                }
-                .foregroundStyle(Theme.accent)
-                Text(collection.title)
-                    .font(Theme.headline)
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                    .shadow(color: .black.opacity(0.6), radius: 2, y: 1)
-                Text("\(collection.items.count) shows")
-                    .font(Theme.mono(10))
-                    .foregroundStyle(.white.opacity(0.7))
             }
-            .padding(12)
+                .frame(width: 165, height: 100)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.stroke))
+            HStack(spacing: 4) {
+                Image(systemName: collection.iconName)
+                    .font(.caption2)
+                Text(collection.badge.sentenceCased)
+                    .font(.caption2.weight(.semibold))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(Theme.textSecondary)
+            Text(collection.title)
+                .font(Theme.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(2)
+            Text("\(collection.items.count) shows")
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
         }
-        .frame(width: 165, height: 160)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(Theme.stroke, lineWidth: 1)
-        )
+        .frame(width: 165, alignment: .leading)
         .task(id: collection.id) {
-            for item in collection.items.prefix(3) {
+            for item in collection.items {
                 if let found = await ArchiveArtwork.shared.cover(
                     date: item.date, identifier: item.identifier, catalog: env.catalog) {
                     coverImage = found
@@ -232,22 +227,22 @@ struct SmartCollectionDetailScreen: View {
     }
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    header
-                    pinButton
-                        .animation(.snappy, value: pinState)
-                    ForEach(collection.items) { item in
-                        itemLink(item)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                header
+                pinButton
+                    .animation(.snappy, value: pinState)
+                VStack(spacing: 0) {
+                    ForEach(Array(collection.items.enumerated()), id: \.element.id) { index, item in
+                        itemLink(item, divider: index < collection.items.count - 1)
                     }
-                    footer
                 }
-                .padding(Theme.screenPadding)
+                footer
             }
-            .withMiniPlayer()
+            .padding(Theme.screenPadding)
         }
+        .background(Theme.background)
+        .withMiniPlayer()
         .navigationTitle(collection.title)
         .navigationBarTitleDisplayMode(.inline)
         .task { if engine == nil { engine = SmartCollectionEngine(env: env) } }
@@ -257,17 +252,16 @@ struct SmartCollectionDetailScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: collection.iconName)
-                    .foregroundStyle(Theme.accent)
-                Text(collection.badge)
-                    .font(Theme.mono(10, weight: .bold))
-                    .tracking(1.8)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
+                Text(collection.badge.sentenceCased)
+                    .font(Theme.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
             }
             Text(collection.title)
-                .font(Theme.display(32))
+                .font(Theme.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
             Text(collection.blurb)
-                .font(.system(.body, design: .serif).italic())
+                .font(.callout)
                 .foregroundStyle(Theme.textSecondary)
         }
     }
@@ -286,53 +280,52 @@ struct SmartCollectionDetailScreen: View {
                 }
             } label: {
                 Label("Keep this shelf", systemImage: "tray.and.arrow.down.fill")
-                    .font(Theme.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Capsule().strokeBorder(Theme.accent.opacity(0.5)))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.primary)
         case .saving:
             HStack(spacing: 8) {
-                ProgressView().tint(Theme.accent)
+                ProgressView().tint(Theme.textSecondary)
                 Text("Finding the best tapes…")
-                    .font(Theme.mono(12))
+                    .font(Theme.subheadline)
                     .foregroundStyle(Theme.textSecondary)
             }
+            .padding(.vertical, 12)
         case .saved(let name):
             Label("Saved to Collections as “\(name)”", systemImage: "checkmark.circle.fill")
-                .font(Theme.mono(12))
+                .font(Theme.subheadline.weight(.medium))
                 .foregroundStyle(Theme.sage)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 12)
         }
     }
 
     @ViewBuilder
-    private func itemLink(_ item: SmartCollectionItem) -> some View {
+    private func itemLink(_ item: SmartCollectionItem, divider: Bool) -> some View {
         // A resolved identifier goes straight to the show; a bare date routes
         // through the resolver, which finds the best surviving tape.
         if let identifier = item.identifier {
             NavigationLink(value: showStub(for: item, identifier: identifier)) {
-                itemRow(item)
+                itemRow(item, divider: divider)
             }
             .buttonStyle(.plain)
         } else {
             NavigationLink(value: notableStub(for: item)) {
-                itemRow(item)
+                itemRow(item, divider: divider)
             }
             .buttonStyle(.plain)
         }
     }
 
-    private func itemRow(_ item: SmartCollectionItem) -> some View {
+    private func itemRow(_ item: SmartCollectionItem, divider: Bool) -> some View {
         HStack(alignment: .top, spacing: 12) {
+            ShowThumbnail(show: showStub(for: item, identifier: item.identifier ?? ""), size: 56)
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .font(Theme.headline)
                     .foregroundStyle(Theme.textPrimary)
                 if !item.subtitle.isEmpty {
                     Text(item.subtitle)
-                        .font(Theme.mono(11))
+                        .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Text(item.note)
@@ -346,21 +339,21 @@ struct SmartCollectionDetailScreen: View {
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.top, 4)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
+        .listRowStyle(divider: divider)
+        .contentShape(Rectangle())
     }
 
     private var footer: some View {
         Text("Curated by \(collection.curatedBy) · \(collection.generatedAt.formatted(.relative(presentation: .named)))")
-            .font(Theme.mono(10))
+            .font(.caption2)
             .foregroundStyle(Theme.textTertiary)
             .padding(.top, 4)
     }
 
     private func showStub(for item: SmartCollectionItem, identifier: String) -> Show {
-        Show(identifier: identifier, title: item.title, date: IADates.parse(item.date),
-             dateString: item.date, venue: item.title, location: nil,
+        let venue = SmartCollectionMiniCard.venueOnly(item.title)
+        return Show(identifier: identifier, title: venue, date: IADates.parse(item.date),
+             dateString: item.date, venue: venue, location: nil,
              year: Int(item.date.prefix(4)), avgRating: nil, numReviews: nil,
              downloads: nil, source: nil)
     }
@@ -368,8 +361,19 @@ struct SmartCollectionDetailScreen: View {
     /// The resolver only needs the date; the rest is display sugar.
     private func notableStub(for item: SmartCollectionItem) -> NotableShow {
         env.knowledgeBase.notableShow(on: item.date)
-            ?? NotableShow(date: item.date, venue: item.title, location: item.subtitle,
+            ?? NotableShow(date: item.date, venue: SmartCollectionMiniCard.venueOnly(item.title), location: item.subtitle,
                            eraID: "", tags: [], blurb: item.note, standoutSongs: [],
                            preferredIdentifier: nil)
+    }
+}
+
+private extension String {
+    /// "WHAT THE ARCHIVE LOVES" → "What the archive loves";
+    /// "DEEP CUT · WEDNESDAY" → "Deep cut · Wednesday".
+    var sentenceCased: String {
+        components(separatedBy: " · ").map { part -> String in
+            guard let first = part.first else { return part }
+            return first.uppercased() + part.dropFirst().lowercased()
+        }.joined(separator: " · ")
     }
 }

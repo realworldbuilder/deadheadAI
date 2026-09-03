@@ -71,3 +71,48 @@ struct ChatLinkTests {
         #expect(reply.contains("[[show:"))
     }
 }
+
+// MARK: - Inline markdown
+
+struct ChatMarkdownRenderTests {
+
+    private func hasBold(_ rendered: AttributedString) -> Bool {
+        rendered.runs.contains { $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true }
+    }
+
+    @Test func boldRendersAsStyleNotAsterisks() {
+        let rendered = ChatLink.render("A **bold** word", linkColor: .red)
+        #expect(String(rendered.characters) == "A bold word")
+        #expect(hasBold(rendered))
+    }
+
+    @Test func emphasisStraddlingATokenStillLinks() {
+        let text = "**\(ChatLink.show("1977-05-08", label: "Cornell")) rules**"
+        let rendered = ChatLink.render(text, linkColor: .red)
+        #expect(String(rendered.characters) == "Cornell rules")
+        #expect(rendered.runs.compactMap(\.link).count == 1)
+        #expect(!String(rendered.characters).contains("*"))
+    }
+
+    @Test func blockSyntaxAndSegueArrowsStayLiteral() {
+        let text = "1. Scarlet > Fire\n- Morning Dew\n# not a heading"
+        let rendered = ChatLink.render(text, linkColor: .red)
+        #expect(String(rendered.characters) == text)
+    }
+
+    @Test func labelsAreNeverParsedAsMarkdown() {
+        let text = "Hear \(ChatLink.show("1972-08-27", label: "dark_star_veneta *live*"))."
+        let rendered = ChatLink.render(text, linkColor: .red)
+        #expect(String(rendered.characters) == "Hear dark_star_veneta *live*.")
+        #expect(rendered.runs.compactMap(\.link).count == 1)
+    }
+
+    @Test func strayPlaceholderCharactersDoNotShiftLinks() {
+        let text = "\u{FFFC}Go \(ChatLink.show("1977-05-08", label: "Cornell"))\u{FFFC} now."
+        let rendered = ChatLink.render(text, linkColor: .red)
+        #expect(String(rendered.characters) == "Go Cornell now.")
+        let links = rendered.runs.compactMap(\.link)
+        #expect(links.count == 1)
+        #expect(ChatLink.destination(for: links[0]) == .show(date: "1977-05-08"))
+    }
+}

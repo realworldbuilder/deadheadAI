@@ -22,7 +22,7 @@ nonisolated actor CatalogDB {
 
     /// Opens read-only. Returns nil when the file is missing, unreadable,
     /// or a different schema version — callers degrade to network-only.
-    init?(fileURL: URL, expectedSchemaVersion: Int = 1) {
+    init?(fileURL: URL, expectedSchemaVersion: Int = 2) {
         var handle: OpaquePointer?
         let uri = "file:\(fileURL.path(percentEncoded: false))?immutable=1"
         guard sqlite3_open_v2(uri, &handle, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, nil) == SQLITE_OK,
@@ -74,6 +74,40 @@ nonisolated actor CatalogDB {
 
     func shows(onDate date: String) -> [CatalogShow] {
         collectShows("SELECT \(Self.showColumns) FROM shows WHERE date = ? ORDER BY show_id", bind: [.text(date)])
+    }
+
+    /// Scans from the nights closest to `date` — usually the same run or
+    /// tour — nearest first, for shows that have no usable scan of their
+    /// own. The night itself is skipped: its scan is what just failed.
+    func nearestCoverImageURLs(toDate date: String, limit: Int) -> [String] {
+        var found: [String] = []
+        query("""
+            SELECT cover_image_url FROM shows
+            WHERE cover_image_url IS NOT NULL AND date != ?
+            ORDER BY abs(julianday(date) - julianday(?)) LIMIT ?
+            """, bind: [.text(date), .text(date), .int(limit)]) { stmt in
+            if let url = Self.text(stmt, 0) { found.append(url) }
+        }
+        return found
+    }
+
+    /// Every memorabilia scan for a night, cover first.
+    func images(onDate date: String) -> [CatalogImage] {
+        var found: [CatalogImage] = []
+        query("""
+            SELECT date, position, kind, url, width, height FROM show_images
+            WHERE date = ? ORDER BY position
+            """, bind: [.text(date)]) { stmt in
+            guard let date = Self.text(stmt, 0), let url = Self.text(stmt, 3) else { return }
+            found.append(CatalogImage(
+                date: date,
+                position: Int(sqlite3_column_int(stmt, 1)),
+                kind: CatalogImage.Kind(rawValue: Self.text(stmt, 2) ?? "") ?? .other,
+                url: url,
+                width: Self.integer(stmt, 4),
+                height: Self.integer(stmt, 5)))
+        }
+        return found
     }
 
     func shows(inYear year: Int) -> [CatalogShow] {
@@ -329,6 +363,10 @@ nonisolated actor CatalogDB {
 
     private static func real(_ stmt: OpaquePointer, _ index: Int32) -> Double? {
         sqlite3_column_type(stmt, index) == SQLITE_NULL ? nil : sqlite3_column_double(stmt, index)
+    }
+
+    private static func integer(_ stmt: OpaquePointer, _ index: Int32) -> Int? {
+        sqlite3_column_type(stmt, index) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, index))
     }
 
     /// User text -> FTS5 MATCH query: each token quoted (so `5-8-77` stays

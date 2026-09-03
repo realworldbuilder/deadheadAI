@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Square-art show card for horizontal rails: the ticket stub, poster, or
-/// archive photo is the face of the show, with a source badge burned into
-/// the corner — date and venue beneath.
+/// archive photo is the face of the show, with date, venue, and source
+/// beneath. Nothing is drawn over the art.
 struct ShowCard: View {
     @Environment(AppEnvironment.self) private var env
     let show: Show
@@ -13,21 +13,17 @@ struct ShowCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ZStack(alignment: .bottomTrailing) {
-                ShowArtworkView(show: show, coverURL: coverURL, size: width, cornerRadius: 10)
-                sourceBadge
-                    .padding(6)
-            }
+            ShowArtworkView(show: show, coverURL: coverURL, size: width, cornerRadius: 10)
             Text(show.displayDate)
-                .font(Theme.mono(13, weight: .bold))
-                .foregroundStyle(Theme.accent)
-                .lineLimit(1)
-            Text(show.venue ?? show.title)
-                .font(Theme.mono(12, weight: .semibold))
+                .font(Theme.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
-            Text(show.location ?? " ")
+            Text(show.venue ?? show.title)
                 .font(Theme.caption)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+            Text(detailLine)
+                .font(.caption2)
                 .foregroundStyle(Theme.textTertiary)
                 .lineLimit(1)
         }
@@ -45,20 +41,14 @@ struct ShowCard: View {
         .accessibilityLabel("\(show.displayDate), \(show.venue ?? "")")
     }
 
-    @ViewBuilder
-    private var sourceBadge: some View {
+    /// "SBD · Ithaca, NY" — the source leads when we know it.
+    private var detailLine: String {
         let badge: String? = {
             if let sourceType, sourceType != .unknown { return sourceType.badge }
             return show.isSoundboard ? "SBD" : nil
         }()
-        if let badge {
-            Text(badge)
-                .font(Theme.mono(10, weight: .bold))
-                .foregroundStyle(Theme.textPrimary)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(Color.black.opacity(0.65)))
-        }
+        let parts = [badge, show.location].compactMap { $0 }
+        return parts.isEmpty ? " " : parts.joined(separator: " · ")
     }
 }
 
@@ -74,13 +64,13 @@ struct ShowRail: View {
             HStack(spacing: 8) {
                 if let icon {
                     Image(systemName: icon)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                 }
                 Text(title).sectionHeaderStyle()
             }
             if let subtitle {
                 Text(subtitle)
-                    .font(Theme.caption)
+                    .font(Theme.footnote)
                     .foregroundStyle(Theme.textSecondary)
             }
             ScrollView(.horizontal, showsIndicators: false) {

@@ -31,13 +31,12 @@ struct PlaylistDetailScreen: View {
 
     var body: some View {
         ZStack {
-            SpaceBackground()
             if let playlist {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         if !playlist.blurb.isEmpty {
                             Text(playlist.blurb)
-                                .font(.system(.callout, design: .serif).italic())
+                                .font(.callout)
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         let _ = refreshToken
@@ -55,6 +54,8 @@ struct PlaylistDetailScreen: View {
                 .withMiniPlayer()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
         .navigationTitle(playlist?.name ?? "Playlist")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -105,20 +106,13 @@ struct PlaylistDetailScreen: View {
             HStack {
                 Image(systemName: "play.fill")
                 Text("Play All")
-                    .font(Theme.mono(15, weight: .bold))
                 Spacer()
                 Text(minutes > 0 ? "\(count) · \(minutes) min" : count)
-                    .font(Theme.mono(12))
+                    .font(Theme.subheadline)
                     .opacity(0.75)
             }
-            .foregroundStyle(Color.black.opacity(0.85))
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .fill(Theme.accentGradient)
-            )
         }
+        .buttonStyle(.primary(fullWidth: true))
     }
 
     private func trackRows(_ items: [PlaylistItem]) -> some View {
@@ -129,7 +123,7 @@ struct PlaylistDetailScreen: View {
                 } label: {
                     HStack(spacing: 10) {
                         Text(String(format: "%02d", index + 1))
-                            .font(Theme.mono(12))
+                            .font(Theme.caption)
                             .foregroundStyle(isCurrent(item) ? Theme.accent : Theme.textTertiary)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.trackTitle)
@@ -137,17 +131,16 @@ struct PlaylistDetailScreen: View {
                                 .foregroundStyle(isCurrent(item) ? Theme.accent : Theme.textPrimary)
                                 .lineLimit(1)
                             Text(item.showDisplayName)
-                                .font(Theme.mono(10))
+                                .font(.caption2)
                                 .foregroundStyle(Theme.textTertiary)
                                 .lineLimit(1)
                         }
                         Spacer()
                         Text(displayDuration(item.durationSeconds))
-                            .font(Theme.mono(12))
+                            .font(Theme.timecode)
                             .foregroundStyle(Theme.textTertiary)
                     }
-                    .padding(.vertical, 11)
-                    .padding(.horizontal, 12)
+                    .listRowStyle(divider: index < items.count - 1)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -176,12 +169,8 @@ struct PlaylistDetailScreen: View {
                         Label("Remove from Playlist", systemImage: "minus.circle")
                     }
                 }
-                if index < items.count - 1 {
-                    Divider().overlay(Theme.stroke.opacity(0.5)).padding(.leading, 34)
-                }
             }
         }
-        .cardStyle()
     }
 
     // MARK: - Flow (deterministic segue suggestions)
@@ -204,7 +193,7 @@ struct PlaylistDetailScreen: View {
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "arrow.triangle.swap")
-                                .foregroundStyle(Theme.accent)
+                                .foregroundStyle(Theme.textSecondary)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("A better order is hiding in here")
                                     .font(Theme.headline)
@@ -215,28 +204,30 @@ struct PlaylistDetailScreen: View {
                             }
                             Spacer()
                             Text("Apply")
-                                .font(Theme.mono(12, weight: .bold))
-                                .foregroundStyle(Theme.accent)
+                                .font(Theme.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.textSecondary)
                         }
-                        .padding(13)
-                        .cardStyle(raised: true)
+                        .padding(Theme.cardPadding)
+                        .cardStyle()
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
-                ForEach(picks, id: \.songKey) { pick in
-                    pickCard(pick, playlist: playlist)
+                VStack(spacing: 0) {
+                    ForEach(Array(picks.enumerated()), id: \.element.songKey) { index, pick in
+                        pickRow(pick, playlist: playlist, divider: index < picks.count - 1)
+                    }
                 }
             }
         }
     }
 
-    private func pickCard(_ pick: SegueSuggester.NextPick, playlist: Playlist) -> some View {
+    private func pickRow(_ pick: SegueSuggester.NextPick, playlist: Playlist, divider: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: "sparkles")
                     .font(.caption)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                 Text(pick.title)
                     .font(Theme.headline)
                     .foregroundStyle(Theme.textPrimary)
@@ -248,14 +239,14 @@ struct PlaylistDetailScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
             switch pickStatus[pick.songKey] {
             case .loading:
-                ProgressView().tint(Theme.accent).scaleEffect(0.8)
+                ProgressView().tint(Theme.textSecondary).scaleEffect(0.8)
             case .added(let source):
                 Label("Added from \(source)", systemImage: "checkmark.circle.fill")
-                    .font(Theme.mono(11, weight: .semibold))
+                    .font(Theme.caption.weight(.semibold))
                     .foregroundStyle(Theme.sage)
             case .failed:
                 Text("Couldn't find a tape with it just now.")
-                    .font(Theme.mono(11))
+                    .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             case nil:
                 if pick.famousDate != nil {
@@ -265,16 +256,14 @@ struct PlaylistDetailScreen: View {
                         HStack(spacing: 5) {
                             Image(systemName: "plus.circle.fill")
                             Text("Find a version & add it")
-                                .font(Theme.mono(12, weight: .semibold))
+                                .font(Theme.subheadline.weight(.semibold))
                         }
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                     }
                 }
             }
         }
-        .padding(13)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
+        .listRowStyle(divider: divider)
     }
 
     private func addPick(_ pick: SegueSuggester.NextPick, playlist: Playlist) async {
@@ -315,21 +304,17 @@ struct PlaylistCard: View {
     let playlist: Playlist
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: playlist.iconName)
-                .font(.title3)
-                .foregroundStyle(Theme.accent)
-            Text(playlist.name)
-                .font(Theme.headline)
-                .foregroundStyle(Theme.textPrimary)
-                .lineLimit(1)
-            Text("\(playlist.items?.count ?? 0) track\((playlist.items?.count ?? 0) == 1 ? "" : "s")")
-                .font(Theme.mono(11))
-                .foregroundStyle(Theme.textTertiary)
-        }
-        .padding(Theme.cardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
+        let items = (playlist.items ?? []).sorted { $0.sortIndex < $1.sortIndex }
+        LibraryTile(
+            name: playlist.name,
+            detail: "\(items.count) track\(items.count == 1 ? "" : "s")",
+            icon: playlist.iconName,
+            cover: items.first.map { Show(identifier: $0.showIdentifier, title: $0.showDisplayName,
+                                          date: IADates.parse($0.showDateString),
+                                          dateString: $0.showDateString, venue: $0.showDisplayName,
+                                          location: nil, year: Int($0.showDateString.prefix(4)),
+                                          avgRating: nil, numReviews: nil, downloads: nil, source: nil) }
+        )
     }
 }
 
@@ -348,42 +333,44 @@ struct NewPlaylistSheet: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                SpaceBackground()
-                VStack(alignment: .leading, spacing: 16) {
-                    TextField("Playlist name", text: $name)
-                        .font(Theme.body)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
-                    TextField("What's the vibe? (optional)", text: $blurb)
-                        .font(Theme.body)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
-                    Text("ICON")
-                        .font(Theme.mono(10, weight: .bold))
-                        .foregroundStyle(Theme.textTertiary)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                        ForEach(Self.icons, id: \.self) { candidate in
-                            Button {
-                                icon = candidate
-                            } label: {
-                                Image(systemName: candidate)
-                                    .font(.title3)
-                                    .foregroundStyle(icon == candidate ? Theme.accent : Theme.textSecondary)
-                                    .frame(width: 46, height: 46)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(icon == candidate ? Theme.accent.opacity(0.15) : Theme.surface)
-                                    )
-                            }
-                            .accessibilityLabel(candidate.replacingOccurrences(of: ".", with: " "))
-                            .accessibilityAddTraits(icon == candidate ? .isSelected : [])
+            VStack(alignment: .leading, spacing: 16) {
+                TextField("Playlist name", text: $name)
+                    .font(Theme.body)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
+                TextField("What's the vibe? (optional)", text: $blurb)
+                    .font(Theme.body)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
+                Text("Icon")
+                    .eyebrowStyle()
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
+                    ForEach(Self.icons, id: \.self) { candidate in
+                        Button {
+                            icon = candidate
+                        } label: {
+                            Image(systemName: candidate)
+                                .font(.title3)
+                                .foregroundStyle(icon == candidate ? Theme.accent : Theme.textSecondary)
+                                .frame(width: 46, height: 46)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(icon == candidate ? Theme.accent.opacity(0.15) : Theme.surface)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .strokeBorder(icon == candidate ? Color.clear : Theme.stroke, lineWidth: 1)
+                                )
                         }
+                        .accessibilityLabel(candidate.replacingOccurrences(of: ".", with: " "))
+                        .accessibilityAddTraits(icon == candidate ? .isSelected : [])
                     }
-                    Spacer()
                 }
-                .padding(Theme.screenPadding)
+                Spacer()
             }
+            .padding(Theme.screenPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.background)
             .navigationTitle("New Playlist")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -400,5 +387,6 @@ struct NewPlaylistSheet: View {
             }
         }
         .presentationDetents([.medium])
+        .presentationBackground(Theme.background)
     }
 }

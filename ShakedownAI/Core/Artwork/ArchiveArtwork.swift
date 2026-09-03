@@ -9,39 +9,68 @@ final class ArchiveArtwork {
     static let shared = ArchiveArtwork()
 
     private let cache = NSCache<NSString, UIImage>()
-    /// Identifiers whose tile was missing or junk — don't re-fetch this run.
+    /// Keys whose image definitely doesn't exist (404, junk, waveform) —
+    /// don't re-fetch this run. Network hiccups and cancelled callers are
+    /// never recorded here, so the next appearance tries again.
     private var misses = Set<String>()
+    /// One download per key, shared by everyone waiting on it. The task is
+    /// unstructured on purpose: when SwiftUI cancels a row's `.task` mid-
+    /// scroll, the download finishes anyway and lands in the cache.
+    private var inflight: [String: Task<UIImage?, Never>] = [:]
 
     /// Fetch any remote cover (e.g. a jerrygarcia.com ticket-stub scan
     /// from the catalog). No waveform filter — these are curated scans.
     func image(from url: URL) async -> UIImage? {
-        let key = url.absoluteString as NSString
-        if let hit = cache.object(forKey: key) { return hit }
-        guard !misses.contains(url.absoluteString),
-              let (data, response) = try? await URLSession.shared.data(from: url),
-              (response as? HTTPURLResponse)?.statusCode == 200,
-              let image = UIImage(data: data),
-              image.size.width >= 50 else {
-            misses.insert(url.absoluteString)
-            return nil
-        }
-        cache.setObject(image, forKey: key)
-        return image
+        await load(key: url.absoluteString, url: url, filterWaveforms: false)
     }
 
+    /// archive.org's per-item tile, with waveform screenshots rejected.
     func thumbnail(for identifier: String) async -> UIImage? {
-        if let hit = cache.object(forKey: identifier as NSString) { return hit }
-        guard !misses.contains(identifier),
-              let url = URL(string: "https://archive.org/services/img/\(identifier)") else { return nil }
-        guard let (data, response) = try? await URLSession.shared.data(from: url),
-              (response as? HTTPURLResponse)?.statusCode == 200,
-              let image = UIImage(data: data),
-              Self.looksLikeRealArt(image) else {
-            misses.insert(identifier)
-            return nil
+        guard let url = URL(string: "https://archive.org/services/img/\(identifier)") else { return nil }
+        return await load(key: identifier, url: url, filterWaveforms: true)
+    }
+
+    private func load(key: String, url: URL, filterWaveforms: Bool) async -> UIImage? {
+        if let hit = cache.object(forKey: key as NSString) { return hit }
+        if misses.contains(key) { return nil }
+        if let running = inflight[key] { return await running.value }
+        let task = Task<UIImage?, Never> {
+            let outcome = await Self.download(url, filterWaveforms: filterWaveforms)
+            inflight[key] = nil
+            switch outcome {
+            case .image(let image):
+                cache.setObject(image, forKey: key as NSString)
+                return image
+            case .missing:
+                misses.insert(key)
+                return nil
+            case .transient:
+                return nil
+            }
         }
-        cache.setObject(image, forKey: identifier as NSString)
-        return image
+        inflight[key] = task
+        return await task.value
+    }
+
+    private enum Outcome {
+        case image(UIImage)
+        /// The server answered and there is no usable image.
+        case missing
+        /// No answer (offline, timeout, throttled): try again later.
+        case transient
+    }
+
+    nonisolated private static func download(_ url: URL, filterWaveforms: Bool) async -> Outcome {
+        guard let (data, response) = try? await URLSession.shared.data(from: url) else {
+            return .transient
+        }
+        guard let http = response as? HTTPURLResponse else { return .transient }
+        if http.statusCode == 429 || http.statusCode >= 500 { return .transient }
+        guard http.statusCode == 200, let image = UIImage(data: data), image.size.width >= 50 else {
+            return .missing
+        }
+        if filterWaveforms, !looksLikeRealArt(image) { return .missing }
+        return .image(image)
     }
 
     /// Waveform thumbnails are mostly near-white background with a thin
@@ -72,6 +101,10 @@ extension ArchiveArtwork {
     /// if the catalog has one, else the archive item tile (filtered),
     /// else nil — caller falls back to the generated stub.
     @MainActor
+    /// The best picture we can put on a show: its own ticket or poster
+    /// scan, the archive's photo of the tape, and failing both, the scan
+    /// from the nearest night — the same run or tour, nine times in ten.
+    /// A page should never show a show with nothing on it.
     func cover(date: String?, identifier: String?, catalog: any ShowCatalog) async -> UIImage? {
         if catalog.isAvailable, let date,
            let night = await catalog.show(onDate: date),
@@ -79,8 +112,16 @@ extension ArchiveArtwork {
            let scanned = await image(from: url) {
             return scanned
         }
-        if let identifier {
-            return await thumbnail(for: identifier)
+        if let identifier, !identifier.isEmpty, !identifier.hasPrefix("placeholder-"),
+           let photo = await thumbnail(for: identifier) {
+            return photo
+        }
+        if catalog.isAvailable, let date {
+            for borrowed in await catalog.nearestCovers(toDate: date, limit: 3) {
+                if let url = URL(string: borrowed), let scan = await image(from: url) {
+                    return scan
+                }
+            }
         }
         return nil
     }

@@ -9,8 +9,8 @@ extension Notification.Name {
 }
 
 /// The real auth seam: a UserDefaults-backed account that survives relaunch.
-/// Apple sign-in is the key that unlocks the bundled AI brain and iCloud sync
-/// of shelves & journal; a local account keeps everything on-device.
+/// Apple sign-in turns on iCloud sync of shelves & journal; a local account
+/// keeps everything on-device. AI is unaffected either way.
 @Observable
 final class PersistentAuthProvider: AuthProvider {
     private nonisolated enum Keys {
@@ -60,11 +60,10 @@ final class PersistentAuthProvider: AuthProvider {
         defaults.removeObject(forKey: Keys.appleUserID)
         defaults.removeObject(forKey: Keys.isLocal)
         currentAccount = nil
-        KeychainStore.lockAI()
     }
 
     /// A revoked Apple ID (user removed the app under Settings > Apple ID)
-    /// must relock AI and stop sync. Called once at launch.
+    /// must stop sync. Called once at launch.
     func validateAppleCredentialAtLaunch() async {
         guard let userID = currentAccount?.appleUserID else { return }
         let state = try? await ASAuthorizationAppleIDProvider().credentialState(forUserID: userID)

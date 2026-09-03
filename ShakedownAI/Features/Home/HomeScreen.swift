@@ -139,61 +139,59 @@ struct HomeScreen: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                SpaceBackground()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 26) {
-                        header
-                        if let model {
-                            if let hero = model.hero {
-                                HeroCard(
-                                    notable: hero,
-                                    recording: model.heroRecording,
-                                    isLoading: model.isLoadingHero,
-                                    isStarting: model.isStartingHero,
-                                    playError: model.heroPlayError,
-                                    onPlay: { Task { await model.playHero() } },
-                                    onWhy: {
-                                        showingWhy = true
-                                        Task { await model.loadHeroNarrative() }
-                                    }
-                                )
-                            }
-                            SmartShelfStrip()
-                            if !model.becauseYouLiked.isEmpty {
-                                notableShelf(
-                                    title: model.recentShows.isEmpty ? "Start Here" : "Because You've Been Listening",
-                                    shows: model.becauseYouLiked
-                                )
-                            }
-                            if !model.onThisDay.isEmpty {
-                                ShowRail(
-                                    title: "Today in Dead History",
-                                    subtitle: "The Dead played \(model.onThisDay.count) documented show\(model.onThisDay.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).",
-                                    shows: model.onThisDay,
-                                    icon: "calendar"
-                                )
-                            }
-                            if !model.topShelf.isEmpty {
-                                ShowRail(
-                                    title: "Top Shelf",
-                                    subtitle: "The tapes the community rates highest.",
-                                    shows: model.topShelf,
-                                    icon: "star.fill"
-                                )
-                            }
-                            if !model.recentShows.isEmpty {
-                                recentSection(model.recentShows)
-                            }
-                            if let quote = model.quote {
-                                QuoteCard(quote: quote)
-                            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
+                    header
+                    if let model {
+                        if let hero = model.hero {
+                            HeroCard(
+                                notable: hero,
+                                recording: model.heroRecording,
+                                isLoading: model.isLoadingHero,
+                                isStarting: model.isStartingHero,
+                                playError: model.heroPlayError,
+                                onPlay: { Task { await model.playHero() } },
+                                onWhy: {
+                                    showingWhy = true
+                                    Task { await model.loadHeroNarrative() }
+                                }
+                            )
+                        }
+                        SmartShelfStrip()
+                        if !model.becauseYouLiked.isEmpty {
+                            notableShelf(
+                                title: model.recentShows.isEmpty ? "Start Here" : "Because You've Been Listening",
+                                shows: model.becauseYouLiked
+                            )
+                        }
+                        if !model.onThisDay.isEmpty {
+                            ShowRail(
+                                title: "Today in Dead History",
+                                subtitle: "The Dead played \(model.onThisDay.count) documented show\(model.onThisDay.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).",
+                                shows: model.onThisDay,
+                                icon: "calendar"
+                            )
+                        }
+                        if !model.topShelf.isEmpty {
+                            ShowRail(
+                                title: "Top Shelf",
+                                subtitle: "The tapes the community rates highest.",
+                                shows: model.topShelf,
+                                icon: "star"
+                            )
+                        }
+                        if !model.recentShows.isEmpty {
+                            recentSection(model.recentShows)
+                        }
+                        if let quote = model.quote {
+                            QuoteCard(quote: quote)
                         }
                     }
-                    .padding(Theme.screenPadding)
                 }
-                .withMiniPlayer()
+                .padding(Theme.screenPadding)
             }
+            .background(Theme.background)
+            .withMiniPlayer()
             .navigationDestination(for: Show.self) { show in
                 ShowDetailScreen(show: show)
             }
@@ -205,7 +203,7 @@ struct HomeScreen: View {
             }
             .toolbar(.hidden, for: .navigationBar)
         }
-        .tint(Theme.accent)
+        .tint(Theme.textPrimary)
         .task {
             if model == nil { model = HomeModel(env: env) }
             await model?.load()
@@ -216,30 +214,26 @@ struct HomeScreen: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(Date.now.formatted(date: .complete, time: .omitted).uppercased())
-                .font(Theme.mono(11, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-            HStack(spacing: 10) {
-                Text("TAPETREE")
-                    .font(Theme.display(32))
-                    .kerning(1.5)
-                    .chromeText()
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                AppMark(size: 28)
+                Text("TapeTree")
+                    .font(Theme.title)
+                    .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                SpiralMandala(size: 40)
             }
-            Text("first generation, straight from the source")
-                .font(Theme.mono(11))
-                .foregroundStyle(Theme.textTertiary)
+            Text(Date.now.formatted(date: .complete, time: .omitted))
+                .font(Theme.subheadline)
+                .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.top, 8)
+        .padding(.top, 14)
     }
 
     private func notableShelf(title: String, shows: [NotableShow]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).sectionHeaderStyle()
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
                     ForEach(shows) { notable in
                         NavigationLink(value: notable) {
                             NotableShowCard(notable: notable, era: env.knowledgeBase.era(id: notable.eraID))
@@ -248,33 +242,36 @@ struct HomeScreen: View {
                     }
                 }
             }
+            .scrollClipDisabled()
         }
     }
 
     private func recentSection(_ recents: [(identifier: String, displayName: String, lastPlayed: Date)]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Recently Played").sectionHeaderStyle()
-            ForEach(recents, id: \.identifier) { recent in
-                NavigationLink(value: Show(identifier: recent.identifier, title: recent.displayName,
-                                           date: nil, dateString: nil, venue: recent.displayName,
-                                           location: nil, year: nil, avgRating: nil,
-                                           numReviews: nil, downloads: nil, source: nil)) {
-                    HStack {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .foregroundStyle(Theme.textTertiary)
-                        Text(recent.displayName)
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(recent.lastPlayed.formatted(.relative(presentation: .named)))
-                            .font(Theme.mono(11))
-                            .foregroundStyle(Theme.textTertiary)
+            VStack(spacing: 0) {
+                ForEach(Array(recents.enumerated()), id: \.element.identifier) { index, recent in
+                    NavigationLink(value: Show(identifier: recent.identifier, title: recent.displayName,
+                                               date: nil, dateString: nil, venue: recent.displayName,
+                                               location: nil, year: nil, avgRating: nil,
+                                               numReviews: nil, downloads: nil, source: nil)) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .foregroundStyle(Theme.textSecondary)
+                            Text(recent.displayName)
+                                .font(Theme.body)
+                                .foregroundStyle(Theme.textPrimary)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(recent.lastPlayed.formatted(.relative(presentation: .named)))
+                                .font(Theme.caption)
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .listRowStyle(divider: index < recents.count - 1)
+                        .contentShape(Rectangle())
                     }
-                    .padding(12)
-                    .cardStyle()
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -294,55 +291,20 @@ private struct HeroCard: View {
 
     @State private var coverImage: UIImage?
 
-    /// The night's poster or ticket scan, full-bleed across the card's top,
-    /// with the date rising out of a scrim — the show's face leads.
+    /// The night's poster or ticket scan, full-bleed across the card's top.
+    /// Only a real scan earns the space; without one the card is just words.
+    @ViewBuilder
     private var artworkBanner: some View {
-        let artwork = coverImage ?? StubArtwork.image(
-            for: recording ?? .artworkPlaceholder(date: notable.date, venue: notable.venue,
-                                                  location: notable.location),
-            layout: .banner)
-        return Color.clear
-            .frame(height: 230)
-            .overlay(
-                Image(uiImage: artwork)
-                    .resizable()
-                    .scaledToFill()
-            )
-            .clipped()
-            .overlay(
-                LinearGradient(
-                    stops: [
-                        .init(color: .black.opacity(0.55), location: 0),
-                        .init(color: .clear, location: 0.3),
-                        .init(color: .clear, location: 0.45),
-                        .init(color: .black.opacity(0.88), location: 1),
-                    ],
-                    startPoint: .top, endPoint: .bottom)
-            )
-            .overlay(alignment: .topLeading) {
-                Text("TONIGHT'S SHOW")
-                    .font(Theme.mono(11, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                    .tracking(2)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Capsule().fill(Color.black.opacity(0.6)))
-                    .padding(12)
-            }
-            .overlay(alignment: .bottomLeading) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(LocalKnowledgeAI.prettyDate(notable.date))
-                        .font(Theme.display(34))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.7), radius: 4, y: 1)
-                    Text("\(notable.venue) · \(notable.location)")
-                        .font(Theme.headline)
-                        .foregroundStyle(.white.opacity(0.85))
-                        .shadow(color: .black.opacity(0.7), radius: 3, y: 1)
-                        .lineLimit(2)
-                }
-                .padding(14)
-            }
+        if let coverImage {
+            Color.clear
+                .frame(height: 220)
+                .overlay(
+                    Image(uiImage: coverImage)
+                        .resizable()
+                        .scaledToFill()
+                )
+                .clipped()
+        }
     }
 
     var body: some View {
@@ -350,83 +312,62 @@ private struct HeroCard: View {
             artworkBanner
 
             VStack(alignment: .leading, spacing: 12) {
-            Text(notable.blurb)
-                .font(Theme.body)
-                .foregroundStyle(Theme.textSecondary)
-                .lineLimit(3)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Tonight's show").eyebrowStyle()
+                    Text(LocalKnowledgeAI.prettyDate(notable.date))
+                        .font(Theme.title)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("\(notable.venue) · \(notable.location)")
+                        .font(Theme.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(2)
+                }
 
-            HStack(spacing: 6) {
-                ForEach(notable.tags.prefix(3), id: \.self) { TagPill(text: $0) }
-            }
+                Text(notable.blurb)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(3)
 
-            HStack(spacing: 10) {
-                Button(action: onPlay) {
-                    HStack {
-                        if isStarting || (isLoading && recording == nil) {
-                            ProgressView().tint(.black)
-                        } else {
-                            Image(systemName: "play.fill")
+                HStack(spacing: 6) {
+                    ForEach(notable.tags.prefix(3), id: \.self) { TagPill(text: $0) }
+                }
+
+                HStack(spacing: 8) {
+                    Button(action: onPlay) {
+                        HStack(spacing: 6) {
+                            if isStarting || (isLoading && recording == nil) {
+                                ProgressView().tint(Theme.onAccent)
+                            } else {
+                                Image(systemName: "play.fill")
+                            }
+                            Text("Play")
                         }
-                        Text("Play")
-                            .font(Theme.mono(14, weight: .bold))
                     }
-                    .foregroundStyle(Color.black.opacity(0.85))
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 11)
-                    .background(Capsule().fill(Theme.accentGradient))
-                }
-                .disabled(recording == nil || isStarting)
+                    .buttonStyle(.primary)
+                    .disabled(recording == nil || isStarting)
 
-                Button(action: onWhy) {
-                    Text("Why?")
-                        .font(Theme.mono(14, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 11)
-                        .background(Capsule().strokeBorder(Theme.accent.opacity(0.5)))
-                }
+                    Button("Why?", action: onWhy)
+                        .buttonStyle(.secondary)
 
-                if let recording {
-                    NavigationLink(value: recording) {
-                        Text("Read")
-                            .font(Theme.mono(14, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 11)
-                            .background(Capsule().strokeBorder(Theme.stroke))
+                    if let recording {
+                        NavigationLink(value: recording) {
+                            Text("Read")
+                        }
+                        .buttonStyle(.secondary)
                     }
                 }
-            }
 
-            if let playError {
-                Text(playError)
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.rose)
+                if let playError {
+                    Text(playError)
+                        .font(Theme.caption)
+                        .foregroundStyle(Theme.rose)
+                }
             }
-            }
-            .padding(16)
+            .padding(Theme.cardPadding)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(Theme.heroGradient)
-                // A window onto space: the starfield behind shows through the
-                // translucent hull, with a nebula glow caught in the corner.
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                        .fill(Theme.nebulaGradient)
-                        .blendMode(.plusLighter)
-                )
-        )
+        .cardStyle()
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(colors: [Theme.accent.opacity(0.45), Theme.stroke.opacity(0.3)],
-                                   startPoint: .topLeading, endPoint: .bottomTrailing),
-                    lineWidth: 1
-                )
-        )
         .task(id: notable.date + "|" + (recording?.identifier ?? "")) {
             coverImage = await ArchiveArtwork.shared.cover(
                 date: notable.date, identifier: recording?.identifier, catalog: env.catalog)
@@ -444,49 +385,33 @@ struct NotableShowCard: View {
     @State private var coverImage: UIImage?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Color.clear
-                .frame(width: 190, height: 120)
-                .overlay(
-                    Image(uiImage: coverImage ?? StubArtwork.image(
-                        for: .artworkPlaceholder(date: notable.date, venue: notable.venue,
-                                                 location: notable.location),
-                        layout: .wide))
+        VStack(alignment: .leading, spacing: 6) {
+            Group {
+                if let coverImage {
+                    Image(uiImage: coverImage)
                         .resizable()
                         .scaledToFill()
-                )
-                .clipped()
-                .overlay(alignment: .bottomTrailing) {
-                    if let era {
-                        Text(era.name)
-                            .font(Theme.mono(9, weight: .bold))
-                            .foregroundStyle(Theme.textPrimary)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Color.black.opacity(0.65)))
-                            .padding(6)
-                            .lineLimit(1)
-                    }
+                } else {
+                    ArtworkPlaceholder(date: LocalKnowledgeAI.prettyDate(notable.date), venue: notable.venue)
                 }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(LocalKnowledgeAI.prettyDate(notable.date))
-                    .font(Theme.mono(14, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                    .lineLimit(1)
-                Text(notable.venue)
-                    .font(Theme.mono(12, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
-                Text(notable.location)
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
-                    .lineLimit(1)
             }
-            .padding(10)
-            .frame(width: 190, alignment: .leading)
+                .frame(width: 190, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.stroke))
+            Text(LocalKnowledgeAI.prettyDate(notable.date))
+                .font(Theme.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+            Text(notable.venue)
+                .font(Theme.caption)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+            Text(era.map { "\($0.name) · \(notable.location)" } ?? notable.location)
+                .font(.caption2)
+                .foregroundStyle(Theme.textTertiary)
+                .lineLimit(1)
         }
-        .cardStyle(raised: true)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
+        .frame(width: 190, alignment: .leading)
         .task(id: notable.date) {
             coverImage = await ArchiveArtwork.shared.cover(
                 date: notable.date, identifier: notable.preferredIdentifier, catalog: env.catalog)
@@ -501,18 +426,18 @@ private struct QuoteCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: "quote.opening")
-                .foregroundStyle(Theme.accent)
+            HairlineDivider()
             Text(quote.text)
-                .font(.system(.title3, design: .serif).italic())
+                .font(Theme.title)
                 .foregroundStyle(Theme.textPrimary)
+                .padding(.top, 8)
             Text("— \(quote.attribution)")
-                .font(Theme.mono(12))
+                .font(Theme.footnote)
                 .foregroundStyle(Theme.textSecondary)
+                .padding(.bottom, 8)
+            HairlineDivider()
         }
-        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
     }
 }
 
@@ -522,45 +447,44 @@ private struct WhySheet: View {
     let model: HomeModel?
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Why this show?")
-                        .font(Theme.display(28))
-                        .foregroundStyle(Theme.textPrimary)
-                    if let rec = model?.heroNarrative {
-                        Text(rec.narrative)
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textSecondary)
-                        if !rec.listenFor.isEmpty {
-                            Text("Listen for")
-                                .font(Theme.title)
-                                .foregroundStyle(Theme.textPrimary)
-                            ForEach(rec.listenFor, id: \.self) { item in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "waveform")
-                                        .foregroundStyle(Theme.accent)
-                                        .font(.caption)
-                                        .padding(.top, 3)
-                                    Text(item)
-                                        .font(Theme.body)
-                                        .foregroundStyle(Theme.textSecondary)
-                                }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Why this show?")
+                    .font(Theme.largeTitle)
+                    .foregroundStyle(Theme.textPrimary)
+                if let rec = model?.heroNarrative {
+                    Text(rec.narrative)
+                        .font(Theme.body)
+                        .foregroundStyle(Theme.textSecondary)
+                    if !rec.listenFor.isEmpty {
+                        Text("Listen for")
+                            .font(Theme.headline)
+                            .foregroundStyle(Theme.textPrimary)
+                        ForEach(rec.listenFor, id: \.self) { item in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "waveform")
+                                    .foregroundStyle(Theme.textSecondary)
+                                    .font(.caption)
+                                    .padding(.top, 3)
+                                Text(item)
+                                    .font(Theme.body)
+                                    .foregroundStyle(Theme.textSecondary)
                             }
                         }
-                    } else if let error = model?.narrativeError {
-                        ErrorCard(message: error) {
-                            Task { await model?.loadHeroNarrative() }
-                        }
-                    } else {
-                        LoadingLampView(text: "Thinking it over…")
                     }
+                } else if let error = model?.narrativeError {
+                    ErrorCard(message: error) {
+                        Task { await model?.loadHeroNarrative() }
+                    }
+                } else {
+                    LoadingLampView(text: "Thinking it over…")
                 }
-                .padding(24)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Theme.background)
+        .presentationBackground(Theme.background)
         .presentationDetents([.medium, .large])
     }
 }
@@ -575,8 +499,7 @@ struct NotableShowResolverScreen: View {
     @State private var failed = false
 
     var body: some View {
-        ZStack {
-            SpaceBackground()
+        Group {
             if let resolved {
                 ShowDetailScreen(show: resolved)
             } else if failed {
@@ -589,6 +512,8 @@ struct NotableShowResolverScreen: View {
                 LoadingLampView(text: "Finding the best tape…")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
         .task { await resolve() }
     }
 
