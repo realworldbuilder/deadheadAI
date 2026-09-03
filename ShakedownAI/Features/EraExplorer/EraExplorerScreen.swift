@@ -54,8 +54,12 @@ struct EraExplorerScreen: View {
 struct EraCard: View {
     let era: EraInfo
 
+    /// The era's face: scans from its must-hear nights, beginner picks next.
+    var coverDates: [String] { EraInfo.coverDates(for: era, limit: 3) }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
+            CoverStrip(dates: coverDates, height: 88)
             HStack {
                 Text(era.years)
                     .font(Theme.subheadline.weight(.semibold))
@@ -112,13 +116,30 @@ struct EraDetailScreen: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(era.years)
-                .font(Theme.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.textSecondary)
-            Text(era.name)
-                .font(Theme.largeTitle)
-                .foregroundStyle(Theme.textPrimary)
+        VStack(alignment: .leading, spacing: 12) {
+            // The nights that define the era, each scan a door to its show.
+            HStack(spacing: 6) {
+                ForEach(EraInfo.coverDates(for: era, limit: 4), id: \.self) { date in
+                    let cover = DateCover(date: date)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 118)
+                    if let notable = env.knowledgeBase.notableShow(on: date) {
+                        NavigationLink(value: notable) { cover }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(LocalKnowledgeAI.prettyDate(date)), \(notable.venue)")
+                    } else {
+                        cover
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(era.years)
+                    .font(Theme.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+                Text(era.name)
+                    .font(Theme.largeTitle)
+                    .foregroundStyle(Theme.textPrimary)
+            }
         }
     }
 
@@ -161,5 +182,14 @@ struct EraDetailScreen: View {
                 }
             }
         }
+    }
+}
+
+extension EraInfo {
+    /// Dates whose scans stand for the era: must-hear nights first, then
+    /// beginner picks, deduplicated, in the order the curator listed them.
+    nonisolated static func coverDates(for era: EraInfo, limit: Int) -> [String] {
+        var seen = Set<String>()
+        return (era.mustHear + era.beginnerShows).filter { seen.insert($0).inserted }.prefix(limit).map { $0 }
     }
 }

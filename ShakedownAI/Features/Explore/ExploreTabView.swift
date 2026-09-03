@@ -12,10 +12,28 @@ struct ExploreTabView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var sky = ExploreSkyModel()
     @State private var motion = SkyMotion()
+    @State private var path = NavigationPath()
 
-    private enum Destination: Hashable {
+    private enum Destination: String, Hashable {
         case search, topShelf, eras, songs, journeys, darkStar, onThisDay,
              journal, taste, years
+    }
+
+    /// Debug hooks for CLI screenshot capture: `--stage-explore eras` opens
+    /// a destination straight from the sky; `--stage-era europe-wall` goes
+    /// one deeper, onto that era's page.
+    private func stageFromArguments() {
+        guard path.isEmpty else { return }
+        let args = ProcessInfo.processInfo.arguments
+        if let index = args.firstIndex(of: "--stage-explore"), index + 1 < args.count,
+           let destination = Destination(rawValue: args[index + 1]) {
+            path.append(destination)
+        }
+        if let index = args.firstIndex(of: "--stage-era"), index + 1 < args.count,
+           let era = env.knowledgeBase.era(id: args[index + 1]) {
+            if path.isEmpty { path.append(Destination.eras) }
+            path.append(era)
+        }
     }
 
     /// One labelled body in the map. `position` is where the *body* sits in
@@ -95,7 +113,7 @@ struct ExploreTabView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack {
                 // Far layer: the field itself barely moves with the phone.
                 ZStack {
@@ -147,6 +165,15 @@ struct ExploreTabView: View {
                 motion.start()
                 Task { await sky.refresh(env: env) }
             }
+            .task {
+                // A push during the first render is dropped, and the view can
+                // be rebuilt once more while the app settles — so try a few
+                // times until the path holds.
+                for _ in 0..<4 {
+                    try? await Task.sleep(for: .seconds(1))
+                    stageFromArguments()
+                }
+            }
             .onDisappear { motion.stop() }
             .onChange(of: scenePhase) { _, phase in
                 guard phase == .active else { return }
@@ -185,6 +212,9 @@ struct ExploreTabView: View {
             }
             .navigationDestination(for: NotableShow.self) { notable in
                 NotableShowResolverScreen(notable: notable)
+            }
+            .navigationDestination(for: EraInfo.self) { era in
+                EraDetailScreen(era: era)
             }
         }
         .tint(Theme.textPrimary)

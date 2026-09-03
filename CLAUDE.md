@@ -37,7 +37,7 @@ xcodebuild -project ShakedownAI.xcodeproj -scheme ShakedownAI \
 
 Install on a physical iPhone: `./run-on-phone.sh` (plugged in, unlocked, trusted).
 
-Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--demo-download` (downloads Cornell '77 and logs progress, for verifying the offline pipeline from the CLI), `--tab explore|chat|library|settings`, `--stage-show` / `--stage-player` (open Cornell '77's show page / full-screen player for CLI screenshot capture), `--stage-year 1977` (open that year's month-by-month browse the same way), `--stage-show 1972-05-04` (stage another night, e.g. one with no memorabilia scans), `--stage-scans` (with `--stage-show`, open the full-screen scan viewer on the night's first scan).
+Debug launch arguments: `--demo-autoplay` (streams Cornell '77, logs to subsystem `ai.deadheads`), `--demo-download` (downloads Cornell '77 and logs progress, for verifying the offline pipeline from the CLI), `--tab explore|chat|library|settings`, `--stage-show` / `--stage-player` (open Cornell '77's show page / full-screen player for CLI screenshot capture), `--stage-year 1977` (open that year's month-by-month browse the same way), `--stage-show 1972-05-04` (stage another night, e.g. one with no memorabilia scans), `--stage-scans` (with `--stage-show`, open the full-screen scan viewer on the night's first scan). `--stage-explore eras|songs|journeys|search|years|topShelf|onThisDay|journal|taste|darkStar` (with `--tab explore`, open that destination straight from the sky) and `--stage-era europe-wall` (that era's page).
 
 ## Releasing
 

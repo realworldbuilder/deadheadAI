@@ -41,9 +41,16 @@ struct SongRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "music.note")
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 26)
+            // The song's face is its defining night's scan.
+            if let date = song.famousVersions.first?.date {
+                DateCover(date: date)
+                    .frame(width: 44, height: 44)
+            } else {
+                Image(systemName: "music.note")
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 44, height: 44)
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Theme.surfaceRaised))
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(song.title)
                     .font(Theme.headline)
@@ -221,21 +228,25 @@ struct SongDetailScreen: View {
     }
 
     private func versionContent(_ version: SongInfo.FamousVersion, divider: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(LocalKnowledgeAI.prettyDate(version.date))
-                    .font(Theme.headline)
-                    .foregroundStyle(Theme.textPrimary)
-                if let label = version.label {
-                    TagPill(text: label, tint: Theme.rose)
+        HStack(alignment: .top, spacing: 12) {
+            DateCover(date: version.date, venue: resolvedNotable(version.date)?.venue)
+                .frame(width: 64, height: 64)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(LocalKnowledgeAI.prettyDate(version.date))
+                        .font(Theme.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    if let label = version.label {
+                        TagPill(text: label, tint: Theme.rose)
+                    }
+                    Spacer()
+                    Image(systemName: "play.circle")
+                        .foregroundStyle(Theme.textTertiary)
                 }
-                Spacer()
-                Image(systemName: "play.circle")
-                    .foregroundStyle(Theme.textTertiary)
+                Text(version.note)
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
             }
-            Text(version.note)
-                .font(Theme.body)
-                .foregroundStyle(Theme.textSecondary)
         }
         .listRowStyle(divider: divider)
         .contentShape(Rectangle())

@@ -60,10 +60,8 @@ struct JourneysScreen: View {
                 ForEach(Array(runs.enumerated()), id: \.element.id) { index, run in
                     NavigationLink(value: run) {
                         HStack(spacing: 12) {
-                            Image(systemName: "flame.fill")
-                                .font(.caption)
-                                .foregroundStyle(Theme.textSecondary)
-                                .frame(width: 22)
+                            DateCover(date: run.date)
+                                .frame(width: 44, height: 44)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(run.title)
                                     .font(Theme.headline)
@@ -129,6 +127,8 @@ private struct JourneyCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // The course's first nights, as their scans.
+            CoverStrip(dates: journey.days.prefix(3).map(\.showDate), height: 80)
             HStack {
                 Text(journey.title)
                     .font(Theme.title)

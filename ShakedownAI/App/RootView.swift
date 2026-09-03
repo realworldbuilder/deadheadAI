@@ -104,7 +104,7 @@ struct RootView: View {
             Tab("Explore", systemImage: "map.fill", value: .explore) {
                 ExploreTabView()
             }
-            Tab("TapeTree", systemImage: "bubble.left.and.text.bubble.right.fill", value: .chat) {
+            Tab("Deadhead", systemImage: "bubble.left.and.text.bubble.right.fill", value: .chat) {
                 ChatScreen()
             }
             Tab("Library", systemImage: "books.vertical.fill", value: .library) {

@@ -229,7 +229,7 @@ struct ChatScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.background)
-            .navigationTitle("TapeTree")
+            .navigationTitle("Deadhead")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Menu {
