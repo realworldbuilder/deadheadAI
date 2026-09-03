@@ -1,9 +1,9 @@
 import SwiftUI
 
-// The night's memorabilia on the show page: the lead scan (the cover)
-// fills a full-bleed hero, the rest ride a thumbnail strip, and any of
-// them opens the full-screen viewer. Scans are hotlinked from
-// jerrygarcia.com and credited; nothing is drawn over the art.
+// The night's memorabilia, kept out of the music's way: the header art is
+// a small stacked deck that opens the full-screen viewer, and the scans
+// get their own "Memorabilia" section after the setlist. Scans are
+// hotlinked from jerrygarcia.com and credited; nothing is drawn over art.
 
 /// Gallery shape for one night, lead (cover) first.
 nonisolated struct ScanGallery: Equatable, Sendable {
@@ -14,10 +14,8 @@ nonisolated struct ScanGallery: Equatable, Sendable {
     }
 
     var lead: CatalogImage? { images.first }
-    var others: [CatalogImage] { Array(images.dropFirst()) }
     var hasScans: Bool { !images.isEmpty }
-    /// One scan is the hero; a strip only earns its space with a second.
-    var showsStrip: Bool { images.count >= 2 }
+    var count: Int { images.count }
 
     /// Viewer pages in gallery order, captioned by kind.
     func viewerPages(dateText: String) -> [ImageViewerPage] {
@@ -32,137 +30,109 @@ nonisolated struct ScanGallery: Equatable, Sendable {
     func pageIndex(of scan: CatalogImage, dateText: String) -> Int {
         viewerPages(dateText: dateText).firstIndex { $0.url.absoluteString == scan.url } ?? 0
     }
+
+    /// What to present, opening on `scan` (or the lead). Nil when there is
+    /// nothing to show.
+    func viewerSelection(opening scan: CatalogImage? = nil, dateText: String) -> ScanViewerSelection? {
+        let pages = viewerPages(dateText: dateText)
+        guard !pages.isEmpty else { return nil }
+        let index = scan.map { pageIndex(of: $0, dateText: dateText) } ?? 0
+        return ScanViewerSelection(pages: pages, index: index)
+    }
+
+    /// "3 scans" / "1 scan", for VoiceOver.
+    var countLabel: String {
+        count == 1 ? "1 scan" : "\(count) scans"
+    }
 }
 
-enum RemoteScanPhase: Equatable {
-    case loading, failed
+/// What the full-screen viewer opens on. Carrying the pages keeps the
+/// cover independent of whichever model produced them.
+struct ScanViewerSelection: Identifiable {
+    let pages: [ImageViewerPage]
+    let index: Int
+    var id: Int { index }
+
+    static let credit = "Scan courtesy jerrygarcia.com"
 }
 
-/// One remote scan through `ArchiveArtwork`'s cache, so the hero, its
-/// thumbnail and the viewer page all share a single download.
-struct RemoteScanImage<Content: View, Placeholder: View>: View {
-    let url: URL
-    @ViewBuilder let content: (UIImage) -> Content
-    @ViewBuilder let placeholder: (RemoteScanPhase) -> Placeholder
-
-    @State private var image: UIImage?
-    @State private var failed = false
-
-    var body: some View {
-        Group {
-            if let image {
-                content(image)
-            } else {
-                placeholder(failed ? .failed : .loading)
-            }
-        }
-        .task(id: url) {
-            let loaded = await ArchiveArtwork.shared.image(from: url)
-            image = loaded
-            failed = loaded == nil
+extension View {
+    /// Presents the scan viewer for a selection, black in both appearances.
+    func scanViewer(_ selection: Binding<ScanViewerSelection?>) -> some View {
+        fullScreenCover(item: selection) { selected in
+            ImageViewer(pages: selected.pages, initialIndex: selected.index,
+                        credit: ScanViewerSelection.credit)
         }
     }
 }
 
-// MARK: - Hero
+// MARK: - Deck
 
-/// The lead scan, edge to edge above the show header. Sized by the scan's
-/// own aspect (tickets sit short and wide, posters tall) within limits, so
-/// the page never opens on a wall of poster or a sliver of stub.
-struct ScanHero: View {
-    let image: CatalogImage
+/// The header art when the night has scans: the cover in front, with a
+/// card peeking out behind it for each further scan (up to two), so the
+/// tile itself says "there's more" without a badge over the art.
+struct ScanDeck: View {
+    let gallery: ScanGallery
     let show: Show
+    var size: CGFloat = 92
     let onTap: () -> Void
 
-    @State private var loadedSize: CGSize?
+    /// How far each card behind the cover peeks out.
+    static let peek: CGFloat = 4
 
     var body: some View {
         Button(action: onTap) {
-            Color.clear
-                .aspectRatio(aspect, contentMode: .fit)
-                .overlay(alignment: alignment) {
-                    if let url = URL(string: image.url) {
-                        RemoteScanImage(url: url) { loaded in
-                            Image(uiImage: loaded)
-                                .resizable()
-                                .scaledToFill()
-                                .onAppear { loadedSize = loaded.size }
-                        } placeholder: { phase in
-                            if phase == .failed {
-                                placeholderTile
-                            } else {
-                                Theme.surface
-                            }
-                        }
-                    } else {
-                        placeholderTile
-                    }
+            ZStack(alignment: .topLeading) {
+                ForEach(Array((0..<backCards).reversed()), id: \.self) { depth in
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Theme.surfaceRaised)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(Theme.stroke, lineWidth: 1)
+                        )
+                        .frame(width: size, height: size)
+                        .offset(x: Self.peek * CGFloat(depth + 1), y: Self.peek * CGFloat(depth + 1))
                 }
-                .clipped()
-                .animation(.snappy, value: loadedSize)
+                ShowArtworkView(show: show, coverURL: gallery.lead?.url, size: size)
+            }
+            .padding([.trailing, .bottom], Self.peek * CGFloat(backCards))
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
-        .accessibilityLabel("\(image.kind.label) scan for \(show.displayDate)")
+        .accessibilityLabel("\(gallery.lead?.kind.label ?? "Scan"), \(gallery.countLabel)")
         .accessibilityHint("Opens full screen")
     }
 
-    private var placeholderTile: some View {
-        ArtworkPlaceholder(date: show.displayDate, shortDate: ShowArtworkView.shortDate(show),
-                           venue: show.venue ?? show.title)
+    private var backCards: Int {
+        Self.backCardCount(for: gallery.count)
     }
 
-    private var aspect: CGFloat {
-        Self.bannerAspect(ratio: image.aspectRatio ?? loadedRatio)
-    }
-
-    private var alignment: Alignment {
-        Self.cropAlignment(kind: image.kind,
-                           width: image.width ?? loadedSize.map { Int($0.width) },
-                           height: image.height ?? loadedSize.map { Int($0.height) })
-    }
-
-    private var loadedRatio: Double? {
-        guard let loadedSize, loadedSize.height > 0 else { return nil }
-        return loadedSize.width / loadedSize.height
-    }
-
-    /// Banner width:height. Unknown → 16:9 (Home's hero height on a phone);
-    /// known → the scan's own ratio, clamped so a ticket isn't a sliver
-    /// and a poster isn't a wall.
-    nonisolated static func bannerAspect(width: Int?, height: Int?) -> CGFloat {
-        guard let width, let height, width > 0, height > 0 else { return bannerAspect(ratio: nil) }
-        return bannerAspect(ratio: Double(width) / Double(height))
-    }
-
-    nonisolated static func bannerAspect(ratio: Double?) -> CGFloat {
-        guard let ratio, ratio.isFinite, ratio > 0 else { return 16.0 / 9.0 }
-        return CGFloat(min(max(ratio, 1.25), 2.4))
-    }
-
-    /// Where the crop keeps its detail: posters and portrait scans carry
-    /// their title at the top; everything else centers.
-    nonisolated static func cropAlignment(kind: CatalogImage.Kind, width: Int?, height: Int?) -> Alignment {
-        if kind == .poster { return .top }
-        if let width, let height, height > width { return .top }
-        return .center
+    /// Cards behind the cover: none for a lone scan, at most two.
+    nonisolated static func backCardCount(for scans: Int) -> Int {
+        min(max(scans - 1, 0), 2)
     }
 }
 
 // MARK: - Strip
 
-/// The scans after the lead, as a horizontal rail of labeled thumbnails.
-struct ScanStrip: View {
+/// Every scan for the night as a horizontal rail of labeled thumbnails,
+/// under a "Memorabilia" heading, credited.
+struct MemorabiliaSection: View {
     let gallery: ScanGallery
-    let dateText: String
     let onTap: (CatalogImage) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Memorabilia").sectionHeaderStyle()
+                Spacer()
+                Text("\(gallery.count)")
+                    .font(Theme.footnote)
+                    .foregroundStyle(Theme.textTertiary)
+            }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 12) {
-                    ForEach(Array(gallery.others.enumerated()), id: \.element.id) { offset, scan in
-                        ScanThumbnail(scan: scan, position: offset + 2, count: gallery.images.count) {
+                    ForEach(Array(gallery.images.enumerated()), id: \.element.id) { offset, scan in
+                        ScanThumbnail(scan: scan, position: offset + 1, count: gallery.count) {
                             onTap(scan)
                         }
                     }
@@ -186,7 +156,7 @@ struct ScanThumbnail: View {
     @State private var image: UIImage?
     @State private var failed = false
 
-    static let height: CGFloat = 72
+    static let height: CGFloat = 84
 
     var body: some View {
         if !failed {
@@ -239,15 +209,20 @@ struct ScanThumbnail: View {
     }
 }
 
-
 // MARK: - Previews
 
 private enum ScanPreviews {
     /// Cornell wearing 3/29/90's scans — a ticket, a poster and a pass.
     static let scans: [CatalogImage] = [
-        CatalogImage(date: "1977-05-08", position: 0, kind: .ticket, url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12151045/t900329.jpeg", width: 319, height: 157),
-        CatalogImage(date: "1977-05-08", position: 0, kind: .poster, url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12152302/19900324.jpeg", width: nil, height: nil),
-        CatalogImage(date: "1977-05-08", position: 0, kind: .backstagePass, url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12151903/b900329.jpeg", width: 324, height: 216)
+        CatalogImage(date: "1977-05-08", position: 0, kind: .ticket,
+                     url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12151045/t900329.jpeg",
+                     width: 319, height: 157),
+        CatalogImage(date: "1977-05-08", position: 1, kind: .poster,
+                     url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12152302/19900324.jpeg",
+                     width: nil, height: nil),
+        CatalogImage(date: "1977-05-08", position: 2, kind: .backstagePass,
+                     url: "https://cdn.jerrygarcia.com/wp-content/uploads/1990/03/12151903/b900329.jpeg",
+                     width: 324, height: 216),
     ]
 
     static func environment(scans: [CatalogImage]) -> AppEnvironment {
@@ -257,7 +232,7 @@ private enum ScanPreviews {
     }
 }
 
-#Preview("Hero + strip") {
+#Preview("Deck + memorabilia") {
     NavigationStack {
         ShowDetailScreen(show: MockData.cornell)
     }
@@ -280,5 +255,5 @@ private enum ScanPreviews {
 
 #Preview("Viewer") {
     ImageViewer(pages: ScanGallery(images: ScanPreviews.scans).viewerPages(dateText: "May 8, 1977"),
-                initialIndex: 0, credit: "Scan courtesy jerrygarcia.com")
+                initialIndex: 0, credit: ScanViewerSelection.credit)
 }

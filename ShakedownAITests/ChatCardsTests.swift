@@ -91,6 +91,29 @@ struct ChatCardsTests {
         #expect(model.messages.last?.text.contains("[[show:1977-05-08|") == true)
     }
 
+    @Test func replyWithNoShowsGetsStartHereCardsAndActions() async {
+        let env = makeEnvironment(ai: ScriptedChatAI(reply: "Europe '72 was a transformative tour with tighter arrangements."))
+        let model = ChatModel(env: env)
+        await model.ask("What makes Europe '72 different?")
+
+        let reply = model.messages.last
+        #expect(reply?.shows.isEmpty == false)
+        #expect(reply?.actions.contains { if case .openEra(let id, _) = $0 { return id == "europe-wall" }; return false } == true)
+        #expect(reply?.actions.contains { if case .ask = $0 { return true }; return false } == true)
+
+        let reloaded = ChatModel(env: env)
+        #expect(reloaded.messages.last?.actions == reply?.actions)
+        #expect(reloaded.messages.last?.shows == reply?.shows)
+    }
+
+    @Test func replyWithCardsGetsNoExtras() async {
+        let env = makeEnvironment(ai: ScriptedChatAI(reply: "Try \(ChatLink.show("1977-05-08", label: "Cornell")) tonight."))
+        let model = ChatModel(env: env)
+        await model.ask("Anything from 1977?")
+        #expect(model.messages.last?.shows.count == 1)
+        #expect(model.messages.last?.actions.isEmpty == true)
+    }
+
     @Test func messageRecordRoundTripsShows() throws {
         let container = ModelContainerFactory.make(inMemory: true)
         let context = container.mainContext
@@ -116,5 +139,54 @@ struct ChatCardsTests {
         #expect(nights.count == 2)
         #expect(nights.contains { $0.identifier == MockData.cornell.identifier })
         #expect(!nights.contains { $0.identifier == audience.identifier })
+    }
+}
+
+struct ChatFollowUpPlannerTests {
+    private var kb: KnowledgeBase { KnowledgeBase.loadFromBundle(Bundle(for: FixtureAnchor.self).appMainBundle) }
+
+    @Test func eraQuestionLeadsToThatErasTapesAndPage() {
+        let plan = ChatFollowUpPlanner.plan(
+            question: "What makes Europe '72 different?",
+            reply: "Europe '72 was a transformative tour. I could recommend some shows!",
+            kb: kb
+        )
+        #expect(!plan.showDates.isEmpty && plan.showDates.count <= 2)
+        #expect(plan.showDates.allSatisfy { $0.hasPrefix("1972") })
+        #expect(plan.actions.contains(.openEra(id: "europe-wall", label: "Europe '72 & the Wall of Sound")))
+        #expect(plan.actions.contains(.ask("What's the one show to hear from 1972?")))
+    }
+
+    @Test func songQuestionLeadsToItsFamousVersionAndPage() {
+        let plan = ChatFollowUpPlanner.plan(question: "Tell me about Dark Star", reply: "It's the big one.", kb: kb)
+        let song = kb.song(matching: "Dark Star")
+        #expect(plan.showDates == song?.famousVersions.prefix(1).map(\.date))
+        #expect(plan.actions.contains(.openSong(key: "dark star", label: "Dark Star")))
+        #expect(plan.actions.contains(.ask("Best Dark Star for a first-timer?")))
+    }
+
+    @Test func greetingsDoNotMatchASong() {
+        #expect(kb.song(matching: "hi") == nil)
+        #expect(kb.song(matching: "hey there") == nil)
+        #expect(kb.song(matching: "china cat")?.key == "china cat sunflower")
+        #expect(kb.song(matching: "What's the best Dark Star?")?.key == "dark star")
+        let plan = ChatFollowUpPlanner.plan(question: "hi", reply: "Hey! What are you in the mood for?", kb: kb)
+        #expect(plan.actions == [.ask("Pick one show for tonight")])
+    }
+
+    @Test func genericChatStillOffersANextStep() {
+        let plan = ChatFollowUpPlanner.plan(question: "hey there", reply: "Hi! Ask me anything.", kb: kb)
+        #expect(plan.showDates.isEmpty)
+        #expect(plan.actions == [.ask("Pick one show for tonight")])
+    }
+
+    @Test func actionsRoundTripThroughRecord() throws {
+        let container = ModelContainerFactory.make(inMemory: true)
+        let record = ChatMessageRecord(role: "assistant", text: "x")
+        container.mainContext.insert(record)
+        #expect(record.actions.isEmpty)
+        record.actions = [.openEra(id: "brent", label: "The Brent Years"), .ask("Pick one show for tonight")]
+        try container.mainContext.save()
+        #expect(record.actions == [.openEra(id: "brent", label: "The Brent Years"), .ask("Pick one show for tonight")])
     }
 }

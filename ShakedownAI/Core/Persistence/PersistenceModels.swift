@@ -319,6 +319,8 @@ final class ChatMessageRecord {
     /// JSON-encoded `[Show]` the reply recommended (assistant rows only);
     /// nil for user turns and for rows written before cards existed.
     var showsData: Data?
+    /// JSON-encoded `[ChatAction]` chips shown beneath the reply; nil when none.
+    var actionsData: Data?
 
     init(role: String, text: String, createdAt: Date = .now) {
         self.role = role
@@ -329,6 +331,11 @@ final class ChatMessageRecord {
     var shows: [Show] {
         get { showsData.flatMap { try? JSONDecoder().decode([Show].self, from: $0) } ?? [] }
         set { showsData = newValue.isEmpty ? nil : try? JSONEncoder().encode(newValue) }
+    }
+
+    var actions: [ChatAction] {
+        get { actionsData.flatMap { try? JSONDecoder().decode([ChatAction].self, from: $0) } ?? [] }
+        set { actionsData = newValue.isEmpty ? nil : try? JSONEncoder().encode(newValue) }
     }
 }
 

@@ -115,14 +115,6 @@ final class ShowDetailModel {
     }
 }
 
-/// What the full-screen viewer opens on. Carrying the pages keeps the
-/// cover independent of the optional model.
-private struct ScanViewerSelection: Identifiable {
-    let pages: [ImageViewerPage]
-    let index: Int
-    var id: Int { index }
-}
-
 struct ShowDetailScreen: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(PlayerEngine.self) private var engine
@@ -205,79 +197,63 @@ struct ShowDetailScreen: View {
         }) { payload in
             PlaylistPickerSheet(show: model?.show ?? show, tracks: payload.tracks)
         }
-        .fullScreenCover(item: $viewerSelection) { selection in
-            ImageViewer(pages: selection.pages, initialIndex: selection.index,
-                        credit: "Scan courtesy jerrygarcia.com")
-        }
+        .scanViewer($viewerSelection)
     }
 
-    private func openViewer(_ model: ShowDetailModel, scan: CatalogImage) {
-        openViewer(model, at: model.gallery.pageIndex(of: scan, dateText: model.show.displayDate))
-    }
-
-    private func openViewer(_ model: ShowDetailModel, at index: Int) {
-        let pages = model.gallery.viewerPages(dateText: model.show.displayDate)
-        guard !pages.isEmpty else { return }
-        viewerSelection = ScanViewerSelection(pages: pages, index: index)
+    private func openViewer(_ model: ShowDetailModel, scan: CatalogImage? = nil) {
+        viewerSelection = model.gallery.viewerSelection(opening: scan, dateText: model.show.displayDate)
     }
 
     /// Debug hook: `--stage-scans` opens the viewer on the first scan for
     /// CLI screenshot capture (simctl can't tap).
     private func stageScansIfRequested(_ model: ShowDetailModel) {
         guard ProcessInfo.processInfo.arguments.contains("--stage-scans") else { return }
-        openViewer(model, at: 0)
+        openViewer(model)
     }
 
     @ViewBuilder
     private func content(_ model: ShowDetailModel) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                if let lead = model.gallery.lead {
-                    ScanHero(image: lead, show: model.show) { openViewer(model, at: 0) }
-                }
-                VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
-                    if model.gallery.showsStrip {
-                        ScanStrip(gallery: model.gallery, dateText: model.show.displayDate) { scan in
+            VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
+                header(model)
+
+                if model.isLoading && model.detail == nil {
+                    LoadingLampView(text: "Tuning in from the archive…")
+                } else if let error = model.errorMessage {
+                    ErrorCard(message: error) {
+                        Task { await model.load() }
+                    }
+                } else if let detail = model.detail {
+                    VStack(spacing: 10) {
+                        playButton(model, detail: detail)
+                        downloadButton(model, detail: detail)
+                    }
+                    famousRunSection(model, detail: detail)
+                    guideSection(model)
+                    let marks = model.guide.map {
+                        GuideTrackMarks.marks(for: $0, tracks: detail.tracks, aliases: model.songAliases)
+                    } ?? [:]
+                    trackList(detail, model: model, marks: marks)
+                    if model.gallery.hasScans {
+                        MemorabiliaSection(gallery: model.gallery) { scan in
                             openViewer(model, scan: scan)
                         }
                     }
-                    header(model, showsArtwork: !model.gallery.hasScans)
-
-                    if model.isLoading && model.detail == nil {
-                        LoadingLampView(text: "Tuning in from the archive…")
-                    } else if let error = model.errorMessage {
-                        ErrorCard(message: error) {
-                            Task { await model.load() }
-                        }
-                    } else if let detail = model.detail {
-                        VStack(spacing: 10) {
-                            playButton(model, detail: detail)
-                            downloadButton(model, detail: detail)
-                        }
-                        famousRunSection(model, detail: detail)
-                        guideSection(model)
-                        let marks = model.guide.map {
-                            GuideTrackMarks.marks(for: $0, tracks: detail.tracks, aliases: model.songAliases)
-                        } ?? [:]
-                        trackList(detail, model: model, marks: marks)
-                        if !model.otherRecordings.isEmpty {
-                            sourcesSection(model)
-                        }
-                        if let notes = detail.notes ?? detail.lineage {
-                            notesSection(notes: detail.notes, lineage: detail.lineage, fallback: notes)
-                        }
-                        if let digest = model.digest {
-                            digestCard(digest)
-                        }
-                        if !detail.reviews.isEmpty {
-                            reviewsSection(detail)
-                        }
+                    if !model.otherRecordings.isEmpty {
+                        sourcesSection(model)
+                    }
+                    if let notes = detail.notes ?? detail.lineage {
+                        notesSection(notes: detail.notes, lineage: detail.lineage, fallback: notes)
+                    }
+                    if let digest = model.digest {
+                        digestCard(digest)
+                    }
+                    if !detail.reviews.isEmpty {
+                        reviewsSection(detail)
                     }
                 }
-                .padding(.horizontal, Theme.screenPadding)
-                .padding(.bottom, Theme.screenPadding)
-                .padding(.top, model.gallery.hasScans ? Theme.itemSpacing : Theme.screenPadding)
             }
+            .padding(Theme.screenPadding)
         }
         .safeAreaInset(edge: .bottom) {
             if isSelectingTracks, let detail = model.detail {
@@ -316,12 +292,14 @@ struct ShowDetailScreen: View {
         .overlay(alignment: .top) { HairlineDivider() }
     }
 
-    /// `showsArtwork` keeps the 92pt art (and its borrowed-scan fallbacks)
-    /// for nights without scans; under a hero, the header is just words.
-    private func header(_ model: ShowDetailModel, showsArtwork: Bool) -> some View {
+    /// With scans, the art is a tappable deck into the viewer; without,
+    /// the plain tile and its borrowed-scan fallbacks, as before.
+    private func header(_ model: ShowDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 14) {
-                if showsArtwork {
+                if model.gallery.hasScans {
+                    ScanDeck(gallery: model.gallery, show: model.show) { openViewer(model) }
+                } else {
                     ShowArtworkView(show: model.show, coverURL: model.coverImageURL, size: 92)
                 }
                 VStack(alignment: .leading, spacing: 4) {

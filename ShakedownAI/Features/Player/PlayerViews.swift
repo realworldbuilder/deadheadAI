@@ -79,7 +79,11 @@ extension View {
 
 struct PlayerScreen: View {
     @Environment(PlayerEngine.self) private var engine
+    @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
+    /// The night's memorabilia, for the ticket button in the secondary row.
+    @State private var scans = ScanGallery()
+    @State private var viewerSelection: ScanViewerSelection?
     @State private var scrubbing = false
     @State private var scrubValue: Double = 0
     @State private var skipCount = 0
@@ -201,6 +205,19 @@ struct PlayerScreen: View {
                         .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Sleep timer")
+                    if scans.hasScans, let show = engine.currentShow {
+                        Button {
+                            viewerSelection = scans.viewerSelection(dateText: show.displayDate)
+                        } label: {
+                            Image(systemName: "ticket")
+                                .font(.system(size: 17))
+                                .foregroundStyle(Theme.textTertiary)
+                                .frame(minWidth: 30, minHeight: 30)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Memorabilia, \(scans.countLabel)")
+                        .accessibilityHint("Opens full screen")
+                    }
                 }
 
                 if case .failed(let message) = engine.state {
@@ -295,6 +312,14 @@ struct PlayerScreen: View {
             }
         }
         .sensoryFeedback(.selection, trigger: skipCount)
+        .task(id: engine.currentShow?.dateString ?? "") {
+            guard env.catalog.isAvailable, let day = engine.currentShow?.dateString else {
+                scans = ScanGallery()
+                return
+            }
+            scans = ScanGallery(images: await env.catalog.images(onDate: day))
+        }
+        .scanViewer($viewerSelection)
     }
 
     private func timeString(_ seconds: Double) -> String {

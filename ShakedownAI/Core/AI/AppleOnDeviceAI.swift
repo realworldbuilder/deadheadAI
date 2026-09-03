@@ -380,7 +380,8 @@ final class AppleOnDeviceAI: AIProvider {
 
         Reply to the listener's last message. Use a tool when you need real show data. \
         When you name a show, write it as [[show:YYYY-MM-DD|Venue M/D/YY]] so the \
-        listener can tap it. Plain prose only: no markdown, bullets, or bold.
+        listener can tap it, and name one or two shows in every answer rather than \
+        offering to. Plain prose only: no markdown, bullets, or bold.
         """
 
         // The framework runs the tool loop itself — no manual round-tripping.

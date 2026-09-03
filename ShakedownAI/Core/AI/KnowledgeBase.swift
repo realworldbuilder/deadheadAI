@@ -48,7 +48,9 @@ nonisolated struct KnowledgeBase: Sendable {
         let needle = Track.normalizeSongKey(text)
         guard !needle.isEmpty else { return nil }
         if let exact = songs.first(where: { $0.key == needle }) { return exact }
-        return songs.first { $0.key.contains(needle) || needle.contains($0.key) }
+        // A query buried inside a title only counts when it's a real fragment
+        // ("china cat"), never a two-letter greeting ("hi" ⊂ "china").
+        return songs.first { needle.contains($0.key) || (needle.count >= 4 && $0.key.contains(needle)) }
     }
 
     func notableShow(on date: String) -> NotableShow? {

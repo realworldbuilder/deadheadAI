@@ -9,6 +9,8 @@ final class ChatModel {
         var text: String
         /// Tapes the reply recommended, rendered as playable cards beneath it.
         var shows: [Show] = []
+        /// Chips beneath the reply: era/song pages and follow-up questions.
+        var actions: [ChatAction] = []
     }
 
     var messages: [DisplayMessage] = []
@@ -40,7 +42,7 @@ final class ChatModel {
             thread = existing
             messages = existing.messages
                 .sorted { $0.createdAt < $1.createdAt }
-                .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text, shows: $0.shows) }
+                .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text, shows: $0.shows, actions: $0.actions) }
         } else {
             let fresh = ChatThread(title: "TapeTree")
             context.insert(fresh)
@@ -90,9 +92,23 @@ final class ChatModel {
         if let index = messages.firstIndex(where: { $0.id == replyID }) {
             let raw = messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
             let verified = await verifyLinks(in: raw)
+            var shows = verified.shows
+            var actions: [ChatAction] = []
+            // A reply with no card is a dead end: the app adds a couple of
+            // grounded tapes and a row of actions so there's always a next tap.
+            if shows.isEmpty {
+                let followUp = ChatFollowUpPlanner.plan(question: text, reply: verified.text, kb: env.knowledgeBase)
+                for date in followUp.showDates {
+                    if let best = (try? await env.recordingProvider.recordings(forDate: date))?.first {
+                        shows.append(best)
+                    }
+                }
+                actions = followUp.actions
+            }
             messages[index].text = verified.text
-            messages[index].shows = verified.shows
-            persist(role: "assistant", text: verified.text, shows: verified.shows)
+            messages[index].shows = shows
+            messages[index].actions = actions
+            persist(role: "assistant", text: verified.text, shows: shows, actions: actions)
         }
         isReplying = false
     }
@@ -116,10 +132,11 @@ final class ChatModel {
         return ChatLink.verifyShows(in: text, lookups: lookups)
     }
 
-    private func persist(role: String, text: String, shows: [Show] = []) {
+    private func persist(role: String, text: String, shows: [Show] = [], actions: [ChatAction] = []) {
         guard let thread else { return }
         let record = ChatMessageRecord(role: role, text: text)
         record.shows = shows
+        record.actions = actions
         record.thread = thread
         context.insert(record)
         try? context.save()
@@ -276,6 +293,14 @@ struct ChatScreen: View {
         }
     }
 
+    private func perform(_ action: ChatAction, model: ChatModel) {
+        switch action {
+        case .openEra(let id, _): path.append(ChatLink.Destination.era(id: id))
+        case .openSong(let key, _): path.append(ChatLink.Destination.song(key: key))
+        case .ask(let question): Task { await model.ask(question) }
+        }
+    }
+
     @ViewBuilder
     private func chatLinkScreen(for destination: ChatLink.Destination) -> some View {
         switch destination {
@@ -322,7 +347,9 @@ struct ChatScreen: View {
                         emptyState(model)
                     }
                     ForEach(model.messages) { message in
-                        MessageBubble(message: message)
+                        MessageBubble(message: message,
+                                      noteFor: { env.knowledgeBase.notableShow(on: $0)?.blurb },
+                                      onAction: { perform($0, model: model) })
                             .id(message.id)
                     }
                     if model.isReplying && (model.messages.last?.text.isEmpty ?? false) {
@@ -399,6 +426,9 @@ struct ChatScreen: View {
 
 private struct MessageBubble: View {
     let message: ChatModel.DisplayMessage
+    /// Curator's blurb for a date, used as the note on app-added cards.
+    var noteFor: (String) -> String? = { _ in nil }
+    var onAction: (ChatAction) -> Void = { _ in }
 
     var body: some View {
         if message.role == .user {
@@ -419,6 +449,12 @@ private struct MessageBubble: View {
             }, uniquingKeysWith: { first, _ in first })
             let segments = ChatLink.segments(in: message.text.isEmpty ? " " : message.text,
                                              cardDates: Set(showsByDate.keys))
+            let referenced = Set(segments.compactMap { segment -> String? in
+                if case .show(let date, _) = segment { return date }
+                return nil
+            })
+            // Tapes the app added because the reply named none.
+            let extras = message.shows.filter { !referenced.contains($0.dateString ?? "") }
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
                     switch segment {
@@ -433,6 +469,27 @@ private struct MessageBubble: View {
                             ChatShowCard(show: show, note: note)
                         }
                     }
+                }
+                if !extras.isEmpty {
+                    Text("Start here")
+                        .eyebrowStyle()
+                        .padding(.top, 4)
+                    ForEach(extras) { show in
+                        ChatShowCard(show: show, note: show.dateString.flatMap(noteFor))
+                    }
+                }
+                if !message.actions.isEmpty {
+                    FlowLayout(spacing: 8) {
+                        ForEach(message.actions, id: \.self) { action in
+                            Button {
+                                onAction(action)
+                            } label: {
+                                Label(action.title, systemImage: action.systemImage)
+                            }
+                            .buttonStyle(.chip)
+                        }
+                    }
+                    .padding(.top, 4)
                 }
             }
             .padding(.vertical, 4)

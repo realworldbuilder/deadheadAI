@@ -10,29 +10,38 @@ private func scan(_ kind: CatalogImage.Kind, _ name: String, width: Int? = nil, 
 }
 
 struct ScanGalleryTests {
-    @Test func emptyGalleryHasNoHeroOrStrip() {
+    @Test func emptyGalleryHasNothingToShow() {
         let gallery = ScanGallery()
         #expect(gallery.lead == nil)
         #expect(!gallery.hasScans)
-        #expect(!gallery.showsStrip)
         #expect(gallery.viewerPages(dateText: "May 8, 1977").isEmpty)
+        #expect(gallery.viewerSelection(dateText: "May 8, 1977") == nil)
     }
 
-    @Test func singleScanIsTheHeroWithoutAStrip() {
-        let gallery = ScanGallery(images: [scan(.ticket, "t.jpg")])
-        #expect(gallery.lead?.kind == .ticket)
-        #expect(gallery.others.isEmpty)
-        #expect(gallery.hasScans)
-        #expect(!gallery.showsStrip)
-    }
-
-    @Test func leadIsTheCoverAndTheRestRideTheStrip() {
+    @Test func leadIsTheCoverAndCountsRead() {
         let images = [scan(.ticket, "t.jpg"), scan(.poster, "p.jpg", position: 1),
                       scan(.backstagePass, "b.jpg", position: 2)]
         let gallery = ScanGallery(images: images)
         #expect(gallery.lead == images[0])
-        #expect(gallery.others == Array(images[1...]))
-        #expect(gallery.showsStrip)
+        #expect(gallery.count == 3)
+        #expect(gallery.countLabel == "3 scans")
+        #expect(ScanGallery(images: [images[0]]).countLabel == "1 scan")
+    }
+
+    @Test func selectionOpensOnTheTappedScan() throws {
+        let images = [scan(.ticket, "t.jpg"), scan(.poster, "p.jpg", position: 1)]
+        let gallery = ScanGallery(images: images)
+        let fromLead = try #require(gallery.viewerSelection(dateText: "May 8, 1977"))
+        #expect(fromLead.index == 0 && fromLead.pages.count == 2)
+        let fromPoster = try #require(gallery.viewerSelection(opening: images[1], dateText: "May 8, 1977"))
+        #expect(fromPoster.index == 1)
+    }
+
+    @Test func deckShowsAtMostTwoCardsBehindTheCover() {
+        #expect(ScanDeck.backCardCount(for: 0) == 0)
+        #expect(ScanDeck.backCardCount(for: 1) == 0)
+        #expect(ScanDeck.backCardCount(for: 2) == 1)
+        #expect(ScanDeck.backCardCount(for: 5) == 2)
     }
 
     @Test func viewerPagesFollowGalleryOrderAndCaptionByKind() {
@@ -45,26 +54,7 @@ struct ScanGalleryTests {
     }
 }
 
-struct ScanHeroTests {
-    @Test func unknownDimensionsFallBackToSixteenByNine() {
-        #expect(ScanHero.bannerAspect(width: nil, height: nil) == 16.0 / 9.0)
-        #expect(ScanHero.bannerAspect(width: 100, height: 0) == 16.0 / 9.0)
-        #expect(ScanHero.bannerAspect(ratio: nil) == 16.0 / 9.0)
-    }
-
-    @Test func aspectIsClampedBetweenPosterAndTicket() {
-        #expect(ScanHero.bannerAspect(width: 2400, height: 1000) == 2.4)
-        #expect(ScanHero.bannerAspect(width: 600, height: 900) == 1.25)
-        #expect(abs(ScanHero.bannerAspect(width: 1600, height: 900) - 16.0 / 9.0) < 0.001)
-    }
-
-    @Test func postersAndPortraitsCropFromTheTop() {
-        #expect(ScanHero.cropAlignment(kind: .poster, width: nil, height: nil) == .top)
-        #expect(ScanHero.cropAlignment(kind: .other, width: 600, height: 900) == .top)
-        #expect(ScanHero.cropAlignment(kind: .ticket, width: 457, height: 157) == .center)
-        #expect(ScanHero.cropAlignment(kind: .backstagePass, width: nil, height: nil) == .center)
-    }
-
+struct ScanThumbnailTests {
     @Test func thumbnailsAreSquareWhenUnknownAndAtMostTwoToOne() {
         #expect(ScanThumbnail.thumbnailAspect(ratio: nil) == 1)
         #expect(ScanThumbnail.thumbnailAspect(ratio: 0.6) == 1)
@@ -115,7 +105,7 @@ struct ShowDetailScansTests {
         await model.loadCatalogContext()
         #expect(model.images.count == 2)
         #expect(model.gallery.lead?.url == "https://cdn.jerrygarcia.com/u/t.jpg")
-        #expect(model.gallery.showsStrip)
+        #expect(model.gallery.count == 2)
     }
 
     @Test func unavailableCatalogLeavesNoScans() async {
