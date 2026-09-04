@@ -13,6 +13,10 @@ struct ExploreTabView: View {
     @State private var sky = ExploreSkyModel()
     @State private var motion = SkyMotion()
     @State private var path = NavigationPath()
+    /// Staging is once per process: `.task` re-runs every time the tab
+    /// reappears, and re-staging would shove the listener back into the
+    /// staged page each time they came home to the sky.
+    private static var didStage = false
 
     private enum Destination: String, Hashable {
         case search, topShelf, eras, songs, journeys, darkStar, onThisDay,
@@ -23,8 +27,10 @@ struct ExploreTabView: View {
     /// a destination straight from the sky; `--stage-era europe-wall` goes
     /// one deeper, onto that era's page.
     private func stageFromArguments() {
-        guard path.isEmpty else { return }
+        guard !Self.didStage, path.isEmpty else { return }
         let args = ProcessInfo.processInfo.arguments
+        guard args.contains("--stage-explore") || args.contains("--stage-era") else { return }
+        Self.didStage = true
         if let index = args.firstIndex(of: "--stage-explore"), index + 1 < args.count,
            let destination = Destination(rawValue: args[index + 1]) {
             path.append(destination)
@@ -169,7 +175,7 @@ struct ExploreTabView: View {
                 // A push during the first render is dropped, and the view can
                 // be rebuilt once more while the app settles — so try a few
                 // times until the path holds.
-                for _ in 0..<4 {
+                for _ in 0..<4 where !Self.didStage {
                     try? await Task.sleep(for: .seconds(1))
                     stageFromArguments()
                 }
