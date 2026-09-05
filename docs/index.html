@@ -12,16 +12,18 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <style>
   :root {
-    /* Analog-dark palette: midnight→walnut, parchment→cream label, gold→ferric-oxide rust. */
-    --midnight: #140d08;
-    --midnight-soft: #1e1410;
-    --card: rgba(38, 28, 20, 0.72);
-    --parchment: #f4ebd4;
-    --parchment-dim: #bdae8c;
-    --gold: #c2662f;
-    --gold-bright: #e0854a;
-    --gold-deep: #8a3f18;
-    --stroke: rgba(216, 190, 150, 0.22);
+    /* Nethead palette: black space, bone-white type, the bolt's red and blue for accents. */
+    --midnight: #050609;
+    --midnight-soft: #0b0d16;
+    --card: rgba(14, 16, 26, 0.72);
+    --parchment: #f2efe6;
+    --parchment-dim: #a6a49b;
+    --gold: #e0261f;
+    --gold-bright: #ff4a3d;
+    --gold-deep: #9e150f;
+    --blue: #1f5cd6;
+    --blue-bright: #5b8dff;
+    --stroke: rgba(242, 239, 230, 0.16);
     --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
     --mono: 'Courier New', ui-monospace, monospace;
   }
@@ -39,9 +41,9 @@
   .sky {
     position: fixed; inset: 0; z-index: -2; pointer-events: none;
     background:
-      radial-gradient(ellipse 90% 55% at 50% -8%, rgba(36, 72, 42, 0.50), transparent 70%),
-      radial-gradient(ellipse 45% 30% at 85% 8%, rgba(140, 60, 32, 0.18), transparent 70%),
-      radial-gradient(ellipse 40% 28% at 8% 85%, rgba(140, 60, 32, 0.14), transparent 70%),
+      radial-gradient(ellipse 90% 55% at 50% -8%, rgba(66, 41, 112, 0.38), transparent 70%),
+      radial-gradient(ellipse 45% 30% at 85% 8%, rgba(26, 56, 122, 0.26), transparent 70%),
+      radial-gradient(ellipse 40% 28% at 8% 85%, rgba(20, 77, 87, 0.20), transparent 70%),
       var(--midnight);
   }
   .stars, .stars2, .stars3 {
@@ -52,24 +54,24 @@
     background-image:
       radial-gradient(1px 1px at 22px 34px, rgba(255,255,255,0.9), transparent 1.5px),
       radial-gradient(1px 1px at 118px 92px, rgba(255,255,255,0.55), transparent 1.5px),
-      radial-gradient(1px 1px at 199px 21px, rgba(240,222,175,0.8), transparent 1.5px),
+      radial-gradient(1px 1px at 199px 21px, rgba(205,216,255,0.8), transparent 1.5px),
       radial-gradient(1px 1px at 61px 156px, rgba(255,255,255,0.65), transparent 1.5px),
-      radial-gradient(1px 1px at 165px 183px, rgba(178,220,178,0.7), transparent 1.5px);
+      radial-gradient(1px 1px at 165px 183px, rgba(205,216,255,0.7), transparent 1.5px);
     background-size: 220px 210px;
   }
   .stars2 {
     background-image:
       radial-gradient(1.5px 1.5px at 45px 65px, rgba(255,255,255,0.95), transparent 2px),
-      radial-gradient(1.5px 1.5px at 280px 190px, rgba(240,222,175,0.9), transparent 2px),
+      radial-gradient(1.5px 1.5px at 280px 190px, rgba(205,216,255,0.9), transparent 2px),
       radial-gradient(1px 1px at 330px 40px, rgba(255,255,255,0.5), transparent 1.5px),
-      radial-gradient(1.5px 1.5px at 150px 280px, rgba(178,220,178,0.85), transparent 2px);
+      radial-gradient(1.5px 1.5px at 150px 280px, rgba(205,216,255,0.85), transparent 2px);
     background-size: 380px 330px;
     animation: twinkle 5s ease-in-out infinite alternate;
   }
   .stars3 {
     background-image:
       radial-gradient(2px 2px at 90px 130px, rgba(255,255,255,1), transparent 2.5px),
-      radial-gradient(2px 2px at 410px 60px, rgba(240,222,175,0.95), transparent 2.5px),
+      radial-gradient(2px 2px at 410px 60px, rgba(205,216,255,0.95), transparent 2.5px),
       radial-gradient(2px 2px at 260px 320px, rgba(255,255,255,0.85), transparent 2.5px);
     background-size: 520px 420px;
     animation: twinkle 7s ease-in-out 1.8s infinite alternate;
@@ -83,8 +85,8 @@
   .icon {
     width: 120px; height: 120px; border-radius: 27px;
     box-shadow:
-      0 0 60px rgba(240, 222, 175, 0.35),
-      0 0 140px rgba(46, 90, 52, 0.45),
+      0 0 60px rgba(91, 141, 255, 0.35),
+      0 0 140px rgba(66, 41, 112, 0.55),
       0 12px 40px rgba(0, 0, 0, 0.6);
     animation: float 6s ease-in-out infinite;
   }
@@ -94,9 +96,9 @@
     font-size: clamp(44px, 9vw, 76px);
     letter-spacing: 0.06em;
     font-weight: bold;
-    background: linear-gradient(180deg, #fdf6e0 8%, var(--gold-bright) 38%, var(--gold) 62%, var(--gold-deep) 95%);
+    background: linear-gradient(180deg, #ffffff 8%, #e6e2d6 38%, #f2efe6 62%, #8c877a 95%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    text-shadow: 0 0 50px rgba(240, 222, 175, 0.18);
+    text-shadow: 0 0 50px rgba(242, 239, 230, 0.18);
     text-transform: uppercase;
   }
   .tagline {
@@ -114,13 +116,13 @@
   .btn:hover { transform: translateY(-2px); }
   .btn-gold {
     background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-    color: #17130a;
-    box-shadow: 0 6px 30px rgba(194, 102, 47, 0.35);
+    color: #ffffff;
+    box-shadow: 0 6px 30px rgba(224, 38, 31, 0.35);
   }
-  .btn-gold:hover { box-shadow: 0 10px 40px rgba(194, 102, 47, 0.5); }
+  .btn-gold:hover { box-shadow: 0 10px 40px rgba(224, 38, 31, 0.5); }
   .btn-ghost {
-    border: 1px solid var(--stroke); color: var(--gold-bright);
-    background: rgba(240, 222, 175, 0.04);
+    border: 1px solid var(--stroke); color: var(--parchment);
+    background: rgba(242, 239, 230, 0.04);
   }
 
   /* ---- intro ---- */
@@ -136,7 +138,7 @@
   .phone {
     border: 1px solid var(--stroke); border-radius: clamp(22px, 4vw, 38px);
     overflow: hidden; background: #000;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 50px rgba(46, 90, 52, 0.18);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 50px rgba(31, 92, 214, 0.18);
     transition: transform 0.25s ease;
   }
   .phone img { display: block; width: 100%; height: auto; }
@@ -162,7 +164,7 @@
     border: 1px solid var(--stroke); border-radius: 18px;
     background: var(--card); backdrop-filter: blur(6px);
     padding: 28px 32px; font-size: 17.5px;
-    box-shadow: 0 0 60px rgba(46, 90, 52, 0.15);
+    box-shadow: 0 0 60px rgba(31, 92, 214, 0.15);
   }
   .comments-feature .feature-body p + p { margin-top: 14px; }
   .comments-feature em { color: var(--gold-bright); font-style: normal; font-weight: bold; }
@@ -184,13 +186,13 @@
   .sleeve {
     display: block; width: 100%; max-width: 320px; margin: 24px auto 0;
     border-radius: 14px; border: 1px solid var(--stroke);
-    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(194, 102, 47, 0.15);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(91, 141, 255, 0.15);
   }
 
   /* ---- field reports ---- */
   section.reports { margin-top: 8px; }
   h2.section {
-    text-align: center; color: var(--gold-bright);
+    text-align: center; color: var(--parchment);
     font-size: clamp(24px, 4.5vw, 34px); letter-spacing: 1px; margin: 40px 0 6px;
   }
   .section-sub {
@@ -204,14 +206,14 @@
     backdrop-filter: blur(6px);
     transition: transform 0.2s ease, border-color 0.2s ease;
   }
-  .review:hover { transform: translateY(-4px); border-color: rgba(240, 222, 175, 0.5); }
+  .review:hover { transform: translateY(-4px); border-color: rgba(91, 141, 255, 0.55); }
   .review .head {
     font-family: var(--mono); font-size: 12.5px; color: var(--parchment-dim);
     display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
     margin-bottom: 10px;
   }
   .review .head .r { color: var(--gold); letter-spacing: 2px; }
-  .review h3 { font-size: 19px; color: var(--gold-bright); margin-bottom: 8px; }
+  .review h3 { font-size: 19px; color: var(--parchment); margin-bottom: 8px; }
   .review p { font-size: 16px; }
   .review p + p { margin-top: 10px; }
 
@@ -227,7 +229,7 @@
   footer nav { margin-bottom: 16px; font-family: var(--mono); font-size: 13px; letter-spacing: 1px; }
   footer nav a { margin: 0 14px; }
   footer p { max-width: 620px; margin: 0 auto; }
-  a { color: var(--gold-bright); }
+  a { color: var(--blue-bright); }
 
   @media (max-width: 560px) {
     .phones { flex-wrap: nowrap; }
@@ -260,8 +262,8 @@
 
   <div class="phones">
     <div class="phone side left"><img src="assets/shot-explore.png" alt="Explore tab — a constellation of destinations: Dark Star, Eras, Songs, Long Strange Trip" loading="lazy"></div>
-    <div class="phone center"><img src="assets/shot-home.png" alt="Home tab — Tonight's Show: 10/18/74 Winterland Arena, with smart shelves"></div>
-    <div class="phone side right"><img src="assets/shot-chat.png" alt="Chat tab — your lifelong Deadhead riding shotgun, ready for questions" loading="lazy"></div>
+    <div class="phone center"><img src="assets/shot-home.png" alt="Home tab — Tonight's Show and The Runs, the night's ticket up top"></div>
+    <div class="phone side right"><img src="assets/shot-chat.png" alt="Nethead tab — your lifelong Nethead riding shotgun, ready for questions" loading="lazy"></div>
   </div>
   <p class="phones-caption">tonight&rsquo;s show &nbsp;✦&nbsp; the constellation &nbsp;✦&nbsp; the head riding shotgun</p>
 
@@ -312,8 +314,8 @@
       </div>
       <div class="review">
         <div class="head"><span class="r">✦</span><span>free ai, on the house</span></div>
-        <h3>Sign in with Apple, the whole brain wakes up</h3>
-        <p>The full AI brain is free with Apple sign-in — and your shelves and journal ride along in your own iCloud. Skip it and everything still works on a curated offline knowledge base. No ads, no trackers, nobody selling your trip diary.</p>
+        <h3>The whole brain, no sign-in</h3>
+        <p>The full AI brain is free and needs no account. Sign in with Apple only if you want your shelves and journal to ride along in your own iCloud. Lose the network and a curated offline knowledge base takes over. No ads, no trackers, nobody selling your trip diary.</p>
       </div>
     </div>
   </section>
@@ -363,11 +365,11 @@
     <h2 class="section">The Tape Deck</h2>
     <p class="section-sub">It was never an &ldquo;audio player.&rdquo; It was always a deck.</p>
     <div class="deck-row">
-      <div class="phone deck-phone"><img src="assets/shot-player.png" alt="Full-screen player — a cassette with turning reels, streaming Cornell '77" loading="lazy"></div>
+      <div class="phone deck-phone"><img src="assets/shot-player.png" alt="Full-screen player — a black cassette with a Nethead sticker and turning reels, streaming Cornell '77" loading="lazy"></div>
       <div class="deck-copy">
         <p>Reels turn while the tape rolls. Background audio, lock-screen controls, gapless queues, scrub anywhere — streaming straight from archive.org, with nothing stored.</p>
-        <p>And every show presses its own sleeve: on your lock screen and in the car, the night you&rsquo;re spinning shows up as its own cover — the mask, the date, the room.</p>
-        <img class="sleeve" src="assets/sleeve.png" alt="Generated now-playing art — the mask over a starfield with GRATEFUL DEAD, May 8, 1977, Barton Hall, Cornell University" loading="lazy">
+        <p>And every show presses its own sleeve: on your lock screen and in the car, the night you&rsquo;re spinning shows up as its own cover — the skull, the date, the room.</p>
+        <img class="sleeve" src="assets/sleeve.png" alt="Generated now-playing art — the Nethead skeleton on cream ticket stock with GRATEFUL DEAD, May 8, 1977, Barton Hall, Cornell University" loading="lazy">
       </div>
     </div>
   </section>
@@ -381,12 +383,12 @@
       <div class="review">
         <div class="head"><span class="r">✦</span><span>no account</span></div>
         <h3>Hop on the Bus</h3>
-        <p>Tap one button and everything works: search, show guides, journeys, and recommendations run on a curated offline knowledge base of essential shows, song histories, and eras. All of it stays on your device.</p>
+        <p>Tap one button and everything works: search, show guides, journeys, recommendations, and the AI brain itself, free. Off the grid, a curated offline knowledge base of essential shows, song histories, and eras takes over. Your listening stays on your device.</p>
       </div>
       <div class="review">
         <div class="head"><span class="r">✦</span><span>sign in with apple</span></div>
-        <h3>Wake the Whole Brain</h3>
-        <p>Free-form AI chat and deeper recommendations, on the house. Your shelves and journal back up to your own iCloud — private to your Apple ID, unreadable by anyone else, including us.</p>
+        <h3>Take It With You</h3>
+        <p>Your shelves and journal back up to your own iCloud and follow you to the next phone — private to your Apple ID, unreadable by anyone else, including us.</p>
       </div>
     </div>
   </section>

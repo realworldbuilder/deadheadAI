@@ -8,10 +8,10 @@
 <style>
   :root {
     /* Analog-dark palette: midnight→walnut, parchment→cream label, gold→ferric-oxide rust. */
-    --midnight: #140d08; --card: rgba(38, 28, 20, 0.72);
-    --parchment: #f4ebd4; --parchment-dim: #bdae8c;
-    --gold: #c2662f; --gold-bright: #e0854a; --gold-deep: #8a3f18;
-    --stroke: rgba(216, 190, 150, 0.22);
+    --midnight: #050609; --card: rgba(14, 16, 26, 0.72);
+    --parchment: #f2efe6; --parchment-dim: #a6a49b;
+    --gold: #e0261f; --gold-bright: #5b8dff; --gold-deep: #9e150f;
+    --stroke: rgba(242, 239, 230, 0.16);
     --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
     --mono: 'Courier New', ui-monospace, monospace;
   }
@@ -32,8 +32,8 @@
     background-image:
       radial-gradient(1px 1px at 22px 34px, rgba(255,255,255,0.9), transparent 1.5px),
       radial-gradient(1px 1px at 118px 92px, rgba(255,255,255,0.55), transparent 1.5px),
-      radial-gradient(1px 1px at 199px 21px, rgba(240,222,175,0.8), transparent 1.5px),
-      radial-gradient(1.5px 1.5px at 61px 156px, rgba(178,220,178,0.7), transparent 2px);
+      radial-gradient(1px 1px at 199px 21px, rgba(205,216,255,0.8), transparent 1.5px),
+      radial-gradient(1.5px 1.5px at 61px 156px, rgba(205,216,255,0.7), transparent 2px);
     background-size: 220px 210px;
   }
   .wrap { max-width: 680px; margin: 0 auto; padding: 44px 24px 80px; }
@@ -41,11 +41,11 @@
     display: flex; align-items: center; gap: 10px;
     font-family: var(--mono); font-size: 13px; margin-bottom: 34px;
   }
-  .crumb img { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 0 20px rgba(240,222,175,0.25); }
+  .crumb img { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 0 20px rgba(205,216,255,0.25); }
   .crumb a { color: var(--gold-bright); text-decoration: none; }
   h1 {
     font-size: 40px; letter-spacing: 1px;
-    background: linear-gradient(180deg, #fdf6e0 8%, var(--gold-bright) 38%, var(--gold) 62%, var(--gold-deep) 95%);
+    background: linear-gradient(180deg, #ffffff 8%, #e6e2d6 38%, #f2efe6 62%, #8c877a 95%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .updated { font-family: var(--mono); font-size: 13px; color: var(--parchment-dim); margin: 8px 0 24px; }
@@ -70,7 +70,7 @@
 <div class="wrap">
   <p class="crumb"><img src="assets/icon.png" alt=""><a href="index.html">← Nethead</a></p>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: August 18, 2026</p>
+  <p class="updated">Last updated: September 5, 2026</p>
 
   <div class="lede">
     <p>The short version: your listening lives on your phone, your shelves can live in <em>your</em> iCloud, your questions go to OpenAI only to get answered, and nobody here is tracking, profiling, or selling anything. There are no ads, no analytics, and no third-party trackers in the app.</p>
@@ -86,7 +86,7 @@
   <p>None of this is transmitted to us. We have no servers and no ability to see it.</p>
 
   <h2>What syncs to your iCloud (optional)</h2>
-  <p>If you sign in with Apple, your collections (saved shows) and journal entries sync to the <strong>private CloudKit database of your own iCloud account</strong>. Apple encrypts and stores this data under your Apple ID; we cannot read, access, or share it. Sign out and syncing stops; your data stays on the device and in your iCloud until you remove it (iOS Settings → your name → iCloud → Manage Account Storage → Nethead; shown as Nethead or Deadhead AI on builds installed before the rename).</p>
+  <p>If you sign in with Apple, your collections (saved shows) and journal entries sync to the <strong>private CloudKit database of your own iCloud account</strong>. Apple encrypts and stores this data under your Apple ID; we cannot read, access, or share it. Sign out and syncing stops; your data stays on the device and in your iCloud until you remove it (iOS Settings → your name → iCloud → Manage Account Storage → Nethead; shown as TapeTree or Deadhead AI on builds installed before the rename).</p>
 
   <h2>What gets sent to OpenAI</h2>
   <p>When the AI brain is active, the text of your chats and searches — plus non-identifying context like era preferences and candidate show listings — is sent to OpenAI&rsquo;s API to generate responses. These requests carry no account identifier, name, or device identifier. Per <a href="https://openai.com/policies/api-data-usage-policies">OpenAI&rsquo;s API policy</a>, API data is not used to train their models. Without sign-in, an offline knowledge base answers instead and nothing is sent at all.</p>
@@ -95,7 +95,7 @@
   <p>Recordings stream directly from the Internet Archive, so archive.org receives the standard information any web request carries (your IP address and the items you stream), governed by the <a href="https://archive.org/about/terms.php">Internet Archive&rsquo;s terms and privacy policy</a>. We are not a party to that traffic.</p>
 
   <h2>Sign in with Apple</h2>
-  <p>Used solely to unlock the hosted AI mode and iCloud sync. We receive the name you choose to share and an anonymous Apple user identifier; both stay on your device. No account is created on any server of ours, because we don&rsquo;t have any.</p>
+  <p>Used solely to turn on iCloud sync of your shelves and journal. We receive the name you choose to share and an anonymous Apple user identifier; both stay on your device. No account is created on any server of ours, because we don&rsquo;t have any.</p>
 
   <h2>Children</h2>
   <p>The app is rated 12+ and is not directed at children under 13. We do not knowingly collect personal information from anyone — including children — because we do not collect personal information.</p>
