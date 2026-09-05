@@ -22,7 +22,7 @@ final class RunShelfModel {
         var badge: String {
             let songs = run.songKeys.filter { !RunFinder.isBridge($0) }.count
             let length = songs <= 1 ? "one long version" : "\(songs) songs"
-            if isCanon { return "Famous run · \(length)" }
+            if isCanon { return "Famous jam · \(length)" }
             let set = run.tags.contains("marathon") ? "Marathon" : "Segue"
             return "\(set) · \(length)"
         }
@@ -170,13 +170,13 @@ final class RunShelfModel {
 
         guard !entries.isEmpty else {
             error = outage ? ArchiveHealth.outageMessage
-                : "Couldn't line up any of these runs on their tapes right now. Check your connection and try again."
+                : "Couldn't line up any of these jams on their tapes right now. Check your connection and try again."
             return
         }
         env.playerEngine.play(entries: entries)
         env.playerEngine.isPresentingFullPlayer = true
         if skipped > 0 {
-            error = "Stitched \(picks.count - skipped) of \(picks.count) runs — the rest aren't on any tape we can reach."
+            error = "Stitched \(picks.count - skipped) of \(picks.count) jams — the rest aren't on any tape we can get to."
         }
     }
 
@@ -307,7 +307,7 @@ struct RunRail: View {
                     HStack(spacing: 8) {
                         Image(systemName: "flame")
                             .foregroundStyle(Theme.textSecondary)
-                        Text("The Runs").sectionHeaderStyle()
+                        Text("The Jams").sectionHeaderStyle()
                         Spacer()
                         Button {
                             Task { await model.playAll() }
@@ -323,7 +323,7 @@ struct RunRail: View {
                         }
                         .buttonStyle(.secondary)
                         .disabled(model.isStitching || model.startingRunID != nil)
-                        .accessibilityLabel("Play all runs, stitched together")
+                        .accessibilityLabel("Play all the jams, stitched together")
                     }
                     Text(subtitle(total: model.totalLengthText))
                         .font(Theme.footnote)
@@ -358,7 +358,7 @@ struct RunRail: View {
     /// The shelf's running time joins the blurb once every tape has answered.
     private func subtitle(total: String?) -> String {
         var text = "Segues and marathon versions — the stretches of a night heads never stop talking about, each playable on its own."
-        if let total { text += " Today's shelf runs \(total) end to end." }
+        if let total { text += " Today's shelf is \(total) end to end." }
         return text
     }
 }
@@ -414,7 +414,7 @@ struct RunCard: View {
                         } else {
                             Image(systemName: "play.circle.fill")
                         }
-                        Text("Play the run")
+                        Text("Play the jam")
                             .font(Theme.subheadline.weight(.semibold))
                     }
                     .foregroundStyle(Theme.textSecondary)

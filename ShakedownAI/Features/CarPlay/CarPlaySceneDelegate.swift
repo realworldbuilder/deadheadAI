@@ -48,9 +48,9 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
     /// filled in as the archive pins each run to a tape. Every row is
     /// "Scarlet Begonias > Fire on the Mountain / 5/8/77 · Barton Hall · 26 min".
     private func runsTemplate() -> CPListTemplate {
-        let list = CPListTemplate(title: "Runs", sections: [])
+        let list = CPListTemplate(title: "Jams", sections: [])
         list.tabImage = UIImage(systemName: "flame")
-        list.emptyViewTitleVariants = ["Finding tonight's runs…"]
+        list.emptyViewTitleVariants = ["Finding tonight's jams…"]
         list.emptyViewSubtitleVariants = ["Segues and long versions, ready to play on their own."]
         Task { @MainActor [weak self, weak list] in
             guard let self, let env = AppEnvironment.current, let list else { return }
@@ -61,7 +61,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
             self.shelf = shelf
             await shelf.load()
             list.updateSections(self.runSections(offline: offline, shelf: shelf))
-            list.emptyViewTitleVariants = ["No runs yet"]
+            list.emptyViewTitleVariants = ["No jams yet"]
             list.emptyViewSubtitleVariants = ["Download a show in Nethead, or connect to the internet."]
         }
         return list

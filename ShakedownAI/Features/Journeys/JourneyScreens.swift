@@ -50,7 +50,7 @@ struct JourneysScreen: View {
     private var epicRunsSection: some View {
         let runs = env.knowledgeBase.runs.sorted { $0.date < $1.date }
         return VStack(alignment: .leading, spacing: 10) {
-            Text("The Runs")
+            Text("The Jams")
                 .eyebrowStyle()
                 .padding(.top, 10)
             Text("Not whole shows. The stretches inside them heads never stop talking about — Scarlet > Fire, Help > Slip > Franklin's, the Dark Star that wouldn't end.")
@@ -105,7 +105,7 @@ struct FamousRunShowScreen: View {
                 }
                 .padding(Theme.screenPadding)
             } else {
-                LoadingLampView(text: "Finding the tape with this run…")
+                LoadingLampView(text: "Finding the tape with this jam…")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -392,7 +392,7 @@ struct JourneyDayScreen: View {
                 Image(systemName: "flame.fill")
                     .font(.caption)
                     .foregroundStyle(Theme.textSecondary)
-                Text("The famous run")
+                Text("The famous jam")
                     .eyebrowStyle()
             }
             Text(run.title)
@@ -404,7 +404,7 @@ struct JourneyDayScreen: View {
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             if runUnavailable {
-                Text("This tape splits the run differently — open tonight's tape to explore it.")
+                Text("This tape splits the jam differently — open tonight's tape to explore it.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             } else {
@@ -417,7 +417,7 @@ struct JourneyDayScreen: View {
                         } else {
                             Image(systemName: "play.circle.fill")
                         }
-                        Text("Play the run")
+                        Text("Play the jam")
                             .font(Theme.subheadline.weight(.semibold))
                     }
                     .foregroundStyle(Theme.textSecondary)

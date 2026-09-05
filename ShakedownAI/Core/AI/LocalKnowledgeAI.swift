@@ -305,7 +305,7 @@ final class LocalKnowledgeAI: AIProvider {
             let listed = Set(song.famousVersions.map(\.date))
             let runs = kb.runs(containing: song.key).filter { !listed.contains($0.date) }.prefix(2)
             if !runs.isEmpty {
-                out.append("It's also half the story of a famous run:\n" + runs.map { "\(Self.showLink($0.date, kb: kb)) — \($0.title)" }.joined(separator: "\n") + "\n")
+                out.append("It's also half the story of a famous jam:\n" + runs.map { "\(Self.showLink($0.date, kb: kb)) — \($0.title)" }.joined(separator: "\n") + "\n")
             }
             return out
         }

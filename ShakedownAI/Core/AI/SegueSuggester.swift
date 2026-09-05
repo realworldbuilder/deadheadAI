@@ -40,7 +40,7 @@ nonisolated enum SegueSuggester {
 
                 if let run = canonRun(pairing: key, with: partnerKey, kb: kb) {
                     score += 6
-                    reason = "Half of a famous run — \(run.title)."
+                    reason = "Half of a famous jam — \(run.title)."
                     date = run.date
                 } else if let famous = partner.famousVersions.first {
                     score += 3

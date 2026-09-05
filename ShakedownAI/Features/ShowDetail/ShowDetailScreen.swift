@@ -808,7 +808,7 @@ struct FamousRunCard: View {
                 HStack(spacing: 6) {
                     Image(systemName: "flame.fill")
                         .font(.system(size: 12))
-                    Text("Famous run")
+                    Text("Famous jam")
                         .font(Theme.footnote.weight(.semibold))
                     Spacer()
                     Text(runLength)
@@ -826,7 +826,7 @@ struct FamousRunCard: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 6) {
                     Image(systemName: "play.circle.fill")
-                    Text("Play the run")
+                    Text("Play the jam")
                         .font(Theme.subheadline.weight(.semibold))
                 }
                 .foregroundStyle(Theme.textSecondary)

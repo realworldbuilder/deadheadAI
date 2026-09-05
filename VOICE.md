@@ -32,7 +32,7 @@ Corpus counts are notes in the two Dead conferences containing the term, for a f
 | the jam, exploratory jamming, "the jam had substance", space | improvisational passage | |
 | tease, bust out, first since '74 | rarity appearance | |
 | on the bus, get on the bus | onboarding, get started | "When did the bus come by for you?" |
-| the scene, the lot, tour, a run, mail order, tix, miracle | fan culture, ticketing | For flavor in longer copy |
+| the scene, the lot, tour, a run (= several nights at one venue), mail order, tix, miracle | fan culture, ticketing | For flavor in longer copy |
 | bummer, little bummers | error, oops, uh-oh | Use once, for real failures |
 | psyched | excited, hyped | |
 | the Vault, from the Vault | the archives | The band's tape vault, Dick's Picks |
@@ -43,7 +43,7 @@ Corpus counts are notes in the two Dead conferences containing the term, for a f
 
 Feature names in the UI, in voice, stable across screens:
 
-- **The Runs** — segues and marathon versions inside a night, playable on their own.
+- **The Jams** — segues and marathon versions inside a night, playable on their own. Never "runs": to a head a run is a stand of shows at one venue (the Boston Garden run), and the code's `Run*` types keep that name only internally.
 - **Mix Tapes** — user playlists (code still says `Playlist`).
 - **Shelves** — user collections; **Today's Shelves** — the smart ones.
 - **Ask the Universe** — natural-language search (a DECnotes topic title; 424 replies).

@@ -312,9 +312,9 @@ nonisolated enum RunRows {
     static func onDevice(_ runs: [ResolvedRun]) -> [Row] {
         guard !runs.isEmpty else { return [] }
         let total = runs.compactMap(\.seconds).reduce(0, +)
-        var summary = "\(runs.count) \(runs.count == 1 ? "run" : "runs")"
+        var summary = "\(runs.count) \(runs.count == 1 ? "jam" : "jams")"
         if total > 0 { summary += " · \(RunLength.format(seconds: total))" }
-        return [Row(title: "Play every run on this device", detail: summary)]
+        return [Row(title: "Play every jam on this device", detail: summary)]
             + runs.map { Row(title: $0.run.title, detail: detail(date: $0.run.date, venue: $0.show.venue, lengthText: $0.lengthText)) }
     }
 
@@ -322,9 +322,9 @@ nonisolated enum RunRows {
     /// pick the archive can reach, its running time joining once known.
     static func shelf(picks: [(run: FamousRun, venue: String?, lengthText: String?)], totalLengthText: String?) -> [Row] {
         guard !picks.isEmpty else { return [] }
-        var summary = "\(picks.count) \(picks.count == 1 ? "run" : "runs")"
+        var summary = "\(picks.count) \(picks.count == 1 ? "jam" : "jams")"
         if let totalLengthText { summary += " · \(totalLengthText)" }
-        return [Row(title: "Play all of today's runs", detail: summary)]
+        return [Row(title: "Play all of today's jams", detail: summary)]
             + picks.map { Row(title: $0.run.title, detail: detail(date: $0.run.date, venue: $0.venue, lengthText: $0.lengthText)) }
     }
 }

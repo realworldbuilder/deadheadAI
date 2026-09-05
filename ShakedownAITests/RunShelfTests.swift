@@ -225,11 +225,11 @@ struct RunShelfPickTests {
     @Test func badgesCountSongsNotBridges() {
         let canon = FamousRun(id: "c", date: "1977-05-08", title: "Scarlet > Fire",
                               songKeys: ["scarlet begonias", "fire on the mountain"], blurb: "", eraID: nil, tags: [])
-        #expect(pick(canon, canon: true).badge == "Famous run · 2 songs")
+        #expect(pick(canon, canon: true).badge == "Famous jam · 2 songs")
 
         let marathon = FamousRun(id: "m", date: "1972-08-27", title: "The Veneta Dark Star",
                                  songKeys: ["dark star"], blurb: "", eraID: nil, tags: [])
-        #expect(pick(marathon, canon: true).badge == "Famous run · one long version")
+        #expect(pick(marathon, canon: true).badge == "Famous jam · one long version")
 
         let catalog = FamousRun(id: "catalog|x|1", date: "1977-05-08", title: "Truckin' > Drums > Space > The Other One",
                                 songKeys: ["truckin'", "drums", "space", "the other one"], blurb: "", eraID: nil, tags: ["segue"])
@@ -478,9 +478,9 @@ struct RunRowsTests {
             hit("b", title: "The Cornell Morning Dew", date: "1977-05-08", venue: "Barton Hall", durations: [830]),
         ]
         let rows = RunRows.onDevice(runs)
-        #expect(rows.map(\.title) == ["Play every run on this device",
+        #expect(rows.map(\.title) == ["Play every jam on this device",
                                        "Scarlet Begonias > Fire on the Mountain", "The Cornell Morning Dew"])
-        #expect(rows[0].detail == "2 runs · 40 min")
+        #expect(rows[0].detail == "2 jams · 40 min")
         #expect(rows[1].detail == "5/8/77 · Barton Hall · 26 min")
         #expect(rows[2].detail == "5/8/77 · Barton Hall · 14 min")
         #expect(RunRows.onDevice([]).isEmpty)
@@ -490,11 +490,11 @@ struct RunRowsTests {
         let scarlet = FamousRun(id: "s", date: "1977-05-08", title: "Scarlet > Fire", songKeys: [], blurb: "", eraID: nil, tags: [])
         let help = FamousRun(id: "h", date: "1977-05-09", title: "Help > Slip > Frank", songKeys: [], blurb: "", eraID: nil, tags: [])
         let rows = RunRows.shelf(picks: [(scarlet, "Barton Hall", "26 min"), (help, nil, nil)], totalLengthText: nil)
-        #expect(rows[0] == RunRows.Row(title: "Play all of today's runs", detail: "2 runs"))
+        #expect(rows[0] == RunRows.Row(title: "Play all of today's jams", detail: "2 jams"))
         #expect(rows[1].detail == "5/8/77 · Barton Hall · 26 min")
         #expect(rows[2].detail == "5/9/77")
         let done = RunRows.shelf(picks: [(scarlet, "Barton Hall", "26 min")], totalLengthText: "26 min")
-        #expect(done[0].detail == "1 run · 26 min")
+        #expect(done[0].detail == "1 jam · 26 min")
         #expect(RunRows.shelf(picks: [], totalLengthText: nil).isEmpty)
     }
 }

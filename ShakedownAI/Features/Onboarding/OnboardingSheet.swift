@@ -30,7 +30,7 @@ struct OnboardingSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 onboardRow(icon: "sparkles", text: "An old head who's spun every tape, riding shotgun.")
                 onboardRow(icon: "dot.radiowaves.left.and.right", text: "Every tape on archive.org, '65 to '95 — boards, auds, matrixes. Nothing re-hosted.")
-                onboardRow(icon: "book.closed", text: "The runs, the setlists, a journal, and thirty years of shows.")
+                onboardRow(icon: "book.closed", text: "The jams, the setlists, a journal, and thirty years of shows.")
             }
             .padding(.horizontal, 10)
 

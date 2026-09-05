@@ -207,7 +207,7 @@ final class AppleOnDeviceAI: AIProvider {
         Source: \(detail.source ?? "unknown")
         Setlist: \(setlist)
         Curator notes: \(notable?.blurb.prefix(200) ?? "none")
-        Famous run on this tape: \(famousRun ?? "none")
+        Famous jam on this tape: \(famousRun ?? "none")
         Fan reviews: \(review.joined(separator: " ||| "))
         """
 
@@ -496,7 +496,7 @@ nonisolated struct LookupSongTool: Tool {
             lines.append("segue partners: \(song.seguePartners.joined(separator: ", "))")
         }
         for run in kb.runs(containing: song.key).prefix(2) {
-            lines.append("famous run date=\(run.date) \(run.title)")
+            lines.append("famous jam date=\(run.date) \(run.title)")
         }
         return lines.joined(separator: "\n")
     }

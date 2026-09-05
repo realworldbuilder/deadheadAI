@@ -214,11 +214,11 @@ final class OpenAIResponsesAI: AIProvider {
         Source: \(detail.source ?? "unknown") | Lineage: \(detail.lineage ?? "unknown")
         Setlist: \(setlist)
         Curator notes: \(notable?.blurb ?? "none")
-        Canonized famous runs on this tape: \(runLines.isEmpty ? "none" : runLines)
+        Canonized famous jams on this tape: \(runLines.isEmpty ? "none" : runLines)
         Community reviews (\(detail.reviews.count) total): \(reviewSample.joined(separator: " ||| "))
 
         The reviews are where fans celebrate specific segues and runs. When they \
-        rave about a sequence (or a canonized run is listed above), lead \
+        rave about a sequence (or a canonized jam is listed above), lead \
         bestTransitions with it, formatted "Song A > Song B — why it matters", \
         naming only songs from the setlist.
         """
@@ -484,7 +484,7 @@ final class OpenAIResponsesAI: AIProvider {
                 lines.append("segue partners: \(song.seguePartners.joined(separator: ", "))")
             }
             for run in kb.runs(containing: song.key) {
-                lines.append("famous run date=\(run.date) \(run.title) — \(run.blurb)")
+                lines.append("famous jam date=\(run.date) \(run.title) — \(run.blurb)")
             }
             return lines.joined(separator: "\n")
         case "best_recording_for_date":
