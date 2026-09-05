@@ -2,8 +2,10 @@ import SwiftUI
 
 // MARK: - Cassette
 
-/// Vintage cassette with reels that spin while playing. A physical object
-/// with its own palette, so it looks the same by day and by night.
+/// The tape in the deck: a black cassette with a cream sticker, the way a
+/// home dub wears the label of whoever made it. The sticker carries the
+/// Nethead mark, the track, and the night, over a red-and-blue stripe
+/// borrowed from the bolt on the icon's screen. Reels turn while it plays.
 struct CassetteView: View {
     var isPlaying: Bool
     var labelTop: String
@@ -11,15 +13,19 @@ struct CassetteView: View {
 
     @State private var spin = false
 
-    private let shellStroke = Color.white.opacity(0.12)
+    private let shellStroke = Color.white.opacity(0.10)
+    private let sticker = Color(red: 0.96, green: 0.94, blue: 0.88)
+    private let stickerInk = Color(red: 0.08, green: 0.08, blue: 0.08)
+    private let stickerInkSoft = Color(red: 0.38, green: 0.36, blue: 0.33)
+    private let boltRed = Color(red: 0.88, green: 0.16, blue: 0.13)
+    private let boltBlue = Color(red: 0.12, green: 0.36, blue: 0.84)
 
     var body: some View {
         ZStack {
-            // Shell
+            // Shell: black plastic, a touch lighter at the top where the light hits.
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
-                    LinearGradient(colors: [Color(red: 0.20, green: 0.18, blue: 0.15),
-                                            Color(red: 0.12, green: 0.11, blue: 0.09)],
+                    LinearGradient(colors: [Color(white: 0.17), Color(white: 0.09)],
                                    startPoint: .top, endPoint: .bottom)
                 )
                 .overlay(
@@ -28,23 +34,35 @@ struct CassetteView: View {
                 )
 
             VStack(spacing: 10) {
-                // Label
-                VStack(spacing: 3) {
-                    Text(labelTop)
-                        .font(.footnote.weight(.semibold))
-                        .lineLimit(1)
-                        .foregroundStyle(Color(red: 0.2, green: 0.17, blue: 0.13))
-                    Text(labelBottom)
-                        .font(.caption2)
-                        .lineLimit(1)
-                        .foregroundStyle(Color(red: 0.35, green: 0.3, blue: 0.24))
+                // Sticker
+                VStack(spacing: 0) {
+                    HStack(spacing: 10) {
+                        AppMark(size: 30)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(labelTop)
+                                .font(.footnote.weight(.semibold))
+                                .lineLimit(1)
+                                .foregroundStyle(stickerInk)
+                            Text(labelBottom)
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .foregroundStyle(stickerInkSoft)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    HStack(spacing: 0) {
+                        boltRed
+                        boltBlue
+                    }
+                    .frame(height: 4)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(red: 0.92, green: 0.88, blue: 0.80))
+                .background(sticker)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(stickerInk.opacity(0.85), lineWidth: 1)
                 )
                 .padding(.horizontal, 22)
 
@@ -52,7 +70,7 @@ struct CassetteView: View {
                 HStack(spacing: 26) {
                     reel
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Color(red: 0.32, green: 0.2, blue: 0.1))
+                        .fill(Color(white: 0.24))
                         .frame(height: 8)
                         .frame(maxWidth: 60)
                     reel
@@ -61,7 +79,7 @@ struct CassetteView: View {
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.black.opacity(0.55))
+                        .fill(Color.black.opacity(0.6))
                         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(shellStroke))
                 )
                 .padding(.horizontal, 30)
@@ -81,16 +99,16 @@ struct CassetteView: View {
 
     private var reel: some View {
         ZStack {
-            Circle().fill(Color(red: 0.85, green: 0.82, blue: 0.75))
+            Circle().fill(Color(white: 0.92))
             ForEach(0..<6, id: \.self) { i in
                 Capsule()
-                    .fill(Color(red: 0.25, green: 0.22, blue: 0.18))
+                    .fill(Color(white: 0.12))
                     .frame(width: 3.5, height: 9)
                     .offset(y: -11)
                     .rotationEffect(.degrees(Double(i) * 60))
             }
             Circle()
-                .strokeBorder(Color(red: 0.3, green: 0.26, blue: 0.2), lineWidth: 3)
+                .strokeBorder(Color(white: 0.30), lineWidth: 3)
         }
         .frame(width: 44, height: 44)
         .rotationEffect(.degrees(spin ? 360 : 0))
@@ -100,9 +118,9 @@ struct CassetteView: View {
 
     private var screw: some View {
         Circle()
-            .fill(Color(red: 0.4, green: 0.36, blue: 0.3))
+            .fill(Color(white: 0.34))
             .frame(width: 7, height: 7)
-            .overlay(Rectangle().fill(Color.black.opacity(0.5)).frame(width: 6, height: 1))
+            .overlay(Rectangle().fill(Color.black.opacity(0.6)).frame(width: 6, height: 1))
     }
 }
 

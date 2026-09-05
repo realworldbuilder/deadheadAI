@@ -176,7 +176,7 @@ struct SettingsScreen: View {
     }
 
     private var aiStatusTitle: String {
-        aiActive ? "TapeTree AI connected" : "Offline brain active"
+        aiActive ? "Nethead AI connected" : "Offline brain active"
     }
 
     private var aiStatusDetail: String {
@@ -187,7 +187,7 @@ struct SettingsScreen: View {
     }
 
     private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
-        let fallbackName = displayName.isEmpty ? "Deadhead" : displayName
+        let fallbackName = displayName.isEmpty ? "Nethead" : displayName
         Task {
             _ = try? await env.authProvider.signInWithApple(
                 userID: credential.user,
@@ -293,7 +293,7 @@ struct SettingsScreen: View {
             HStack(spacing: 10) {
                 AppMark(size: 28)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("TapeTree")
+                    Text("Nethead")
                         .font(Theme.headline)
                         .foregroundStyle(Theme.textPrimary)
                     Text("The music never stopped. Neither should discovering it.")

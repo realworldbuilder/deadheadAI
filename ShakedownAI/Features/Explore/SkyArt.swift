@@ -36,19 +36,18 @@ extension View {
 }
 
 
-/// The dark of the den behind every screen: espresso shadow with warm haze,
-/// an ember glow low on the screen like lamplight off a spinning reel, and
-/// dust motes laid out in three planes of depth so the view reads as
-/// distance rather than as a flat dot pattern. Deterministic — the same motes
-/// sit in the same places every launch, and nothing animates, so this stays
-/// cheap on the ~30 screens that use it.
+/// Deep space behind the sky: true black, lifted a hair toward cold navy at
+/// the centre, with faint cool nebulae and a dusty band for depth, and stars
+/// laid out in three planes so the view reads as distance rather than as a
+/// flat dot pattern. Deterministic — the same motes sit in the same places
+/// every launch, and nothing animates, so this stays cheap.
 struct StarfieldBackground: View {
     var body: some View {
         ZStack {
-            // Void, lifted very slightly toward warm espresso at the center so
+            // Void, lifted very slightly toward cold navy at the center so
             // the screen has a middle rather than a wall.
             RadialGradient(
-                colors: [Color(red: 0.072, green: 0.054, blue: 0.036), .black],
+                colors: [Color(red: 0.030, green: 0.034, blue: 0.060), .black],
                 center: UnitPoint(x: 0.5, y: 0.38),
                 startRadius: 0, endRadius: 620
             )
@@ -56,7 +55,6 @@ struct StarfieldBackground: View {
 
             nebulae
             galacticBand
-            sunrise
 
             Canvas { context, size in
                 var rng = LCG(seed: 0x5EED)
@@ -86,20 +84,21 @@ struct StarfieldBackground: View {
     // MARK: - Nebulae
 
     /// Three soft clouds of haze. Heavily blurred, low opacity — they should
-    /// register as depth, never as shapes you could point at. Forest overhead,
-    /// amber at the horizon line, rust below — the palette's own strata.
+    /// register as depth, never as shapes you could point at. Cold colours
+    /// only — violet overhead, deep blue at the shoulder, a teal breath
+    /// below — so the black stays black.
     private var nebulae: some View {
         GeometryReader { proxy in
             let w = proxy.size.width
             let h = proxy.size.height
             ZStack {
-                cloud(Color(red: 0.15, green: 0.34, blue: 0.19), opacity: 0.30)
+                cloud(Color(red: 0.26, green: 0.16, blue: 0.44), opacity: 0.16)
                     .frame(width: w * 1.15, height: w * 1.15)
                     .position(x: w * 0.20, y: h * 0.18)
-                cloud(Color(red: 0.50, green: 0.33, blue: 0.11), opacity: 0.20)
+                cloud(Color(red: 0.10, green: 0.22, blue: 0.48), opacity: 0.14)
                     .frame(width: w * 1.0, height: w * 1.0)
                     .position(x: w * 0.92, y: h * 0.44)
-                cloud(Color(red: 0.55, green: 0.20, blue: 0.06), opacity: 0.18)
+                cloud(Color(red: 0.08, green: 0.30, blue: 0.34), opacity: 0.10)
                     .frame(width: w * 0.9, height: w * 0.9)
                     .position(x: w * 0.38, y: h * 0.86)
             }
@@ -117,16 +116,16 @@ struct StarfieldBackground: View {
             )
     }
 
-    /// A dusty lane of light cutting across the dark on a diagonal,
-    /// tinted like cream label stock.
+    /// A dusty lane of light cutting across the dark on a diagonal — the
+    /// Milky Way, bone-white and faint.
     private var galacticBand: some View {
         GeometryReader { proxy in
             Ellipse()
                 .fill(
                     LinearGradient(
                         colors: [.clear,
-                                 Color(red: 0.88, green: 0.78, blue: 0.58).opacity(0.11),
-                                 Color(red: 0.96, green: 0.92, blue: 0.80).opacity(0.05),
+                                 Color(red: 0.80, green: 0.84, blue: 0.94).opacity(0.07),
+                                 Color(red: 0.92, green: 0.94, blue: 1.00).opacity(0.03),
                                  .clear],
                         startPoint: .leading, endPoint: .trailing
                     )
@@ -137,48 +136,6 @@ struct StarfieldBackground: View {
                 .position(x: proxy.size.width * 0.62, y: proxy.size.height * 0.5)
         }
         .blendMode(.plusLighter)
-        .allowsHitTesting(false)
-    }
-
-    /// The reel glow: an ember low on the screen with faint concentric
-    /// rings radiating from it, like lamplight tracing the wraps of tape
-    /// on a spinning reel. Static, so it costs one draw.
-    private var sunrise: some View {
-        GeometryReader { proxy in
-            let w = proxy.size.width
-            let h = proxy.size.height
-            let center = CGPoint(x: w * 0.5, y: h * 1.06)
-            ZStack {
-                // Ember core, mostly below the bottom edge.
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color(red: 0.95, green: 0.55, blue: 0.18).opacity(0.30),
-                                     Color(red: 0.70, green: 0.30, blue: 0.08).opacity(0.14),
-                                     .clear],
-                            center: .center, startRadius: 0, endRadius: w * 0.55
-                        )
-                    )
-                    .frame(width: w * 1.1, height: w * 1.1)
-                    .position(center)
-
-                // Radiating rings, fading with distance.
-                Canvas { context, _ in
-                    for i in 1...7 {
-                        let r = w * 0.14 * CGFloat(i)
-                        let alpha = 0.085 * (1.0 - Double(i) / 8.5)
-                        let rect = CGRect(x: center.x - r, y: center.y - r,
-                                          width: r * 2, height: r * 2)
-                        context.stroke(
-                            Path(ellipseIn: rect),
-                            with: .color(Color(red: 0.86, green: 0.74, blue: 0.52).opacity(alpha)),
-                            lineWidth: 1
-                        )
-                    }
-                }
-            }
-            .blendMode(.plusLighter)
-        }
         .allowsHitTesting(false)
     }
 
@@ -576,3 +533,4 @@ struct LCG {
         return CGFloat((state >> 33) % 10_000) / 10_000
     }
 }
+

@@ -226,19 +226,19 @@ struct ExploreTabView: View {
         .tint(Theme.textPrimary)
     }
 
-    /// The centrepiece: the wordmark over the rooted-stealie mark, the way
-    /// the old page hung GRATEFUL DEAD over the stealie in the middle of the
-    /// solar system, with tonight's moon named beneath. It's the biggest thing on
-    /// the map, so it goes somewhere: tonight's show.
+    /// The centrepiece: the wordmark over the Nethead skeleton, the way the
+    /// old page hung GRATEFUL DEAD over the stealie in the middle of the solar
+    /// system, with tonight's moon named beneath. The art is transparent, so
+    /// no ring and no tile — it floats in the black like everything else.
+    /// It's the biggest thing on the map, so it goes somewhere: tonight's show.
     @ViewBuilder
     private var emblem: some View {
         let art = VStack(spacing: 8) {
-            Text("TapeTree")
+            Text("Nethead")
                 .font(.system(size: 22, weight: .bold, design: .serif))
                 .skyChrome()
-            AppMark(size: 124)
-                .overlay(Circle().strokeBorder(Sky.accent.opacity(0.35), lineWidth: 1))
-                .shadow(color: Sky.accent.opacity(0.45), radius: 28)
+            AppMark(size: 132)
+                .shadow(color: Sky.ink.opacity(0.35), radius: 18)
             Text(MoonPhase.name(for: sky.moonPhase))
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .foregroundStyle(Sky.inkFaint)

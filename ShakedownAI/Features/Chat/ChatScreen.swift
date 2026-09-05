@@ -44,7 +44,7 @@ final class ChatModel {
                 .sorted { $0.createdAt < $1.createdAt }
                 .map { DisplayMessage(id: UUID(), role: $0.role == "user" ? .user : .assistant, text: $0.text, shows: $0.shows, actions: $0.actions) }
         } else {
-            let fresh = ChatThread(title: "TapeTree")
+            let fresh = ChatThread(title: "Nethead")
             context.insert(fresh)
             try? context.save()
             thread = fresh
@@ -229,7 +229,7 @@ struct ChatScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.background)
-            .navigationTitle("Deadhead")
+            .navigationTitle("Nethead")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Menu {
@@ -372,7 +372,7 @@ struct ChatScreen: View {
 
     private func emptyState(_ model: ChatModel) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Your lifelong Deadhead, riding shotgun.")
+            Text("Your lifelong Nethead, riding shotgun.")
                 .font(Theme.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
             Text("I've heard every tape and read every review. Ask me anything — or tell me how tonight feels.")

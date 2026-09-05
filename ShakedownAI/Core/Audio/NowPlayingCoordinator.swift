@@ -154,19 +154,14 @@ final class NowPlayingCoordinator {
         ctx.fill(CGRect(origin: .zero, size: size))
     }
 
-    /// The mark, like a foil seal on the stub. Clipped to a circle so the
-    /// icon tile's square corners never show.
+    /// The mark, printed straight onto the stub: the art is transparent, so
+    /// it needs no clip and the paper shows through around it.
     private static func drawStubMark(in ctx: UIGraphicsImageRendererContext,
                                      center: CGPoint, diameter: CGFloat) {
         guard let mark = UIImage(named: "NowPlayingMark") else { return }
         let markRect = CGRect(x: center.x - diameter / 2, y: center.y - diameter / 2,
                               width: diameter, height: diameter)
-        ctx.cgContext.saveGState()
-        let inset = diameter * 24 / 320
-        ctx.cgContext.addEllipse(in: markRect.insetBy(dx: inset, dy: inset))
-        ctx.cgContext.clip()
         mark.draw(in: markRect)
-        ctx.cgContext.restoreGState()
     }
 
     private static func drawStubLettering(in ctx: UIGraphicsImageRendererContext,

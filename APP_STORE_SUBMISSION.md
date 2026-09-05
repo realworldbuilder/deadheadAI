@@ -1,4 +1,4 @@
-# App Store Submission Pack — Deadhead AI 1.0
+# App Store Submission Pack — Nethead 1.0
 
 Everything needed to submit in [App Store Connect](https://appstoreconnect.apple.com). Paste-ready copy is in code blocks. Items marked **TODO** need a decision or an asset from you.
 
@@ -8,7 +8,7 @@ Everything needed to submit in [App Store Connect](https://appstoreconnect.apple
 
 | Field | Value |
 |---|---|
-| App name (already on record) | Deadhead AI |
+| App name | Nethead (rename the record from Deadhead AI / TapeTree in App Information → Name) |
 | Bundle ID | com.deadhead.ai |
 | Version | 1.0 |
 | Build | Latest from TestFlight (CI run — commit `416929a`, gated AI key) |
@@ -37,7 +37,7 @@ The music never stopped. Neither should discovering it.
 
 You know how it goes. Somebody says "man, you GOTTA hear 5/8/77" and suddenly it's 3am, you're six shows deep, and Jerry is peeling the paint off some field house in 1974. The Internet Archive holds thousands of tapes — auds, boards, matrixes, thirty years of the boys cooking — and the only map has ever been the heads in the comment section.
 
-Deadhead AI puts one of those heads in your pocket. The app hosts no music. It just knows the road.
+Nethead puts one of those heads in your pocket. The app hosts no music. It just knows the road.
 
 IT READS THE COMMENT SECTION
 For twenty years, picking a tape has meant scrolling the reviews under every show — tapers talking mic placement, heads naming the minute the X-factor arrives, somebody who was on the floor settling the argument. Deadhead AI reads all of it: every rating, every source note, every review on every recording feeds its answers, and the real reviews sit right on the show page. When it tells you which Cornell source to trust, it's channeling the people who were there.
@@ -66,7 +66,7 @@ Background audio, lock screen controls, gapless queues, streaming straight from 
 FREE AI, ON THE HOUSE
 Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. No account? Everything still works on a curated offline knowledge base of essential shows, song histories, and eras. Hop on the bus either way.
 
-Deadhead AI streams from the Internet Archive's Grateful Dead collection, where the band's long-standing taping tradition lives on. This app is an independent project and is not affiliated with the Grateful Dead, Rhino, or Warner Music.
+Nethead streams from the Internet Archive's Grateful Dead collection, where the band's long-standing taping tradition lives on. This app is an independent project and is not affiliated with the Grateful Dead, Rhino, or Warner Music.
 ```
 
 **Keywords** (100 chars max — don't repeat words from the name; this is ~97):
@@ -124,7 +124,7 @@ App Store Connect asks whether the app contains, shows, or accesses third-party 
 ## 7. App Review notes (paste into "Notes" box)
 
 ```
-Deadhead AI is a client for the Internet Archive's Grateful Dead collection (archive.org/details/GratefulDead). All audio streams directly from archive.org; the app hosts and stores no recordings. The Grateful Dead have permitted audience taping and free trading of their live recordings since the 1970s, and the Internet Archive hosts this collection publicly in cooperation with the band's representatives — the Archive enforces the streaming rules per recording. The app is an independent project, clearly disclaimed as unaffiliated in the description.
+Nethead is a client for the Internet Archive's Grateful Dead collection (archive.org/details/GratefulDead). All audio streams directly from archive.org; the app hosts and stores no recordings. The Grateful Dead have permitted audience taping and free trading of their live recordings since the 1970s, and the Internet Archive hosts this collection publicly in cooperation with the band's representatives — the Archive enforces the streaming rules per recording. The app is an independent project, clearly disclaimed as unaffiliated in the description.
 
 SIGN-IN IS OPTIONAL. No demo account is needed. Tap "Hop on the Bus" on the welcome screen for full access to every feature without any account. Sign in with Apple only unlocks the hosted AI mode (server-generated prose via OpenAI); without it, recommendations, search, show guides, and journeys run on the app's built-in offline knowledge base.
 
@@ -165,7 +165,7 @@ xcrun simctl io booted screenshot shot1.png
 
 - [ ] **CloudKit schema deployed to Production** (CloudKit Console → `iCloud.com.deadhead.ai` → Deploy Schema Changes). TestFlight/App Store builds use the Production environment; without this, sync silently fails. Redo after any synced-model change.
 - [ ] Latest TestFlight build finished processing and is selectable
-- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm Settings shows "Deadhead AI connected"; also confirm "Hop on the Bus" alone leaves the offline brain active
+- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm Settings shows "Nethead AI connected"; also confirm "Hop on the Bus" alone leaves the offline brain active
 - [ ] OpenAI spending limit set (the bundled key ships in the binary — treat as semi-public)
 - [ ] Privacy policy URL live and pasted in
 - [ ] Support URL pasted in

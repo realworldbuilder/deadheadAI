@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "cache"
 OUT = ROOT / "out"
 
-USER_AGENT = "TapeTree-catalog-pipeline/1.0 (contact: phishmiami@gmail.com)"
+USER_AGENT = "Nethead-catalog-pipeline/1.0 (contact: phishmiami@gmail.com)"
 
 _last_request = 0.0
 RATE_SECONDS = 0.34  # ~3 req/s

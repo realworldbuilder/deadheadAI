@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// TapeTree design language: a baseline, near-monochrome system. Neutral
+/// Nethead design language: a baseline, near-monochrome system. Neutral
 /// surfaces that follow the appearance setting, one sans typeface set in
 /// Dynamic Type styles, hairline dividers instead of boxes, and black-on-
 /// white (or white-on-charcoal) for every control. The tape-trader colours
@@ -108,16 +108,15 @@ struct HairlineDivider: View {
     }
 }
 
-/// The app mark: the rooted-stealie emblem, clipped to a circle so the
-/// square icon tile never shows.
+/// The app mark: the Nethead skeleton at its terminal, as transparent art
+/// so it sits directly on whatever surface is behind it — no tile, no clip.
 struct AppMark: View {
     var size: CGFloat = 28
     var body: some View {
         Image("NowPlayingMark")
             .resizable()
-            .scaledToFill()
+            .scaledToFit()
             .frame(width: size, height: size)
-            .clipShape(Circle())
             .accessibilityHidden(true)
     }
 }

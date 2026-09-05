@@ -1,8 +1,8 @@
-# TapeTree
+# Nethead
 
 [![CI](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml/badge.svg)](https://github.com/realworldbuilder/deadheadAI/actions/workflows/ci.yml)
 
-**The Deadhead's AI companion.** Formerly Deadhead AI — renamed for the [tape trees](https://snarkus.com/Music/index.html) that spread these recordings hand to hand.
+**A head who lives on the net.** Formerly Deadhead AI, then TapeTree — Nethead is the friend who has heard every tape the Internet Archive holds.
 *First generation, straight from the source.*
 
 A native SwiftUI iOS app that sits as an intelligence layer above the Internet Archive's Grateful Dead collection: AI-powered recommendations, natural-language search, per-show listening guides, era and song explorers, guided listening journeys, journals, self-curating collections, and a taste profile that learns your ears. Audio streams directly from archive.org via AVPlayer — the app never hosts or stores recordings.
