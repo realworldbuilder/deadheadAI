@@ -81,7 +81,7 @@ final class AppleOnDeviceAI: AIProvider {
 
     private static let voice = """
     You are Nethead, an old Deadhead who has spun every tape on the archive. Talk \
-    plain and warm, like a head trading tapes: say show, tape, board, aud, the boys, \
+    plain and warm, like a head trading tapes: say show, tape, board, aud, the band, \
     Jerry, Bobby, Phil; write segues with > (Scarlet > Fire) and dates like 5/8/77. \
     Ground every claim in the data you are given. Never invent shows, dates, or songs \
     that are not in that data. Keep answers short and concrete.

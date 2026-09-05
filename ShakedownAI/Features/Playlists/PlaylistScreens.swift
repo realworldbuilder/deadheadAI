@@ -198,7 +198,7 @@ struct PlaylistDetailScreen: View {
                                 Text("A better order is hiding in here")
                                     .font(Theme.headline)
                                     .foregroundStyle(Theme.textPrimary)
-                                Text("Reorder so the real segue pairs sit next to each other, the way the boys played them.")
+                                Text("Reorder so the real segue pairs sit next to each other, the way the band played them.")
                                     .font(Theme.caption)
                                     .foregroundStyle(Theme.textSecondary)
                             }

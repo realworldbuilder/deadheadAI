@@ -200,7 +200,7 @@ struct ExploreTabView: View {
                 case .onThisDay:
                     ShowListScreen(
                         title: "On This Day",
-                        subtitle: "Every year the boys played this date, best tape of each night first.",
+                        subtitle: "Every year the band played this date, best tape of each night first.",
                         loader: { try await env.recordingProvider.onThisDay(monthDay: HomeModel.monthDayString(.now)) }
                     )
                 case .darkStar:

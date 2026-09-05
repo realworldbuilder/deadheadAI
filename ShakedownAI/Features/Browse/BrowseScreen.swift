@@ -75,7 +75,7 @@ struct BrowseScreen: View {
     private var venueSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("The Rooms").sectionHeaderStyle()
-            Text("Where the boys kept coming back to.")
+            Text("Where the band kept coming back to.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
             VStack(spacing: 0) {

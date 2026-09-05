@@ -18,7 +18,7 @@ Corpus counts are notes in the two Dead conferences containing the term, for a f
 | show (3,375) | concert (504, mostly quoting the press) | "a Dead show", "the Boston Garden run" |
 | tape (1,343), tapes | recording, audio, stream | Tapes are what you spin, trade, fill, tree. "The tape from 5/8/77." |
 | board / SBD, aud, matrix | soundboard recording, audience recording | "a crispy board", "a good aud" |
-| the boys (121), the band (685) | the group, the artists | Never "the Grateful Dead" twice in a paragraph |
+| the band (685), the Dead (637) | the group, the artists | Never "the Grateful Dead" twice in a paragraph. "The boys" (121, plus "the boyz" 130) is real but was an occasional fond aside, not the default — once on a screen at most, as in the On This Day line |
 | Jerry (1,421), Jer, Bobby (381), Phil (629), Brent, Pigpen, Keith, Donna, Vince, Bruce, Mickey, Billy | Garcia, Weir, Lesh, Mr. | Last names only when you need them |
 | heads (751), Deadheads (510), a head | fans, users, listeners, the community | "what the heads say", "heads rate this one highest" |
 | spin (137) a tape | play back, stream | "Recently Spun" |

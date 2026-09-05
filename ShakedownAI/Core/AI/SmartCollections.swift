@@ -292,7 +292,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
                       "Working hours — jams that reward half your attention and reveal themselves on the second pass.")
         case (.evening, 6):
             recipe = ("Friday Night Fire", "FRIDAY NIGHT", "flame.fill", ["high-energy", "tight", "joyful"],
-                      "It's Friday night. These are the nights the boys came out swinging and never let up.")
+                      "It's Friday night. These are the nights the band came out swinging and never let up.")
         case (.evening, 7):
             recipe = ("Saturday Blowout", "SATURDAY NIGHT", "flame.fill", ["high-energy", "epic-jams", "joyful"],
                       "Saturday night: the big rooms, the long second sets, the encores that ran late.")
@@ -365,7 +365,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
                       "Winter meant indoor runs and the New Year's shows — cold outside, hot inside.")
         case .spring:
             recipe = ("Spring Tour", "SPRING TOUR", [3, 4, 5],
-                      "Spring tour: the boys coming off rehearsals sharp, playing the college halls.")
+                      "Spring tour: the band coming off rehearsals sharp, playing the college halls.")
         case .summer:
             recipe = ("Summer Outdoors", "SUMMER TOUR", [6, 7, 8],
                       "Summer meant fields, sheds, and daylight — shows that sound like the weather they were played in.")
@@ -451,7 +451,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
         ("The Long Ones", "DEEP CUT", "infinity", ["epic-jams"],
          "Nothing under fifteen minutes. Clear your evening."),
         ("Pure Joy", "DEEP CUT", "sun.horizon.fill", ["joyful", "tight"],
-         "Shows where you can hear the boys grinning."),
+         "Shows where you can hear the band grinning."),
         ("Shadow Sets", "DEEP CUT", "moon.stars.fill", ["dark"],
          "The heavy nights — menace, minor keys, and Jerry singing about weather."),
         ("Gentle Hands", "DEEP CUT", "heart.fill", ["mellow", "ballad", "acoustic"],
