@@ -20,9 +20,10 @@ from pathlib import Path
 import fts
 import songcanon
 import sourcetype
+import tracks
 from util import CACHE, OUT, read_json
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 ERAS = [
     ("primal", 1965, 1967), ("anthem", 1968, 1970), ("europe-wall", 1971, 1974),
@@ -70,6 +71,10 @@ CREATE TABLE recordings(
   quality_score REAL NOT NULL
 );
 CREATE INDEX idx_recordings_show ON recordings(show_id, quality_score DESC);
+CREATE TABLE recording_tracks(
+  identifier TEXT PRIMARY KEY REFERENCES recordings(identifier),
+  tracks_json TEXT NOT NULL
+);
 CREATE TABLE setlist_entries(
   show_id TEXT NOT NULL REFERENCES shows(show_id),
   position INTEGER NOT NULL,
@@ -170,6 +175,24 @@ def recover_segues(entries: list[dict], archive_seq: list[tuple[str, bool]]) -> 
                 entry["segues_into_next"] |= int(archive_seq[k][1])
                 j = k + 1
                 break
+
+
+def track_rows_for(identifiers) -> list[tuple[str, str]]:
+    """(identifier, tracks_json) for every tape stage 2b fetched files for.
+    Compact: one [title, seconds, file name] per track, play order — what the
+    app needs to pin a run to a tape and say how long it is, with no network."""
+    rows = []
+    for ident in identifiers:
+        path = CACHE / "tracks" / f"{ident}.json"
+        if not path.exists():
+            continue
+        built = tracks.build_tracks(read_json(path))
+        if not built:
+            continue
+        payload = [[t["title"], round(t["seconds"], 1) if t["seconds"] is not None else None, t["name"]]
+                   for t in built]
+        rows.append((ident, json.dumps(payload, ensure_ascii=False, separators=(",", ":"))))
+    return rows
 
 
 def load_metadata(identifier: str) -> dict:
@@ -388,6 +411,8 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
     db.executemany(
         "INSERT INTO recordings VALUES(:identifier,:show_id,:title,:source_type,:source_text,"
         ":lineage,:taper,:avg_rating,:num_reviews,:downloads,:quality_score)", rec_rows)
+    track_rows = track_rows_for(r["identifier"] for r in rec_rows)
+    db.executemany("INSERT INTO recording_tracks VALUES(?,?)", track_rows)
     db.executemany(
         "INSERT INTO setlist_entries VALUES(:show_id,:position,:set_label,:song_key,"
         ":song_title,:segues_into_next)", entry_rows)
@@ -414,6 +439,9 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
         "git_commit": git_commit,
         "show_count": str(len(show_rows)),
         "recording_count": str(len(rec_rows)),
+        "tapes_with_tracks": str(len(track_rows)),
+        "best_tapes_with_tracks": str(sum(1 for r in show_rows
+                                          if r["best_identifier"] in {i for i, _ in track_rows})),
         "setlist_full": str(setlist_full),
         "setlist_partial": str(setlist_partial),
         "digest_count": str(len(digest_rows)),
@@ -442,8 +470,16 @@ def build(out_path: Path, fixture_dates: set[str] | None, gates: bool) -> None:
             errors.append(f"setlist coverage 1972+ is {len(full72)}/{len(post72)} < 85%")
         if len(image_rows) < 2000:
             errors.append(f"image count {len(image_rows)} < 2000 (gallery.json missing?)")
-        if size_mb > 14:
-            errors.append(f"size {size_mb:.1f}MB > 14MB budget")
+        if size_mb > 24:
+            errors.append(f"size {size_mb:.1f}MB > 24MB budget")
+        # Stage 2b fetches best tapes first, so a partial crawl must still
+        # cover (nearly) every show's best tape — that's what the home shelf
+        # and CarPlay resolve runs against with no network.
+        with_tracks = {ident for ident, _ in track_rows}
+        best_ids = [r["best_identifier"] for r in show_rows if r["best_identifier"]]
+        covered = sum(1 for b in best_ids if b in with_tracks)
+        if best_ids and covered / len(best_ids) < 0.9:
+            errors.append(f"best-tape track coverage {covered}/{len(best_ids)} < 90% (run `make tracks`)")
         if errors:
             print("BUILD GATES FAILED:\n  " + "\n  ".join(errors), file=sys.stderr)
             sys.exit(1)

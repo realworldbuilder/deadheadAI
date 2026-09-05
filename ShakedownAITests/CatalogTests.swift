@@ -214,10 +214,28 @@ struct CatalogStoreTests {
         #expect(images.isEmpty)
     }
 
+    @Test func fixtureCarriesTracksWithRunningTimesForTheBestTapes() async throws {
+        let store = try #require(Self.fixtureStore())
+        let cornell = try #require(await store.show(onDate: "1977-05-08"))
+        let best = try #require(cornell.bestIdentifier)
+        let tracks = try #require(await store.tracks(forRecording: best))
+        #expect(tracks.count >= 15)
+        #expect(tracks.allSatisfy { !$0.fileName.isEmpty && $0.fileName.hasSuffix(".mp3") })
+        #expect(tracks.allSatisfy { ($0.durationSeconds ?? 0) > 0 })
+        #expect(tracks.map(\.trackNumber) == Array(1...tracks.count).map { Optional($0) })
+        // The whole point: the canon resolves against the catalog's own track list.
+        let kb = KnowledgeBase.loadFromBundle(Bundle(for: FixtureAnchor.self).appMainBundle)
+        let scarletFire = try #require(kb.run(id: "1977-05-08-scarlet-fire"))
+        let range = try #require(RunResolver.resolve(scarletFire, in: tracks))
+        #expect(RunLength.seconds(of: tracks, in: range).map { $0 > 600 } == true)
+        // A tape stage 2b never fetched answers nil, not an empty list.
+        #expect(await store.tracks(forRecording: "no-such-tape") == nil)
+    }
+
     @Test func fixtureOpensWithSaneCounts() async throws {
         let store = try #require(Self.fixtureStore())
         let meta = await store.meta()
-        #expect(meta["schema_version"] == "2")
+        #expect(meta["schema_version"] == "3")
         #expect(Int(meta["show_count"] ?? "0") ?? 0 >= 10)
     }
 

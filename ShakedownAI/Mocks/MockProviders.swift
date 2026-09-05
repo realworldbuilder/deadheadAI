@@ -74,6 +74,9 @@ enum MockData {
 final class MockRecordingProvider: LiveRecordingProvider, MetadataProvider {
     var showsResult: [Show] = MockData.shows
     var detailResult: RecordingDetail = MockData.cornellDetail
+    /// Per-tape details for tests that need tapes to differ; `detailResult` otherwise.
+    var detailsByIdentifier: [String: RecordingDetail] = [:]
+    private(set) var requestedDetails: [String] = []
 
     func shows(matching filters: SearchFilters) async throws -> [Show] { showsResult }
     func recordings(forDate day: String) async throws -> [Show] {
@@ -81,7 +84,10 @@ final class MockRecordingProvider: LiveRecordingProvider, MetadataProvider {
     }
     func topRated(yearRange: ClosedRange<Int>?, limit: Int) async throws -> [Show] { showsResult }
     func onThisDay(monthDay: String) async throws -> [Show] { showsResult }
-    func detail(for identifier: String) async throws -> RecordingDetail { detailResult }
+    func detail(for identifier: String) async throws -> RecordingDetail {
+        requestedDetails.append(identifier)
+        return detailsByIdentifier[identifier] ?? detailResult
+    }
 }
 
 final class MockStreamingProvider: StreamingProvider {
@@ -167,10 +173,11 @@ final class MockShowCatalog: ShowCatalog {
     func nearestCovers(toDate date: String, limit: Int) async -> [String] { [] }
     func images(onDate date: String) async -> [CatalogImage] { imagesByDate[date] ?? [] }
     var isAvailable = true
-    var metaValues: [String: String] = ["schema_version": "2"]
+    var metaValues: [String: String] = ["schema_version": "3"]
     var imagesByDate: [String: [CatalogImage]] = [:]
     var showsByID: [String: CatalogShow] = [:]
     var recordingsByShow: [String: [CatalogRecording]] = [:]
+    var tracksByIdentifier: [String: [Track]] = [:]
     var setlistsByShow: [String: Setlist] = [:]
     var digestsByShow: [String: ShowDigest] = [:]
     var searchResults: [CatalogShow] = []
@@ -202,6 +209,7 @@ final class MockShowCatalog: ShowCatalog {
     func recording(identifier: String) async -> CatalogRecording? {
         recordingsByShow.values.flatMap { $0 }.first { $0.identifier == identifier }
     }
+    func tracks(forRecording identifier: String) async -> [Track]? { tracksByIdentifier[identifier] }
     func setlist(forShow showID: String) async -> Setlist? { setlistsByShow[showID] }
     func digest(forShow showID: String) async -> ShowDigest? { digestsByShow[showID] }
     func searchText(_ query: String, limit: Int) async -> [CatalogShow] { Array(searchResults.prefix(limit)) }

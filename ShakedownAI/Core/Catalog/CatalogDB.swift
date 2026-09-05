@@ -22,7 +22,7 @@ nonisolated actor CatalogDB {
 
     /// Opens read-only. Returns nil when the file is missing, unreadable,
     /// or a different schema version — callers degrade to network-only.
-    init?(fileURL: URL, expectedSchemaVersion: Int = 2) {
+    init?(fileURL: URL, expectedSchemaVersion: Int = 3) {
         var handle: OpaquePointer?
         let uri = "file:\(fileURL.path(percentEncoded: false))?immutable=1"
         guard sqlite3_open_v2(uri, &handle, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, nil) == SQLITE_OK,
@@ -227,6 +227,24 @@ nonisolated actor CatalogDB {
                 qualityScore: sqlite3_column_double(stmt, 10))
         }
         return out
+    }
+
+    /// The tape's tracks as the catalog carries them (top tapes per show
+    /// only), in play order with running times — nil when stage 2b never
+    /// fetched this tape, so callers fall back to the live detail call.
+    func tracks(forRecording identifier: String) -> [Track]? {
+        var payload: String?
+        query("SELECT tracks_json FROM recording_tracks WHERE identifier = ?", bind: [.text(identifier)]) { stmt in
+            payload = Self.text(stmt, 0)
+        }
+        guard let payload, let data = payload.data(using: .utf8),
+              let rows = try? JSONSerialization.jsonObject(with: data) as? [[Any]] else { return nil }
+        let tracks = rows.enumerated().compactMap { index, row -> Track? in
+            guard row.count >= 3, let title = row[0] as? String, let name = row[2] as? String else { return nil }
+            let seconds = (row[1] as? NSNumber)?.doubleValue
+            return Track(fileName: name, title: title, trackNumber: index + 1, durationSeconds: seconds)
+        }
+        return tracks.isEmpty ? nil : tracks
     }
 
     // MARK: - Setlists & songs

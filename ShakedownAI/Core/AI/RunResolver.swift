@@ -6,7 +6,9 @@ import Foundation
 nonisolated enum RunResolver {
 
     /// Longest tolerated stretch of unrelated tracks between two songs of a
-    /// run (covers "Drums"/"Jam" bridges and two-part transfers).
+    /// run (covers two-part transfers and a stray tuning file). Drums, Space
+    /// and jam tracks don't count: they are the run's own connective tissue,
+    /// and tapes split them every which way.
     private static let maxGap = 1
 
     /// The contiguous track range covering the run, or nil when this transfer
@@ -37,14 +39,25 @@ nonisolated enum RunResolver {
         }
 
         while keyIndex < keys.count {
-            guard last + 1 < tracks.count else { return nil }
+            let key = keys[keyIndex]
             var found: Int?
-            let window = (last + 1)...min(last + 1 + maxGap, tracks.count - 1)
-            for candidate in window where matches(tracks[candidate].songKey, key: keys[keyIndex]) {
-                found = candidate
-                break
+            var cursor = last + 1
+            var slack = maxGap
+            while cursor < tracks.count {
+                let trackKey = tracks[cursor].songKey
+                if matches(trackKey, key: key) { found = cursor; break }
+                if !RunFinder.isBridgeTrack(trackKey) {
+                    guard slack > 0 else { break }
+                    slack -= 1
+                }
+                cursor += 1
             }
-            guard let next = found else { return nil }
+            guard let next = found else {
+                // A run written as "Truckin' > Drums > The Other One" still
+                // lives on a tape that folded Drums into Truckin'.
+                if RunFinder.isBridge(key) { keyIndex += 1; continue }
+                return nil
+            }
             last = next
             keyIndex += 1
             while keyIndex < keys.count, matches(tracks[next].songKey, key: keys[keyIndex]) {

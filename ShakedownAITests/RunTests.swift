@@ -69,9 +69,25 @@ struct RunResolverTests {
         #expect(RunResolver.resolve(run(["dark star", "the other one"]), in: list) == 0...2)
     }
 
-    @Test func twoInterveningTracksRejectTheRun() {
-        let list = tracks(["Dark Star", "Drums", "Space", "The Other One"])
+    @Test func twoInterveningSongsRejectTheRun() {
+        let list = tracks(["Dark Star", "Sugaree", "Sugar Magnolia", "The Other One"])
         #expect(RunResolver.resolve(run(["dark star", "the other one"]), in: list) == nil)
+    }
+
+    @Test func drumsAndSpaceNeverBreakARun() {
+        // The tape splits the bridge into as many files as it likes.
+        let list = tracks(["Dark Star", "Drums", "Space", "Space Jam", "The Other One"])
+        #expect(RunResolver.resolve(run(["dark star", "the other one"]), in: list) == 0...4)
+        let numbered = tracks(["Estimated Prophet", "Drums 1", "Drums 2", "Space", "The Other One"])
+        #expect(RunResolver.resolve(run(["estimated prophet", "the other one"]), in: numbered) == 0...4)
+    }
+
+    @Test func bridgeKeysAreOptionalOnTapesThatFoldThemIn() {
+        // Frankfurt '72 on a tape with no separate Drums file.
+        let folded = tracks(["Casey Jones", "Truckin' >", "The Other One >", "Comes A Time"])
+        #expect(RunResolver.resolve(run(["truckin'", "drums", "the other one"]), in: folded) == 1...2)
+        // A song key is never optional.
+        #expect(RunResolver.resolve(run(["truckin'", "wharf rat", "the other one"]), in: folded) == nil)
     }
 
     @Test func combinedTitleTrackSatisfiesConsecutiveKeys() {

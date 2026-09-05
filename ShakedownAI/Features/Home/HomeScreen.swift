@@ -157,6 +157,7 @@ struct HomeScreen: View {
                                 }
                             )
                         }
+                        RunRail()
                         SmartShelfStrip()
                         if !model.becauseYouLiked.isEmpty {
                             notableShelf(
@@ -201,6 +202,9 @@ struct HomeScreen: View {
             .navigationDestination(for: SmartCollection.self) { collection in
                 SmartCollectionDetailScreen(collection: collection)
             }
+            .navigationDestination(for: FamousRun.self) { run in
+                FamousRunShowScreen(run: run)
+            }
             .toolbar(.hidden, for: .navigationBar)
         }
         .tint(Theme.textPrimary)
@@ -213,20 +217,14 @@ struct HomeScreen: View {
         }
     }
 
+    /// Just the date — the app's name and mark stay off Home so the night's
+    /// ticket is the first thing on the page.
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                AppMark(size: 28)
-                Text("TapeTree")
-                    .font(Theme.title)
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-            }
-            Text(Date.now.formatted(date: .complete, time: .omitted))
-                .font(Theme.subheadline)
-                .foregroundStyle(Theme.textSecondary)
-        }
-        .padding(.top, 14)
+        Text(Date.now.formatted(date: .complete, time: .omitted))
+            .font(Theme.subheadline)
+            .foregroundStyle(Theme.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 14)
     }
 
     private func notableShelf(title: String, shows: [NotableShow]) -> some View {

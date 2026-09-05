@@ -1,4 +1,4 @@
-# TapeTree catalog pipeline. Run from this directory.
+# Nethead catalog pipeline. Run from this directory.
 # Full rebuild: make all   (crawl is resume-safe; re-runs only fetch new items)
 
 PY := python3
@@ -7,7 +7,7 @@ FIXTURE_DATES := 1977-05-08,1972-05-04,1969-02-27,1970-02-13,1989-07-07,1995-07-
 APP_CATALOG := ../../ShakedownAI/Resources/catalog/catalog.sqlite
 FIXTURE_OUT := ../../ShakedownAITests/Fixtures/catalog-fixture.sqlite
 
-.PHONY: crawl setlists metadata build images digests fixture install all test
+.PHONY: crawl setlists metadata build tracks images digests fixture install all test
 
 crawl:
 	cd $(PIPE) && $(PY) stage1_search.py
@@ -20,6 +20,10 @@ metadata:
 
 build:
 	cd $(PIPE) && $(PY) stage4_build.py
+
+tracks:
+	cd $(PIPE) && $(PY) stage2b_tracks.py   # needs out/catalog.sqlite for the per-show ranking
+	cd $(PIPE) && $(PY) stage4_build.py     # re-embed with recording_tracks
 
 images:
 	cd $(PIPE) && $(PY) stage4_build.py --no-gates  # stage_images needs the date list
@@ -41,4 +45,4 @@ install: build
 test:
 	$(PY) -m pytest tests -q
 
-all: crawl setlists metadata build images fixture install
+all: crawl setlists metadata build tracks images fixture install

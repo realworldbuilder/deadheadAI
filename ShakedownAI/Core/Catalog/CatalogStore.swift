@@ -19,6 +19,8 @@ protocol ShowCatalog: AnyObject {
     func topRated(yearRange: ClosedRange<Int>?, limit: Int) async -> [CatalogShow]
     func recordings(forShow showID: String) async -> [CatalogRecording]
     func recording(identifier: String) async -> CatalogRecording?
+    /// The tape's tracks with running times, when the catalog carries them.
+    func tracks(forRecording identifier: String) async -> [Track]?
     func setlist(forShow showID: String) async -> Setlist?
     func digest(forShow showID: String) async -> ShowDigest?
     func searchText(_ query: String, limit: Int) async -> [CatalogShow]
@@ -106,6 +108,10 @@ final class CatalogStore: ShowCatalog {
 
     func recording(identifier: String) async -> CatalogRecording? {
         await db?.recording(identifier: identifier)
+    }
+
+    func tracks(forRecording identifier: String) async -> [Track]? {
+        await db?.tracks(forRecording: identifier)
     }
 
     func setlist(forShow showID: String) async -> Setlist? {

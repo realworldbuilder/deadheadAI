@@ -224,3 +224,39 @@ def test_memorabilia_keeps_posters_drops_fan_photos_orders_ticket_first():
 def test_cover_is_first_memorabilia_entry():
     assert pick_image(GALLERY_PAGE) == memorabilia(gallery_items(GALLERY_PAGE))[0]["url"]
     assert pick_image("<p>no gallery</p>") is None
+
+
+# --- tracks (mirror of ArchiveAPIClient / IAFile) ------------------------
+
+def test_tracks_prefer_one_mp3_format_and_never_duplicate():
+    import tracks
+    files = [
+        {"name": "a.mp3", "format": "VBR MP3", "title": "Scarlet Begonias", "track": "01", "length": "10:12"},
+        {"name": "a64.mp3", "format": "64Kbps MP3", "title": "Scarlet Begonias", "track": "01", "length": "10:12"},
+        {"name": "a.flac", "format": "Flac", "title": "Scarlet Begonias", "track": "01", "length": "612"},
+    ]
+    assert [f["name"] for f in tracks.playable_files(files)] == ["a.mp3"]
+    fixed_only = [f for f in files if f["format"] != "VBR MP3"]
+    assert [f["name"] for f in tracks.playable_files(fixed_only)] == ["a64.mp3"]
+    odd = [{"name": "x.mp3", "format": "Ogg Vorbis"}, {"name": "y.mp3", "format": "Sample MP3"}]
+    assert [f["name"] for f in tracks.playable_files(odd)] == ["y.mp3"]
+
+
+def test_track_durations_titles_and_order_match_the_app():
+    import tracks
+    assert tracks.duration_seconds("06:21") == 381
+    assert tracks.duration_seconds("1:02:03") == 3723
+    assert tracks.duration_seconds("318.42") == 318.42
+    assert tracks.duration_seconds("") is None and tracks.duration_seconds("abc") is None
+    assert tracks.track_number("01") == 1 and tracks.track_number("1/2") == 1 and tracks.track_number("x") is None
+    # a bare taper file name has nothing left after the prefix: fall back to the name itself
+    assert tracks.title_from_filename("gd77-05-08d2t03.mp3") == "gd77-05-08d2t03.mp3"
+    assert tracks.title_from_filename("gd1977-05-08.sbd.d2t03.Scarlet_Begonias.mp3") == "Scarlet Begonias"
+    built = tracks.build_tracks([
+        {"name": "b.mp3", "format": "VBR MP3", "title": "Fire", "track": "2", "length": "12:00"},
+        {"name": "z.mp3", "format": "VBR MP3", "title": "Encore Crowd", "length": "0:30"},
+        {"name": "a.mp3", "format": "VBR MP3", "track": "1", "length": "600"},
+    ])
+    assert [t["title"] for t in built] == ["a", "Fire", "Encore Crowd"]
+    assert [t["seconds"] for t in built] == [600, 720, 30]
+    assert built[0]["track"] == 1 and built[2]["track"] is None

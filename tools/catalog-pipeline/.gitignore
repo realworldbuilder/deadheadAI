@@ -4,6 +4,7 @@
 # OpenAI spend; they are the digest source of truth).
 cache/search/
 cache/metadata/
+cache/tracks/
 out/
 __pycache__/
 .pytest_cache/
