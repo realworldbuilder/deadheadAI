@@ -9,7 +9,7 @@ struct ShowGuideView: View {
             HStack {
                 Image(systemName: "sparkles")
                     .foregroundStyle(Theme.textSecondary)
-                Text("Listening Guide")
+                Text("Listening Notes")
                     .font(Theme.title)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
@@ -19,7 +19,7 @@ struct ShowGuideView: View {
             row(label: "Mood", text: guide.overallMood)
             row(label: "Context", text: guide.historicalContext)
             row(label: "Recording", text: guide.recordingNotes)
-            row(label: "Accessibility", text: guide.accessibility)
+            row(label: "Good first show?", text: guide.accessibility)
 
             if !guide.musicalHighlights.isEmpty {
                 bulletList(title: "Highlights", items: guide.musicalHighlights, icon: "star.fill")
@@ -30,7 +30,7 @@ struct ShowGuideView: View {
             if !guide.listenFor.isEmpty {
                 bulletList(title: "Listen for", items: guide.listenFor, icon: "waveform")
             }
-            row(label: "Fan consensus", text: guide.fanConsensus)
+            row(label: "What the heads say", text: guide.fanConsensus)
         }
         .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)

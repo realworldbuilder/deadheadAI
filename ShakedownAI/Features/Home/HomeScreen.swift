@@ -161,14 +161,14 @@ struct HomeScreen: View {
                         SmartShelfStrip()
                         if !model.becauseYouLiked.isEmpty {
                             notableShelf(
-                                title: model.recentShows.isEmpty ? "Start Here" : "Because You've Been Listening",
+                                title: model.recentShows.isEmpty ? "Start Here" : "Because You've Been Spinning",
                                 shows: model.becauseYouLiked
                             )
                         }
                         if !model.onThisDay.isEmpty {
                             ShowRail(
-                                title: "Today in Dead History",
-                                subtitle: "The Dead played \(model.onThisDay.count) documented show\(model.onThisDay.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).",
+                                title: "On This Day",
+                                subtitle: "The boys played \(model.onThisDay.count) show\(model.onThisDay.count == 1 ? "" : "s") on \(Date.now.formatted(.dateTime.month(.wide).day())).",
                                 shows: model.onThisDay,
                                 icon: "calendar"
                             )
@@ -176,7 +176,7 @@ struct HomeScreen: View {
                         if !model.topShelf.isEmpty {
                             ShowRail(
                                 title: "Top Shelf",
-                                subtitle: "The tapes the community rates highest.",
+                                subtitle: "The tapes heads rate highest.",
                                 shows: model.topShelf,
                                 icon: "star"
                             )
@@ -246,7 +246,7 @@ struct HomeScreen: View {
 
     private func recentSection(_ recents: [(identifier: String, displayName: String, lastPlayed: Date)]) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Recently Played").sectionHeaderStyle()
+            Text("Recently Spun").sectionHeaderStyle()
             VStack(spacing: 0) {
                 ForEach(Array(recents.enumerated()), id: \.element.identifier) { index, recent in
                     NavigationLink(value: Show(identifier: recent.identifier, title: recent.displayName,
@@ -507,7 +507,7 @@ struct NotableShowResolverScreen: View {
                 }
                 .padding(Theme.screenPadding)
             } else {
-                LoadingLampView(text: "Finding the best tape…")
+                LoadingLampView(text: "Pulling the best tape…")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

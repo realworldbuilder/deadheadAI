@@ -66,7 +66,7 @@ struct LibraryScreen: View {
     private var playlistsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Playlists").sectionHeaderStyle()
+                Text("Mix Tapes").sectionHeaderStyle()
                 Spacer()
                 Button {
                     showingNewPlaylist = true
@@ -75,12 +75,12 @@ struct LibraryScreen: View {
                         .font(.title3)
                         .foregroundStyle(Theme.textPrimary)
                 }
-                .accessibilityLabel("New playlist")
+                .accessibilityLabel("New mix tape")
             }
             let playlists = env.library.playlists
             let _ = refreshToken   // re-read after sheet dismissals
             if playlists.isEmpty {
-                Text("Build your own runs — song by song, across any shows. Long-press a track on any show page to start one.")
+                Text("Roll your own mix tape — any tune from any show. Long-press a track on a show page to start one.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -112,7 +112,7 @@ struct LibraryScreen: View {
             let collections = env.library.collections
             let _ = refreshToken   // re-read after sheet dismissals
             if collections.isEmpty {
-                Text("Make shelves for the shows that matter — road trips, Sunday mornings, Jerry destroying it.")
+                Text("Shelves for the shows that matter — road trips, Sunday mornings, nights Jerry was on.")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -131,19 +131,19 @@ struct LibraryScreen: View {
         VStack(spacing: 0) {
             NavigationLink(value: Destination.years) {
                 libraryRow(icon: "calendar", title: "Years",
-                           subtitle: "Every night they played, 1965 to '95 — find a show by date.")
+                           subtitle: "Every show they played, '65 to '95 — find one by date.")
             }
             NavigationLink(value: Destination.journal) {
                 libraryRow(icon: "book.closed.fill", title: "Journal",
-                           subtitle: "Memories tied to music.")
+                           subtitle: "Where you were, who you were with.")
             }
             NavigationLink(value: Destination.history) {
                 libraryRow(icon: "clock.arrow.circlepath", title: "Listening History",
-                           subtitle: "Every night you've spent in the archive.")
+                           subtitle: "Every tape you've spun.")
             }
             NavigationLink(value: Destination.taste) {
                 libraryRow(icon: "chart.bar.fill", title: "Taste Profile",
-                           subtitle: "What the app has learned about your ears.")
+                           subtitle: "What Nethead has figured out about your ears.")
             }
             NavigationLink(value: Destination.downloads) {
                 libraryRow(icon: "arrow.down.circle.fill", title: "Downloads",
@@ -266,7 +266,7 @@ struct CollectionDetailScreen: View {
                                 Image(systemName: "square.stack.3d.up.slash")
                                     .font(.title)
                                     .foregroundStyle(Theme.textTertiary)
-                                Text("Nothing shelved yet. Save shows here from any show page.")
+                                Text("Nothing on this shelf yet. Save shows here from any show page.")
                                     .font(Theme.body)
                                     .foregroundStyle(Theme.textSecondary)
                                     .multilineTextAlignment(.center)

@@ -218,7 +218,7 @@ struct ShowDetailScreen: View {
                 header(model)
 
                 if model.isLoading && model.detail == nil {
-                    LoadingLampView(text: "Tuning in from the archive…")
+                    LoadingLampView(text: "Cueing up the tape…")
                 } else if let error = model.errorMessage {
                     ErrorCard(message: error) {
                         Task { await model.load() }
@@ -281,7 +281,7 @@ struct ShowDetailScreen: View {
             } label: {
                 Text(selectedTrackIDs.isEmpty
                      ? "Select tracks"
-                     : "Add \(selectedTrackIDs.count) to Playlist")
+                     : "Add \(selectedTrackIDs.count) to Mix Tape")
             }
             .buttonStyle(.primary)
             .disabled(selectedTrackIDs.isEmpty)
@@ -459,10 +459,10 @@ struct ShowDetailScreen: View {
                     Image(systemName: "sparkles")
                         .foregroundStyle(Theme.textSecondary)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Listening Guide")
+                        Text("Listening Notes")
                             .font(Theme.headline)
                             .foregroundStyle(Theme.textPrimary)
-                        Text("Mood, history, transitions, and what to listen for.")
+                        Text("What kind of night it was, what to listen for, and where the segues hit.")
                             .font(Theme.footnote)
                             .foregroundStyle(Theme.textSecondary)
                     }
@@ -487,7 +487,7 @@ struct ShowDetailScreen: View {
     /// archive.org review of this night, readable with zero network.
     private func digestCard(_ digest: ShowDigest) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Fan Consensus").sectionHeaderStyle()
+            Text("What the Heads Say").sectionHeaderStyle()
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     RatingDots(rating: digest.derivedRating)
@@ -606,7 +606,7 @@ struct ShowDetailScreen: View {
             Button {
                 playlistSheetPayload = PlaylistSheetPayload(tracks: [track])
             } label: {
-                Label("Add to Playlist…", systemImage: "music.note.list")
+                Label("Add to Mix Tape…", systemImage: "music.note.list")
             }
             Button {
                 withAnimation(.snappy) {
@@ -653,13 +653,13 @@ struct ShowDetailScreen: View {
         let visible = Array(model.otherRecordings.prefix(showingSources ? 30 : 3))
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Other Sources").sectionHeaderStyle()
+                Text("Other Tapes").sectionHeaderStyle()
                 Spacer()
                 Text("\(model.otherRecordings.count)")
                     .font(Theme.footnote)
                     .foregroundStyle(Theme.textTertiary)
             }
-            Text("Same night, different tapes — soundboards, audience mics, and matrix mixes each hear the room differently.")
+            Text("Same night, different tapes. Boards, auds, and matrixes each hear the room differently.")
                 .font(Theme.footnote)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.bottom, 4)
@@ -674,7 +674,7 @@ struct ShowDetailScreen: View {
                 }
             }
             if model.otherRecordings.count > 3 {
-                Button(showingSources ? "Show fewer" : "Show all \(model.otherRecordings.count) sources") {
+                Button(showingSources ? "Show fewer" : "Show all \(model.otherRecordings.count) tapes") {
                     withAnimation(.snappy) { showingSources.toggle() }
                 }
                 .font(Theme.subheadline.weight(.medium))
@@ -754,7 +754,7 @@ struct ShowDetailScreen: View {
     private func reviewsSection(_ detail: RecordingDetail) -> some View {
         let reviews = Array(detail.reviews.prefix(visibleReviewCount))
         return VStack(alignment: .leading, spacing: 4) {
-            Text("From the Community").sectionHeaderStyle()
+            Text("Show Reviews").sectionHeaderStyle()
             VStack(spacing: 0) {
                 ForEach(Array(reviews.enumerated()), id: \.offset) { index, review in
                     ReviewCard(review: review, divider: index < reviews.count - 1)

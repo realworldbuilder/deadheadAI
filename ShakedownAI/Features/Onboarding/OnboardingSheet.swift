@@ -21,16 +21,16 @@ struct OnboardingSheet: View {
                 Text("Nethead")
                     .font(Theme.largeTitle)
                     .foregroundStyle(Theme.textPrimary)
-                Text("The music never stopped.\nNeither should discovering it.")
+                Text("When did the bus come by for you?")
                     .font(Theme.body)
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                onboardRow(icon: "sparkles", text: "An AI companion that knows every tape — and learns your ears.")
-                onboardRow(icon: "dot.radiowaves.left.and.right", text: "Streams straight from the Internet Archive's Grateful Dead collection.")
-                onboardRow(icon: "book.closed", text: "Journeys, journals, and thirty years to explore.")
+                onboardRow(icon: "sparkles", text: "An old head who's spun every tape, riding shotgun.")
+                onboardRow(icon: "dot.radiowaves.left.and.right", text: "Every tape on archive.org, '65 to '95 — boards, auds, matrixes. Nothing re-hosted.")
+                onboardRow(icon: "book.closed", text: "The runs, the setlists, a journal, and thirty years of shows.")
             }
             .padding(.horizontal, 10)
 
@@ -43,7 +43,7 @@ struct OnboardingSheet: View {
                 .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.stroke))
 
-            Button("Hop on the Bus") {
+            Button("Get on the Bus") {
                 finish(with: name.isEmpty ? "Nethead" : name)
             }
             .buttonStyle(.primary(fullWidth: true))
@@ -68,7 +68,7 @@ struct OnboardingSheet: View {
             .frame(height: 44)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-            Text("Sign in with Apple to keep your shelves & journal in iCloud. Or hop on without an account; everything stays on this device.")
+            Text("Sign in with Apple to keep your shelves and journal in iCloud. Or skip it — everything stays on this device.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)

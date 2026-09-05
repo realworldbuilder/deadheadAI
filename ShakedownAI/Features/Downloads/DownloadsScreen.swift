@@ -46,10 +46,10 @@ struct DownloadsScreen: View {
 
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Nothing saved yet")
+            Text("Nothing on the deck yet")
                 .font(Theme.headline)
                 .foregroundStyle(Theme.textPrimary)
-            Text("Open any show and tap Download to keep it on this device — perfect for flights, road trips, and basements with no bars.")
+            Text("Open any show and tap Download to keep it on this device. For the drive to the show, the flight, and the basement with no bars.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
         }

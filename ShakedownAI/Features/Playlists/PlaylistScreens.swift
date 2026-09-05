@@ -56,7 +56,7 @@ struct PlaylistDetailScreen: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
-        .navigationTitle(playlist?.name ?? "Playlist")
+        .navigationTitle(playlist?.name ?? "Mix Tape")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -64,20 +64,20 @@ struct PlaylistDetailScreen: View {
                     Button(role: .destructive) {
                         confirmingDelete = true
                     } label: {
-                        Label("Delete Playlist", systemImage: "trash")
+                        Label("Delete Mix Tape", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
             }
         }
-        .confirmationDialog("Delete this playlist?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Delete Playlist", role: .destructive) {
+        .confirmationDialog("Delete this mix tape?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Delete Mix Tape", role: .destructive) {
                 if let playlist { env.library.deletePlaylist(playlist) }
                 dismiss()
             }
         } message: {
-            Text("The tracks stay in the archive — only the playlist goes.")
+            Text("The tracks stay on the archive — only the mix goes.")
         }
     }
 
@@ -86,7 +86,7 @@ struct PlaylistDetailScreen: View {
             Image(systemName: "music.note.list")
                 .font(.title)
                 .foregroundStyle(Theme.textTertiary)
-            Text("No tracks yet. Long-press any song on a show page — or select a few — and add them here.")
+            Text("Nothing on it yet. Long-press any tune on a show page — or select a few — and add them here.")
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
@@ -166,7 +166,7 @@ struct PlaylistDetailScreen: View {
                         env.library.remove(item: item)
                         refreshToken += 1
                     } label: {
-                        Label("Remove from Playlist", systemImage: "minus.circle")
+                        Label("Remove from Mix Tape", systemImage: "minus.circle")
                     }
                 }
             }
@@ -198,7 +198,7 @@ struct PlaylistDetailScreen: View {
                                 Text("A better order is hiding in here")
                                     .font(Theme.headline)
                                     .foregroundStyle(Theme.textPrimary)
-                                Text("Reorder so the true segue pairs sit next to each other, the way the band played them.")
+                                Text("Reorder so the real segue pairs sit next to each other, the way the boys played them.")
                                     .font(Theme.caption)
                                     .foregroundStyle(Theme.textSecondary)
                             }
@@ -334,11 +334,11 @@ struct NewPlaylistSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
-                TextField("Playlist name", text: $name)
+                TextField("Mix tape name", text: $name)
                     .font(Theme.body)
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
-                TextField("What's the vibe? (optional)", text: $blurb)
+                TextField("What's it for? (optional)", text: $blurb)
                     .font(Theme.body)
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
@@ -371,7 +371,7 @@ struct NewPlaylistSheet: View {
             .padding(Theme.screenPadding)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.background)
-            .navigationTitle("New Playlist")
+            .navigationTitle("New Mix Tape")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

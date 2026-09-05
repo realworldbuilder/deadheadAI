@@ -87,7 +87,7 @@ struct SongDetailScreen: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
                 statsRow
-                infoBlock(title: "Evolution", text: song.evolution)
+                infoBlock(title: "How It Changed", text: song.evolution)
 
                 if !song.famousVersions.isEmpty {
                     famousVersionsSection
@@ -121,8 +121,8 @@ struct SongDetailScreen: View {
     private var performancesSection: some View {
         let visible = Array(performances.prefix(showAllPerformances ? performances.count : 8))
         return VStack(alignment: .leading, spacing: 8) {
-            Text("All \(performances.count) in the Vault").sectionHeaderStyle()
-            Text("Every setlist that carries it, first to last.")
+            Text("All \(performances.count) Times They Played It").sectionHeaderStyle()
+            Text("Every setlist it turns up in, first to last.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
             VStack(spacing: 0) {
@@ -202,7 +202,7 @@ struct SongDetailScreen: View {
 
     private var famousVersionsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("The Versions That Matter").sectionHeaderStyle()
+            Text("Favorite Versions").sectionHeaderStyle()
             VStack(spacing: 0) {
                 ForEach(Array(song.famousVersions.enumerated()), id: \.element.date) { index, version in
                     famousVersionCard(version, divider: index < song.famousVersions.count - 1)
@@ -270,8 +270,8 @@ struct SongDetailScreen: View {
 
     private var seguesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Runs With").sectionHeaderStyle()
-            Text("The conversations this song usually joins.")
+            Text("Goes Into").sectionHeaderStyle()
+            Text("What it usually segues into, and out of.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
             FlowLayout(spacing: 8) {

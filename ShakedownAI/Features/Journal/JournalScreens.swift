@@ -19,7 +19,7 @@ struct JournalListScreen: View {
                         Text("Your journal is empty")
                             .font(Theme.title)
                             .foregroundStyle(Theme.textPrimary)
-                        Text("\"Listened while driving through the Blue Ridge.\"\n\"This Morning Dew wrecked me.\"\n\nYears from now, these notes will take you back. Write from any show page.")
+                        Text("\"Spun this on the drive home from Hampton.\"\n\"That Dew. Had to pull over.\"\n\nYears from now these notes will take you back. Write one from any show page.")
                             .font(Theme.body)
                             .foregroundStyle(Theme.textSecondary)
                             .multilineTextAlignment(.center)
@@ -118,7 +118,7 @@ struct JournalEditorSheet: View {
     @State private var text = ""
     @State private var mood = ""
 
-    private static let moods = ["blissed", "wistful", "electric", "peaceful", "wrecked", "grateful"]
+    private static let moods = ["psyched", "mellow", "blissed", "wistful", "wrecked", "grateful"]
 
     var body: some View {
         NavigationStack {
@@ -203,7 +203,7 @@ struct HistoryScreen: View {
                         Image(systemName: "hourglass")
                             .font(.largeTitle)
                             .foregroundStyle(Theme.textTertiary)
-                        Text("No listening yet — the archive awaits.")
+                        Text("Nothing spun yet.")
                             .font(Theme.body)
                             .foregroundStyle(Theme.textSecondary)
                     }
@@ -262,7 +262,7 @@ struct TasteProfileScreen: View {
                         Text("Still listening…")
                             .font(Theme.title)
                             .foregroundStyle(Theme.textPrimary)
-                        Text("Play a few shows and the app starts learning your ears — favorite eras, songs, and rooms.")
+                        Text("Spin a few shows and Nethead starts to figure out your ears — eras, tunes, rooms.")
                             .font(Theme.body)
                             .foregroundStyle(Theme.textSecondary)
                             .multilineTextAlignment(.center)
@@ -275,11 +275,11 @@ struct TasteProfileScreen: View {
                         eraChart(taste)
                     }
                     if !taste.topSongKeys.isEmpty {
-                        listBlock(title: "Songs You Return To",
+                        listBlock(title: "Tunes You Keep Spinning",
                                   items: taste.topSongKeys.map { env.knowledgeBase.song(forKey: $0)?.title ?? $0.capitalized })
                     }
                     if !taste.favoriteVenues.isEmpty {
-                        listBlock(title: "Rooms You Haunt", items: taste.favoriteVenues)
+                        listBlock(title: "Rooms You Keep Going Back To", items: taste.favoriteVenues)
                     }
                 }
             }

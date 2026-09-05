@@ -28,11 +28,11 @@ final class ChatModel {
     }
 
     static let starterQuestions = [
-        "What made 1973 special?",
-        "Why do people love Veneta?",
-        "What's the Wall of Sound?",
-        "When should I start with Brent?",
-        "Best Morning Dew for a first-timer?",
+        "What's the big deal about '73?",
+        "Why do heads rave about Veneta?",
+        "What was the Wall of Sound?",
+        "Where do I start with Brent?",
+        "Best Dew for a first-timer?",
         "What makes Europe '72 different?",
     ]
 
@@ -310,7 +310,7 @@ struct ChatScreen: View {
             if let song = env.knowledgeBase.song(forKey: key) ?? env.knowledgeBase.song(matching: key) {
                 SongDetailScreen(song: song)
             } else {
-                missingScreen("That song isn't in the songbook yet.")
+                missingScreen("Don't have that tune in the songbook yet.")
             }
         case .era(let id):
             if let era = env.knowledgeBase.era(id: id) {
@@ -372,10 +372,10 @@ struct ChatScreen: View {
 
     private func emptyState(_ model: ChatModel) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Your lifelong Nethead, riding shotgun.")
+            Text("An old head, riding shotgun.")
                 .font(Theme.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
-            Text("I've heard every tape and read every review. Ask me anything — or tell me how tonight feels.")
+            Text("I've spun every tape on the archive and read every review. Ask me anything, or just tell me what kind of night it is.")
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
             FlowingChips(prompts: ChatModel.starterQuestions) { prompt in
@@ -390,7 +390,7 @@ struct ChatScreen: View {
             MiniPlayerBar()
                 .padding(.bottom, 6)
             HStack(spacing: 10) {
-                TextField("Ask, or describe tonight's mood…", text: Binding(
+                TextField("Ask away, or say what kind of night it is…", text: Binding(
                     get: { model.draft },
                     set: { model.draft = $0 }
                 ), axis: .vertical)

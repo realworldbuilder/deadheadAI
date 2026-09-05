@@ -74,8 +74,8 @@ struct BrowseScreen: View {
 
     private var venueSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Hallowed Ground").sectionHeaderStyle()
-            Text("The rooms they kept coming back to.")
+            Text("The Rooms").sectionHeaderStyle()
+            Text("Where the boys kept coming back to.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textSecondary)
             VStack(spacing: 0) {

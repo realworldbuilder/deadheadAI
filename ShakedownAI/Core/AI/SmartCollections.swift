@@ -277,10 +277,10 @@ nonisolated struct SmartCollectionPlanner: Sendable {
         switch (context.daypart, context.weekday) {
         case (.morning, 1):
             recipe = ("Slow Sunday", "SUNDAY MORNING", "sun.horizon.fill", ["mellow", "acoustic", "ballad"],
-                      "It's Sunday morning — slow starts, acoustic sets, and the gentlest Jerry ballads in the canon.")
+                      "Sunday morning. Slow starts, acoustic sets, and the gentlest Jerry ballads there are.")
         case (.morning, 2):
             recipe = ("Monday Ignition", "MONDAY MORNING", "bolt.fill", ["high-energy", "joyful", "tight"],
-                      "Monday morning needs a push: first sets that come out of the gate hot.")
+                      "Monday needs a kick: first sets that come out of the gate smokin'.")
         case (.morning, _):
             recipe = ("First Light", "THIS MORNING", "sun.horizon.fill", ["mellow", "joyful", "acoustic"],
                       "Morning listening — warm, melodic, nothing that demands the whole room yet.")
@@ -292,7 +292,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
                       "Working hours — jams that reward half your attention and reveal themselves on the second pass.")
         case (.evening, 6):
             recipe = ("Friday Night Fire", "FRIDAY NIGHT", "flame.fill", ["high-energy", "tight", "joyful"],
-                      "It's Friday night. These are the nights the band came out swinging and never let up.")
+                      "It's Friday night. These are the nights the boys came out swinging and never let up.")
         case (.evening, 7):
             recipe = ("Saturday Blowout", "SATURDAY NIGHT", "flame.fill", ["high-energy", "epic-jams", "joyful"],
                       "Saturday night: the big rooms, the long second sets, the encores that ran late.")
@@ -301,7 +301,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
                       "A weeknight with room to stretch — shows that take their time getting where they're going.")
         case (.lateNight, _):
             recipe = ("The Small Hours", "LATE NIGHT", "moon.stars.fill", ["psychedelic", "exploratory", "dark"],
-                      "Everyone else is asleep. This is when Dark Star, Space, and the strange stuff belong.")
+                      "Everyone else is asleep. Dark Star, Space, and the weird stuff.")
         }
 
         let dates = select(tags: recipe.tags, limit: 6, rotation: context.dayOfYear,
@@ -365,7 +365,7 @@ nonisolated struct SmartCollectionPlanner: Sendable {
                       "Winter meant indoor runs and the New Year's shows — cold outside, hot inside.")
         case .spring:
             recipe = ("Spring Tour", "SPRING TOUR", [3, 4, 5],
-                      "Spring tour: the band coming off rehearsals sharp, playing the college halls.")
+                      "Spring tour: the boys coming off rehearsals sharp, playing the college halls.")
         case .summer:
             recipe = ("Summer Outdoors", "SUMMER TOUR", [6, 7, 8],
                       "Summer meant fields, sheds, and daylight — shows that sound like the weather they were played in.")
@@ -429,10 +429,10 @@ nonisolated struct SmartCollectionPlanner: Sendable {
         let decade = [(1969, 1974), (1975, 1979), (1980, 1990)][context.dayOfYear % 3]
         return CollectionBrief(
             slotID: "trend",
-            badge: "WHAT THE ARCHIVE LOVES",
+            badge: "WHAT THE HEADS LOVE",
             fallbackTitle: "Most-Loved Tapes",
             iconName: "chart.line.uptrend.xyaxis",
-            rationale: "The recordings other listeners rate and stream the most, \(decade.0)–\(decade.1). Not the canon — the crowd.",
+            rationale: "The tapes other heads rate and spin the most, \(decade.0)–\(decade.1). Not the canon — the crowd.",
             tags: [],
             candidateDates: [],
             archiveQuery: .init(yearStart: decade.0, yearEnd: decade.1, limit: 8)
@@ -451,12 +451,12 @@ nonisolated struct SmartCollectionPlanner: Sendable {
         ("The Long Ones", "DEEP CUT", "infinity", ["epic-jams"],
          "Nothing under fifteen minutes. Clear your evening."),
         ("Pure Joy", "DEEP CUT", "sun.horizon.fill", ["joyful", "tight"],
-         "Shows where you can hear the band grinning."),
+         "Shows where you can hear the boys grinning."),
         ("Shadow Sets", "DEEP CUT", "moon.stars.fill", ["dark"],
          "The heavy nights — menace, minor keys, and Jerry singing about weather."),
         ("Gentle Hands", "DEEP CUT", "heart.fill", ["mellow", "ballad", "acoustic"],
          "Quiet playing from a band famous for the opposite."),
-        ("The On-Ramp", "DEEP CUT", "car.fill", ["beginner-friendly"],
+        ("For the Newbies", "DEEP CUT", "car.fill", ["beginner-friendly"],
          "If someone asked you where to start tomorrow, you'd hand them these."),
     ]
 
@@ -564,7 +564,7 @@ nonisolated enum SmartCollectionCurator {
             return firstSentence(candidate.blurb)
         }
         if let rating = candidate.rating {
-            return String(format: "%.1f stars from the community.", rating)
+            return String(format: "%.1f stars from the heads.", rating)
         }
         return candidate.location.isEmpty ? "A night worth the time." : "Live from \(candidate.location)."
     }

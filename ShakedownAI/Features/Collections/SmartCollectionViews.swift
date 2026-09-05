@@ -344,7 +344,7 @@ struct SmartCollectionDetailScreen: View {
     }
 
     private var footer: some View {
-        Text("Curated by \(collection.curatedBy) · \(collection.generatedAt.formatted(.relative(presentation: .named)))")
+        Text("Shelved by \(collection.curatedBy) · \(collection.generatedAt.formatted(.relative(presentation: .named)))")
             .font(.caption2)
             .foregroundStyle(Theme.textTertiary)
             .padding(.top, 4)
@@ -368,7 +368,7 @@ struct SmartCollectionDetailScreen: View {
 }
 
 private extension String {
-    /// "WHAT THE ARCHIVE LOVES" → "What the archive loves";
+    /// "WHAT THE HEADS LOVE" → "What the heads love";
     /// "DEEP CUT · WEDNESDAY" → "Deep cut · Wednesday".
     var sentenceCased: String {
         components(separatedBy: " · ").map { part -> String in

@@ -112,7 +112,7 @@ struct ChatShowCard: View {
         do {
             let detail = try await env.metadataProvider.detail(for: show.identifier)
             if detail.tracks.isEmpty {
-                playError = "This tape has no streamable tracks — open the show page to pick another source."
+                playError = "This tape has no streamable tracks — open the show page and pick another tape."
             } else {
                 env.playerEngine.play(show: show, tracks: detail.tracks)
                 env.playerEngine.isPresentingFullPlayer = true

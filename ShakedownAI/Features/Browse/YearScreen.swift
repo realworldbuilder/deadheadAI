@@ -54,7 +54,7 @@ struct YearScreen: View {
                     } else if !loaded {
                         LoadingLampView(text: "Opening \(year)…")
                     } else if months.isEmpty {
-                        Text("Nothing surfaced. The vault is deep — try another angle.")
+                        Text("Nothing here. Try another year.")
                             .font(Theme.body)
                             .foregroundStyle(Theme.textSecondary)
                             .padding(.top, 30)

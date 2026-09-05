@@ -168,7 +168,7 @@ struct SettingsScreen: View {
                     .foregroundStyle(Theme.textPrimary)
             }
         } header: {
-            Text("Intelligence")
+            Text("The Brain")
         } footer: {
             Text(aiStatusDetail)
         }
@@ -181,9 +181,9 @@ struct SettingsScreen: View {
 
     private var aiStatusDetail: String {
         if aiActive {
-            return "AI is on the house. Recommendations and chat are grounded in real archive data, with the offline brain as backup."
+            return "AI's on the house. Every pick is grounded in real tapes and real setlists, with the offline brain as backup."
         }
-        return "Everything works offline from the curated knowledge base. This build shipped without an AI key, so free-form chat runs locally."
+        return "This build shipped without an AI key, so chat runs off the built-in knowledge base. Everything still works, all of it offline."
     }
 
     private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
@@ -296,7 +296,7 @@ struct SettingsScreen: View {
                     Text("Nethead")
                         .font(Theme.headline)
                         .foregroundStyle(Theme.textPrimary)
-                    Text("The music never stopped. Neither should discovering it.")
+                    Text("Every tape on the archive, and a head who's spun them all.")
                         .font(Theme.footnote)
                         .foregroundStyle(Theme.textSecondary)
                 }
@@ -305,7 +305,7 @@ struct SettingsScreen: View {
             Text("About")
         } footer: {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Recordings come directly from the Internet Archive's Grateful Dead collection, preserved by tapers and archivists over six decades. This app re-hosts no music — it streams (and saves for offline) straight from the archive, adding the intelligence layer.")
+                Text("Every tape comes straight from the Internet Archive's Grateful Dead collection — pulled by tapers, traded for decades, kept by the archive. Nethead re-hosts nothing and sells nothing. It streams from archive.org (and saves tapes for offline) and adds a head who knows the collection.")
                 if let stamp = catalogStamp {
                     Text(stamp)
                 }

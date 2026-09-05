@@ -58,7 +58,7 @@ struct PlaylistPickerSheet: View {
                     }
 
                     HStack(spacing: 10) {
-                        TextField("New playlist…", text: $newName)
+                        TextField("New mix tape…", text: $newName)
                             .font(Theme.body)
                             .padding(12)
                             .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
@@ -73,14 +73,14 @@ struct PlaylistPickerSheet: View {
                                 .foregroundStyle(Theme.textPrimary)
                         }
                         .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
-                        .accessibilityLabel("Create playlist and add")
+                        .accessibilityLabel("Create mix tape and add")
                     }
                     .padding(.top, 6)
                 }
                 .padding(Theme.screenPadding)
             }
             .background(Theme.background)
-            .navigationTitle("Add to Playlist")
+            .navigationTitle("Add to Mix Tape")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -76,7 +76,7 @@ struct ExploreTabView: View {
              style: .galaxy, bodySize: 40, position: UnitPoint(x: 0.50, y: 0.13),
              side: .top, tint: Color(red: 0.64, green: 0.74, blue: 1.0)),
         // First pair: the sun and the ringed planet
-        Star(id: "search", destination: .search, title: "Ask the\nArchive",
+        Star(id: "search", destination: .search, title: "Ask the\nUniverse",
              style: .sun, bodySize: 58, position: UnitPoint(x: 0.17, y: 0.27),
              side: .trailing, tint: amber),
         Star(id: "eras", destination: .eras, title: "Eras",
@@ -194,13 +194,13 @@ struct ExploreTabView: View {
                 case .topShelf:
                     ShowListScreen(
                         title: "Top Shelf",
-                        subtitle: "The community's highest-rated tapes across three decades.",
+                        subtitle: "The tapes heads rate highest, '65 to '95.",
                         loader: { try await env.recordingProvider.topRated(yearRange: nil, limit: 40) }
                     )
                 case .onThisDay:
                     ShowListScreen(
                         title: "On This Day",
-                        subtitle: "Every year the band played this date, best tape of each night first.",
+                        subtitle: "Every year the boys played this date, best tape of each night first.",
                         loader: { try await env.recordingProvider.onThisDay(monthDay: HomeModel.monthDayString(.now)) }
                     )
                 case .darkStar:

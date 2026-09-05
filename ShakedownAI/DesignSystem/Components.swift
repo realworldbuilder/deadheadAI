@@ -249,7 +249,7 @@ struct ArchiveOfflineBanner: View {
                 HStack(spacing: 8) {
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
                         .foregroundStyle(Theme.rose)
-                    Text("The Internet Archive is temporarily offline — the tapes will be back.")
+                    Text("archive.org is down right now. The tapes will be back.")
                         .font(Theme.caption)
                         .foregroundStyle(Theme.textPrimary)
                 }

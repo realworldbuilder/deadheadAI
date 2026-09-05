@@ -357,7 +357,7 @@ struct RunRail: View {
 
     /// The shelf's running time joins the blurb once every tape has answered.
     private func subtitle(total: String?) -> String {
-        var text = "Segues and marathons — the stretches inside a night that people never stop talking about, each playable on its own."
+        var text = "Segues and marathon versions — the stretches of a night heads never stop talking about, each playable on its own."
         if let total { text += " Today's shelf runs \(total) end to end." }
         return text
     }
@@ -402,7 +402,7 @@ struct RunCard: View {
             .buttonStyle(.plain)
 
             if isUnavailable {
-                Text("Not on any tape we can reach")
+                Text("Not on any tape we can get to")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.vertical, 2)

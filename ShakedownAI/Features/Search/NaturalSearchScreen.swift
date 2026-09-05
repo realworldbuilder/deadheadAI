@@ -20,14 +20,14 @@ final class NaturalSearchModel {
     }
 
     static let examplePrompts = [
-        "Best China Rider",
-        "I'm exhausted",
-        "Most psychedelic second set",
-        "Primal Dead from 1968",
-        "Best audience tapes",
-        "Shows for new listeners",
-        "I want Phil bombs",
-        "Terrifying Dark Star",
+        "Best China > Rider",
+        "I'm beat, something mellow",
+        "Spaciest 2nd set",
+        "Primal Dead, '68",
+        "Best aud tapes",
+        "First show for a newbie",
+        "Phil bombs",
+        "Scary Dark Star",
         "Something like Cornell",
         "Rainy Sunday morning",
     ]
@@ -94,7 +94,7 @@ final class NaturalSearchModel {
 
             results = try await env.recordingProvider.shows(matching: filters)
             if results.isEmpty && kbSuggestions.isEmpty {
-                errorMessage = "Nothing surfaced for that. Try a mood, a year, a song, or a venue."
+                errorMessage = "Nothing came up for that. Try a mood, a year, a tune, or a room."
             }
         } catch HTTPError.serviceUnavailable {
             if kbSuggestions.isEmpty {
@@ -102,7 +102,7 @@ final class NaturalSearchModel {
             }
         } catch {
             if kbSuggestions.isEmpty {
-                errorMessage = "The archive didn't answer — but the offline brain still works. Try a mood or era."
+                errorMessage = "archive.org didn't answer, but the offline brain still works. Try a mood or an era."
             }
         }
         isSearching = false
@@ -120,7 +120,7 @@ struct NaturalSearchScreen: View {
                 searchField
                 if let model {
                     if model.isSearching {
-                        LoadingLampView(text: "Reading your mind…")
+                        LoadingLampView(text: "Digging through the tape list…")
                     } else if model.searched {
                         resultsSection(model)
                     } else {
@@ -135,7 +135,7 @@ struct NaturalSearchScreen: View {
         }
         .background(Theme.background)
         .withMiniPlayer()
-        .navigationTitle("Ask the Archive")
+        .navigationTitle("Ask the Universe")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             if model == nil { model = NaturalSearchModel(env: env) }
@@ -167,7 +167,7 @@ struct NaturalSearchScreen: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Theme.textSecondary)
-            TextField("Describe what you want to hear…", text: Binding(
+            TextField("Say what you want to hear…", text: Binding(
                 get: { model?.query ?? "" },
                 set: { model?.query = $0 }
             ))
@@ -193,7 +193,7 @@ struct NaturalSearchScreen: View {
 
     private func promptIdeas(_ model: NaturalSearchModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("No filters. No dates. Just say it.")
+            Text("No filters, no menus. Ask it like you'd ask a head in the lot.")
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
             FlowingChips(prompts: NaturalSearchModel.examplePrompts) { prompt in
@@ -208,7 +208,7 @@ struct NaturalSearchScreen: View {
         if let song = model.songContext {
             VStack(alignment: .leading, spacing: 6) {
                 Text(song.title).sectionHeaderStyle()
-                Text("The versions Deadheads argue about, resolved to the best tapes:")
+                Text("The versions heads argue about, each on its best tape:")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -230,7 +230,7 @@ struct NaturalSearchScreen: View {
             }
         }
         if !model.kbSuggestions.isEmpty {
-            Text("From the Curator's Shelf")
+            Text("From the Shelf")
                 .sectionHeaderStyle()
                 .padding(.top, 8)
             ScrollView(.horizontal, showsIndicators: false) {

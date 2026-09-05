@@ -4,10 +4,11 @@ import UIKit
 /// Nethead design language: a baseline, near-monochrome system. Neutral
 /// surfaces that follow the appearance setting, one sans typeface set in
 /// Dynamic Type styles, hairline dividers instead of boxes, and black-on-
-/// white (or white-on-charcoal) for every control. The tape-trader colours
-/// survive only as small highlights: rust for progress and what's playing
-/// now, forest green for a soundboard tag, denim for a segue mark. Real
-/// ticket and poster scans are the only decoration.
+/// white (or white-on-charcoal) for every control. The icon's colours
+/// survive only as small highlights: the bolt's red for progress, play
+/// buttons and what's playing now, leaf green for a soundboard tag, the
+/// bolt's blue for a segue mark. Real ticket and poster scans are the only
+/// decoration.
 enum Theme {
 
     // MARK: - Colors
@@ -21,23 +22,23 @@ enum Theme {
     /// Hairline dividers and card borders. Opaque, so it never muddies.
     static let stroke = Color(light: rgb(0.925, 0.925, 0.925), dark: rgb(0.259, 0.259, 0.259))
 
-    /// Ferric-oxide rust. Darkened by day so it holds contrast on white.
-    static let accent = Color(light: rgb(0.66, 0.36, 0.14), dark: rgb(0.86, 0.50, 0.24))
+    /// The bolt's red. Deepened by day so it holds contrast on white.
+    static let accent = Color(light: rgb(0.80, 0.13, 0.11), dark: rgb(0.93, 0.29, 0.25))
     /// Text and glyphs drawn on a flat accent fill.
-    static let onAccent = Color(light: rgb(1, 1, 1), dark: rgb(0.051, 0.051, 0.051))
-    /// Red rust for errors and destructive actions.
-    static let rose = Color(light: rgb(0.70, 0.23, 0.12), dark: rgb(0.85, 0.36, 0.24))
-    /// Forest green for soundboard tags and success states.
-    static let sage = Color(light: rgb(0.24, 0.50, 0.26), dark: rgb(0.44, 0.72, 0.42))
-    /// Faded denim for segues and song links.
-    static let denim = Color(light: rgb(0.28, 0.40, 0.60), dark: rgb(0.52, 0.62, 0.78))
+    static let onAccent = Color(light: rgb(1, 1, 1), dark: rgb(1, 1, 1))
+    /// Crimson for errors and destructive actions — a step darker than the accent.
+    static let rose = Color(light: rgb(0.66, 0.10, 0.16), dark: rgb(0.88, 0.38, 0.42))
+    /// Leaf green for soundboard tags and success states.
+    static let sage = Color(light: rgb(0.16, 0.52, 0.24), dark: rgb(0.40, 0.74, 0.42))
+    /// The bolt's blue for segues, audience tags, and song links.
+    static let denim = Color(light: rgb(0.12, 0.36, 0.84), dark: rgb(0.44, 0.62, 1.00))
 
     static let textPrimary = Color(light: rgb(0.051, 0.051, 0.051), dark: rgb(0.925, 0.925, 0.925))
     static let textSecondary = Color(light: rgb(0.365, 0.365, 0.365), dark: rgb(0.706, 0.706, 0.706))
     static let textTertiary = Color(light: rgb(0.459, 0.459, 0.459), dark: rgb(0.557, 0.557, 0.557))
 
     /// The accent as a dynamic UIColor, for UIKit views (AirPlay picker).
-    static let accentUIColor = UIColor(light: rgb(0.66, 0.36, 0.14), dark: rgb(0.86, 0.50, 0.24))
+    static let accentUIColor = UIColor(light: rgb(0.80, 0.13, 0.11), dark: rgb(0.93, 0.29, 0.25))
 
     // MARK: - Typography
 

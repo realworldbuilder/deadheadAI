@@ -7,7 +7,7 @@ struct EraExplorerScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Thirty years, seven bands wearing the same name.")
+                Text("Thirty years, and a different band every few of them.")
                     .font(Theme.body)
                     .foregroundStyle(Theme.textSecondary)
 
@@ -95,13 +95,13 @@ struct EraDetailScreen: View {
                 infoBlock(title: "The sound", text: era.style)
                 infoBlock(title: "The story", text: era.summary)
                 infoBlock(title: "Context", text: era.context)
-                infoBlock(title: "On stage", text: era.lineup)
+                infoBlock(title: "Lineup", text: era.lineup)
 
                 if !beginnerShows.isEmpty {
                     shelf(title: "Start Here", shows: beginnerShows)
                 }
                 if !mustHear.isEmpty {
-                    shelf(title: "Must-Hear Nights", shows: mustHear)
+                    shelf(title: "Must-Hear Shows", shows: mustHear)
                 }
                 if !eraShows.isEmpty {
                     shelf(title: "Deeper In", shows: eraShows)

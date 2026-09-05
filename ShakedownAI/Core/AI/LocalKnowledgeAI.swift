@@ -129,7 +129,7 @@ final class LocalKnowledgeAI: AIProvider {
         if let notable {
             narrative.append(notable.blurb)
         } else {
-            narrative.append("A \(pick.year.map(String.init) ?? "classic")-era night at \(pick.venue ?? "a storied room"), well loved by the community\(pick.avgRating.map { String(format: " (%.1f stars)", $0) } ?? "").")
+            narrative.append("A \(pick.year.map(String.init) ?? "classic")-era night at \(pick.venue ?? "a good room"), well loved by the heads\(pick.avgRating.map { String(format: " (%.1f stars)", $0) } ?? "").")
         }
         if let era {
             narrative.append("It sits in \(era.name) (\(era.years)): \(era.style)")
@@ -146,12 +146,12 @@ final class LocalKnowledgeAI: AIProvider {
     }
 
     nonisolated private static func openingLine(forTags tags: Set<String>) -> String {
-        if tags.contains("mellow") { return "Sounds like a night for something gentle — here's where I'd land." }
+        if tags.contains("mellow") { return "Sounds like a mellow night. Here's where I'd go." }
         if tags.contains("dark") { return "You want the deep end. Good. Bring a flashlight." }
         if tags.contains("psychedelic") { return "Strap in — this one leaves the map entirely." }
-        if tags.contains("high-energy") { return "You want fire. This one never lets up." }
-        if tags.contains("beginner-friendly") { return "Perfect place to start — welcoming, warm, and unmistakably them." }
-        if tags.contains("primal") { return "Back to the garage — loud, raw, and gloriously unpolished." }
+        if tags.contains("high-energy") { return "You want it hot. This one never lets up." }
+        if tags.contains("beginner-friendly") { return "A good first show — warm, tuneful, and unmistakably them." }
+        if tags.contains("primal") { return "Primal Dead — loud, raw, Pigpen out front." }
         if tags.contains("jazzy") { return "For the conversation between the instruments, start here." }
         return "Here's where I'd point you tonight."
     }
@@ -224,18 +224,18 @@ final class LocalKnowledgeAI: AIProvider {
         var consensus = "Not many reviews on this source yet — sometimes that means a sleeper."
         if let avgStars, detail.reviews.count >= 3 {
             let tone = avgStars >= 4.5 ? "beloved" : avgStars >= 3.8 ? "well regarded" : "debated"
-            consensus = String(format: "%d community reviews averaging %.1f stars — a %@ tape.",
+            consensus = String(format: "%d heads have weighed in, averaging %.1f stars — a %@ tape.",
                                detail.reviews.count, avgStars, tone)
             if let top = detail.reviews.first(where: { ($0.body?.count ?? 0) > 40 })?.body?.prefix(140) {
-                consensus += " One listener put it: “\(String(top).trimmingCharacters(in: .whitespacesAndNewlines))…”"
+                consensus += " One head put it: “\(String(top).trimmingCharacters(in: .whitespacesAndNewlines))…”"
             }
         }
 
         let sourceLower = ((detail.source ?? "") + " " + (show?.identifier ?? detail.identifier)).lowercased()
         let isSBD = sourceLower.contains("sbd") || sourceLower.contains("soundboard") || sourceLower.contains("matrix")
         let recordingNotes = isSBD
-            ? "Soundboard lineage — clean instrument separation, the band as the crew heard them."
-            : "Audience tape — you trade fidelity for the room: crowd roar, hall echo, the actual night."
+            ? "Board tape — clean separation, the band the way the crew heard it."
+            : "Aud tape — you trade some fidelity for the room: the crowd, the hall, the actual night."
 
         return ShowGuide(
             overallMood: notable.map(Self.mood(from:)) ?? era.map { "A night of \($0.style.lowercased().trimmingCharacters(in: .punctuationCharacters))" } ?? "A night with the Grateful Dead",
@@ -245,8 +245,8 @@ final class LocalKnowledgeAI: AIProvider {
             bestTransitions: transitions,
             improvisationRating: improv,
             accessibility: (notable?.tags.contains("beginner-friendly") ?? false)
-                ? "A welcoming entry point — melodic, well recorded, and easy to love on first listen."
-                : "Better once you've got a few shows under your belt; the rewards are deeper in.",
+                ? "A good first show — tuneful, well recorded, easy to love on the first spin."
+                : "Better once you've got a few shows under your belt. The good stuff is deeper in.",
             recordingNotes: recordingNotes,
             listenFor: notable?.standoutSongs ?? highlights,
             fanConsensus: consensus,
@@ -290,7 +290,7 @@ final class LocalKnowledgeAI: AIProvider {
 
         // Song question?
         if let song = kb.song(matching: question) ?? Self.songMention(in: question, kb: kb) {
-            out.append("Ah, \(ChatLink.song(song.key, label: song.title)) — good taste.")
+            out.append("\(ChatLink.song(song.key, label: song.title)). Good call.")
             out.append(song.evolution)
             // One show per line: the chat renders each as a card carrying
             // the note after the dash.
@@ -370,7 +370,7 @@ final class LocalKnowledgeAI: AIProvider {
         if let nowPlaying = grounding.nowPlaying {
             out.append("While \(nowPlaying) plays — here's a thought.")
         }
-        out.append("I live for questions like this.")
+        out.append("Now you're talking.")
         out.append("Ask me about a song (\"What's the best Dark Star?\"), a year (\"What made 1973 special?\"), a show (\"Why do people love Veneta?\"), or a mood (\"I need something mellow\").")
         out.append("Or just tell me how you're feeling and I'll pull the right tape.")
         return out

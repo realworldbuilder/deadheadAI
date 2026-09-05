@@ -79,7 +79,7 @@
   <h2>What stays on your device</h2>
   <ul>
     <li>Listening history and the taste profile computed from it</li>
-    <li>Journey progress and AI chat transcripts</li>
+    <li>Trip progress and AI chat transcripts</li>
     <li>Your display name and, if you sign in with Apple, the Apple-provided user identifier</li>
     <li>Cached setlists and search results (so the app works offline)</li>
   </ul>
@@ -89,7 +89,7 @@
   <p>If you sign in with Apple, your collections (saved shows) and journal entries sync to the <strong>private CloudKit database of your own iCloud account</strong>. Apple encrypts and stores this data under your Apple ID; we cannot read, access, or share it. Sign out and syncing stops; your data stays on the device and in your iCloud until you remove it (iOS Settings → your name → iCloud → Manage Account Storage → Nethead; shown as TapeTree or Deadhead AI on builds installed before the rename).</p>
 
   <h2>What gets sent to OpenAI</h2>
-  <p>When the AI brain is active, the text of your chats and searches — plus non-identifying context like era preferences and candidate show listings — is sent to OpenAI&rsquo;s API to generate responses. These requests carry no account identifier, name, or device identifier. Per <a href="https://openai.com/policies/api-data-usage-policies">OpenAI&rsquo;s API policy</a>, API data is not used to train their models. Without sign-in, an offline knowledge base answers instead and nothing is sent at all.</p>
+  <p>When the AI brain is active, the text of your chats and searches — plus non-identifying context like era preferences and candidate show listings — is sent to OpenAI&rsquo;s API to generate responses. These requests carry no account identifier, name, or device identifier. Per <a href="https://openai.com/policies/api-data-usage-policies">OpenAI&rsquo;s API policy</a>, API data is not used to train their models. When there is no network, or when a build ships without an AI key, the built-in knowledge base answers instead and nothing is sent at all.</p>
 
   <h2>What archive.org sees</h2>
   <p>Recordings stream directly from the Internet Archive, so archive.org receives the standard information any web request carries (your IP address and the items you stream), governed by the <a href="https://archive.org/about/terms.php">Internet Archive&rsquo;s terms and privacy policy</a>. We are not a party to that traffic.</p>

@@ -11,7 +11,7 @@ struct JourneysScreen: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Long strange trip")
                     .eyebrowStyle()
-                Text("Guided listening courses, taught by the archive itself. One show at a time, with context, focus tracks, and a place to write.")
+                Text("Guided trips through the tapes, one night at a time. Some context, a couple of tunes to listen for, and a place to write down what happened.")
                     .font(Theme.body)
                     .foregroundStyle(Theme.textSecondary)
 
@@ -50,10 +50,10 @@ struct JourneysScreen: View {
     private var epicRunsSection: some View {
         let runs = env.knowledgeBase.runs.sorted { $0.date < $1.date }
         return VStack(alignment: .leading, spacing: 10) {
-            Text("Epic runs")
+            Text("The Runs")
                 .eyebrowStyle()
                 .padding(.top, 10)
-            Text("Not whole shows — the sequences inside them that people never stop talking about.")
+            Text("Not whole shows. The stretches inside them heads never stop talking about — Scarlet > Fire, Help > Slip > Franklin's, the Dark Star that wouldn't end.")
                 .font(Theme.body)
                 .foregroundStyle(Theme.textSecondary)
             VStack(spacing: 0) {
@@ -192,7 +192,7 @@ struct JourneyDetailScreen: View {
                     } label: {
                         HStack {
                             Image(systemName: "figure.walk")
-                            Text("Begin the Journey")
+                            Text("Start the Trip")
                         }
                     }
                     .buttonStyle(.primary(fullWidth: true))
