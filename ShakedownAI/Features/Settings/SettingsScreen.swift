@@ -22,6 +22,7 @@ struct SettingsScreen: View {
                 providerSection
                 downloadsSection
                 cacheSection
+                notesfileSection
                 aboutSection
             }
             .scrollContentBackground(.hidden)
@@ -284,6 +285,38 @@ struct SettingsScreen: View {
             Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive.")
         }
         .listRowBackground(Theme.surface)
+    }
+
+    // MARK: - The Notesfile
+
+    /// The Dead conference, back up on the web: RDVAX::GRATEFUL. Every show
+    /// is a topic, heads write notes, tape lists get passed around as trees.
+    private var notesfileSection: some View {
+        Section {
+            Link(destination: URL(string: "https://nethead.nethead-web.workers.dev")!) {
+                HStack(spacing: 12) {
+                    Image(systemName: "terminal")
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("The Notesfile")
+                            .font(Theme.body)
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("RDVAX::GRATEFUL on the web. Notes on every show, tape lists, the lot.")
+                            .font(Theme.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
+        } header: {
+            Text("The Notesfile")
+        } footer: {
+            Text("Get on the bus there with a handle like PHISH::HUSSEY and a passkey. No email, no password.")
+        }
     }
 
     // MARK: - About
