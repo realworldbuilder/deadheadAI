@@ -4,8 +4,8 @@ import type { App } from "../env";
 import * as cat from "../catalog/queries";
 import { parseTracksJson, streamUrl, stripLeadingTrackNumber, type Track } from "../archive/files";
 import { fetchTape } from "../archive/metadata";
-import { nowIso } from "../db/ids";
-import { one, stmt } from "../db/notes";
+import { one } from "../db/notes";
+import { recordSpin, type SpinBody } from "../lot/spins";
 import { prettyDate } from "../fmt";
 import { requireSameOrigin } from "../auth/csrf";
 import { mixtape, mixtapeItems } from "../tapes/store";
@@ -59,32 +59,11 @@ deck.get("/deck/mixtapes/:id", async (c) => {
   return c.json({ id: tape.id, title: tape.name, page: `/heads/${owner?.handle ?? ""}/mixtapes/${tape.id}`, tracks });
 });
 
-interface SpinBody { identifier?: string; showId?: string | null; trackTitle?: string; stopped?: boolean }
-
 deck.post("/deck/spin", requireSameOrigin, async (c) => {
   const head = c.get("head");
   if (!head) return c.body(null, 204);
-  let body: SpinBody;
-  try { body = await c.req.json<SpinBody>(); } catch { return c.json({ error: "malformed" }, 400); }
-  const now = nowIso();
-  if (body.stopped) {
-    await stmt(c.env.NOTES, "DELETE FROM spins WHERE user_id=?", head.id).run();
-    return c.body(null, 204);
-  }
-  if (!head.shareSpins || !body.identifier || !body.trackTitle) return c.body(null, 204);
-  const last = await one<{ id: number; identifier: string; updated_at: string }>(c.env.NOTES,
-    "SELECT id, identifier, updated_at FROM spins WHERE user_id=? ORDER BY updated_at DESC LIMIT 1", head.id);
-  const tenSecondsAgo = new Date(Date.now() - 10000).toISOString();
-  if (last && last.updated_at > tenSecondsAgo) return c.body(null, 204);
-  const twentyMinutesAgo = new Date(Date.now() - 20 * 60000).toISOString();
-  if (last && last.identifier === body.identifier && last.updated_at > twentyMinutesAgo) {
-    await stmt(c.env.NOTES, "UPDATE spins SET track_title=?, updated_at=? WHERE id=?", body.trackTitle.slice(0, 120), now, last.id).run();
-  } else {
-    await c.env.NOTES.batch([
-      stmt(c.env.NOTES, "DELETE FROM spins WHERE user_id=?", head.id),
-      stmt(c.env.NOTES, "INSERT INTO spins (user_id, handle, show_id, identifier, track_title, started_at, updated_at) VALUES (?,?,?,?,?,?,?)",
-        head.id, head.handle, body.showId ?? null, body.identifier.slice(0, 200), body.trackTitle.slice(0, 120), now, now),
-    ]);
-  }
+  const body = await c.req.json<SpinBody>().catch(() => null);
+  if (!body) return c.json({ error: "malformed" }, 400);
+  await recordSpin(c.env.NOTES, head, body);
   return c.body(null, 204);
 });

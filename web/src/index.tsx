@@ -14,6 +14,7 @@ import { tapes } from "./tapes/routes";
 import { trees } from "./trees/routes";
 import { lot } from "./lot/routes";
 import { admin } from "./admin/routes";
+import { api } from "./api/routes";
 import { Frame, render } from "./views/frame";
 import { Broke, NotFound } from "./views/errors";
 import { purge } from "./cron";
@@ -34,6 +35,7 @@ app.route("/", tapes);
 app.route("/", trees);
 app.route("/", lot);
 app.route("/", admin);
+app.route("/", api);
 
 app.notFound(async (c) => {
   if (c.env.ASSETS && c.req.method === "GET") {
@@ -43,7 +45,7 @@ app.notFound(async (c) => {
   return c.html(render(<Frame title="Nothing here" crumb={["GRATEFUL"]} head={c.get("head") ?? null} page="none"><NotFound /></Frame>), 404);
 });
 
-const JSON_PATHS = /^\/(bus|signin|recover|me\/passkeys|deck)\//;
+const JSON_PATHS = /^\/(bus|signin|recover|me\/passkeys|deck|api)\//;
 
 app.onError((err, c) => {
   console.error(err);

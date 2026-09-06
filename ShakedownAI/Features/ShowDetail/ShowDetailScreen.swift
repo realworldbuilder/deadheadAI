@@ -23,7 +23,14 @@ final class ShowDetailModel {
     /// Every memorabilia scan for this night, cover first (see `ScanGallery`).
     var images: [CatalogImage] = []
     var gallery: ScanGallery { ScanGallery(images: images) }
+    /// What the heads wrote under this night on the notesfile (nil until loaded, or no notesfile).
+    var notes: NoteFeed?
+    var notesPageURL: URL? {
+        guard let api, let notes else { return nil }
+        return api.url(path: notes.page)
+    }
 
+    private let api: NetheadAPIClient?
     private let metadata: any MetadataProvider
     private let recordings: any LiveRecordingProvider
     private let ai: any AIProvider
@@ -31,8 +38,10 @@ final class ShowDetailModel {
     private let catalog: (any ShowCatalog)?
 
     init(show: Show, metadata: any MetadataProvider, recordings: any LiveRecordingProvider,
-         ai: any AIProvider, downloads: DownloadManager? = nil, catalog: (any ShowCatalog)? = nil) {
+         ai: any AIProvider, downloads: DownloadManager? = nil, catalog: (any ShowCatalog)? = nil,
+         api: NetheadAPIClient? = nil) {
         self.show = show
+        self.api = api
         self.metadata = metadata
         self.recordings = recordings
         self.ai = ai
@@ -69,6 +78,11 @@ final class ShowDetailModel {
                 }
             }
         }
+    }
+
+    func loadNotes() async {
+        guard notes == nil, let api, let day = show.dateString else { return }
+        notes = try? await api.notes(forDate: day)
     }
 
     func loadGuide() async {
@@ -149,7 +163,8 @@ struct ShowDetailScreen: View {
                                             recordings: env.recordingProvider,
                                             ai: env.aiProvider,
                                             downloads: env.downloads,
-                                            catalog: env.catalog)
+                                            catalog: env.catalog,
+                                            api: env.api)
                 // The catalog is local SQLite: resolve it before the first
                 // paint so the hero doesn't pop in above the header.
                 await fresh.loadCatalogContext()
@@ -157,6 +172,7 @@ struct ShowDetailScreen: View {
                 stageScansIfRequested(fresh)
             }
             await model?.load()
+            await model?.loadNotes()
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -250,6 +266,9 @@ struct ShowDetailScreen: View {
                     }
                     if !detail.reviews.isEmpty {
                         reviewsSection(detail)
+                    }
+                    if let notes = model.notes {
+                        notesfileSection(notes, model: model)
                     }
                 }
             }
@@ -751,6 +770,39 @@ struct ShowDetailScreen: View {
         }
     }
 
+    /// The conference's notes under this night, and the way to add one.
+    private func notesfileSection(_ feed: NoteFeed, model: ShowDetailModel) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("On the Notesfile").sectionHeaderStyle()
+            if feed.notes.isEmpty {
+                Text("No notes on this show yet. You know something about this night. Write it down.")
+                    .font(Theme.body)
+                    .foregroundStyle(Theme.textSecondary)
+                    .listRowStyle(divider: false)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(feed.notes.prefix(8).enumerated()), id: \.element.id) { index, note in
+                        NotesfileNoteCard(note: note, divider: index < min(feed.notes.count, 8) - 1)
+                    }
+                }
+            }
+            if let url = model.notesPageURL {
+                HStack(spacing: 12) {
+                    Link(destination: URL(string: url.absoluteString + "#write") ?? url) {
+                        Label(feed.notes.isEmpty ? "Write the first note" : "Write a note", systemImage: "square.and.pencil")
+                    }
+                    if feed.noteCount > 8 {
+                        Link(destination: url) {
+                            Text("All \(feed.noteCount) notes")
+                        }
+                    }
+                }
+                .font(Theme.subheadline.weight(.medium))
+                .foregroundStyle(Theme.textSecondary)
+            }
+        }
+    }
+
     private func reviewsSection(_ detail: RecordingDetail) -> some View {
         let reviews = Array(detail.reviews.prefix(visibleReviewCount))
         return VStack(alignment: .leading, spacing: 4) {
@@ -880,6 +932,36 @@ private struct ReviewCard: View {
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
+        }
+        .listRowStyle(divider: divider)
+    }
+}
+
+/// One note from the conference: the handle, the number, the stamp, the words.
+private struct NotesfileNoteCard: View {
+    let note: NoteRow
+    var divider = true
+
+    private var stamp: String {
+        guard let date = NetheadDates.date(note.createdAt) else { return "" }
+        return date.formatted(date: .numeric, time: .omitted)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text(note.handle ?? "—")
+                    .font(.system(.subheadline, design: .monospaced))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("· \(note.ref) · \(stamp)")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(Theme.textTertiary)
+                Spacer()
+            }
+            Text(note.body)
+                .font(Theme.body)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(8)
         }
         .listRowStyle(divider: divider)
     }

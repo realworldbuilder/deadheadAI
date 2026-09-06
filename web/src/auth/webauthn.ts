@@ -15,7 +15,7 @@ import { one, q, stmt } from "../db/notes";
 
 export const CEREMONY_TTL = 300;
 
-export type CeremonyKind = "signup" | "signin" | "add_passkey" | "recovery";
+export type CeremonyKind = "signup" | "signin" | "add_passkey" | "recovery" | "pair";
 
 export interface Ceremony { id: string; kind: string; user_id: string | null; challenge: string; payload_json: string | null; expires_at: string }
 

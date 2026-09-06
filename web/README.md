@@ -51,6 +51,19 @@ and deploys on a push to `main` only if `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ACCOUNT_ID` are set as repo secrets (an API token with the
 "Edit Cloudflare Workers" template plus D1 edit). Without them it warns and skips.
 
+## The phone
+
+Nethead on iOS rides as a head's handle. On the site, `/me` → **Get the phone on
+the bus** mints a six-character code (ten minutes, one use); in the app,
+Settings → Get on the Bus takes the code and gets a bearer token
+(`POST /api/pair`). From then on the app keeps shelves, mix tapes and the
+journal in step with the site (`GET /api/sync?since=<seq>` and `POST /api/sync`,
+last-writer-wins by `updatedAt`, tombstones as `deletedAt`, client UUID ids),
+says what it's spinning (`POST /api/spin`), and shows the notes under a night
+(`GET /api/notes/:date`, public). `GET /api/me` checks the session;
+`POST /api/signout` ends it. Bearer requests skip the cookie and CSRF rules;
+JSON routes under `/api/` answer errors as `{error, detail}`.
+
 ## Passkeys and the domain
 
 Passkeys are bound to the host name. Moving from `workers.dev` to a real domain

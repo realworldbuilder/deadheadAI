@@ -18,9 +18,15 @@ export function isAdmin(handle: string, role: string, adminHandles: string): boo
   return adminHandles.split(",").map((h) => h.trim().toUpperCase()).filter(Boolean).includes(handle.toUpperCase());
 }
 
+/** The app sends its session as a bearer token instead of a cookie. */
+export function bearerToken(c: Context<App>): string | null {
+  const h = c.req.header("authorization") ?? "";
+  return h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() || null : null;
+}
+
 export const sessionMiddleware: MiddlewareHandler<App> = async (c, next) => {
   c.set("head", null);
-  const token = getCookie(c, COOKIE, "host");
+  const token = bearerToken(c) ?? getCookie(c, COOKIE, "host");
   if (token) {
     const hash = await sha256Hex(token);
     const row = await one<SessionRow>(c.env.NOTES,
@@ -51,6 +57,23 @@ export async function createSession(c: Context<App>, userId: string): Promise<vo
     "INSERT INTO sessions (token_hash, user_id, created_at, last_seen_at, expires_at, user_agent) VALUES (?,?,?,?,?,?)",
     hash, userId, now, now, isoPlus(TTL_SECONDS), (c.req.header("user-agent") ?? "").slice(0, 200)).run();
   setCookie(c, COOKIE, token, { prefix: "host", httpOnly: true, secure: true, sameSite: "Lax", path: "/", maxAge: TTL_SECONDS });
+}
+
+/** A session for the app: the raw token goes back in the body, never a cookie. */
+export async function createBearerSession(c: Context<App>, userId: string, device: string): Promise<string> {
+  const token = randomToken(32);
+  const hash = await sha256Hex(token);
+  const now = nowIso();
+  await stmt(c.env.NOTES,
+    "INSERT INTO sessions (token_hash, user_id, created_at, last_seen_at, expires_at, user_agent) VALUES (?,?,?,?,?,?)",
+    hash, userId, now, now, isoPlus(TTL_SECONDS), device.slice(0, 200)).run();
+  return token;
+}
+
+export async function revokeBearer(c: Context<App>): Promise<void> {
+  const token = bearerToken(c);
+  if (!token) return;
+  await stmt(c.env.NOTES, "DELETE FROM sessions WHERE token_hash=?", await sha256Hex(token)).run();
 }
 
 export async function revokeCurrent(c: Context<App>): Promise<void> {

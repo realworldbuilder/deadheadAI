@@ -28,6 +28,10 @@ export const Me: FC<{ head: Head; saved?: boolean; error?: string | null; passke
       <li><a href="/me/tree">On the tree</a></li>
     </ol>
 
+    <h2>The Phone</h2>
+    <p>Nethead on your iPhone can ride as this handle: same shelves, same mix tapes, same journal, and the phone shows up in the lot while it's spinning.</p>
+    <form method="post" action="/me/pair"><div class="btns"><button class="btn btn-red" type="submit">Get the phone on the bus</button></div></form>
+
     <h2>Passkeys</h2>
     <p class="meta">{passkeyCount} {passkeyCount === 1 ? "passkey" : "passkeys"} · <a href="/me/passkeys" data-full>Manage passkeys and the recovery code</a></p>
 
@@ -84,5 +88,15 @@ export const LeaveBus: FC<{ head: Head; error?: string | null }> = ({ head, erro
         <a class="btn" href="/me">Stay</a>
       </div>
     </form>
+  </>
+);
+
+export const PhoneCode: FC<{ head: Head; code: string }> = ({ head, code }) => (
+  <>
+    <h1>Get the phone on the bus</h1>
+    <p>In Nethead on your iPhone, open Settings, tap <b>Get on the Bus</b> under Account, and type this code. It's good for ten minutes and works once.</p>
+    <p class="code" style="font-size:28px">{code}</p>
+    <p class="help">The phone rides as {head.handle} from then on. Sign it out from the phone's Settings, or from <a href="/me">your page</a> with “Sign out everywhere”.</p>
+    <p class="meta"><a href="/me">← Your page</a></p>
   </>
 );

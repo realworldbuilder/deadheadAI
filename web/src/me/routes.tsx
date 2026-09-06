@@ -6,7 +6,8 @@ import { nowIso } from "../db/ids";
 import { one, stmt } from "../db/notes";
 import { parseHeadDate } from "../fmt";
 import { Frame, render } from "../views/frame";
-import { LeaveBus, Me } from "../views/me";
+import { LeaveBus, Me, PhoneCode } from "../views/me";
+import { mintPairCode } from "../api/routes";
 
 export const me = new Hono<App>();
 
@@ -47,6 +48,12 @@ me.post("/me", requireHead(), async (c) => {
   await stmt(c.env.NOTES, "UPDATE users SET first_show=?, share_spins=?, updated_at=? WHERE id=?", firstShow, share, nowIso(), head.id).run();
   if (!share) await stmt(c.env.NOTES, "DELETE FROM spins WHERE user_id=?", head.id).run();
   return c.redirect("/me?saved=1", 303);
+});
+
+me.post("/me/pair", requireHead(), async (c) => {
+  const head = c.get("head")!;
+  const code = await mintPairCode(c.env.NOTES, head.id);
+  return c.html(render(<Frame title="Get the phone on" crumb={[head.handle, "phone"]} head={head} page="me"><PhoneCode head={head} code={code} /></Frame>));
 });
 
 me.get("/me/delete", requireHead(), (c) => {

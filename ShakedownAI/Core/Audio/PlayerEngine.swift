@@ -102,6 +102,8 @@ final class PlayerEngine {
 
     /// Fired when a track finishes or is abandoned: (show, track, secondsListened, completed).
     var onListeningEvent: ((Show, Track, Double, Bool) -> Void)?
+    /// Fired when a track starts playing (a fresh load or a gapless roll-over).
+    var onTrackStarted: ((Show, Track) -> Void)?
 
     // MARK: - Internals
 
@@ -249,6 +251,7 @@ final class PlayerEngine {
         if autoplay {
             player.play()
             state = .playing
+            onTrackStarted?(entry.show, entry.track)
         }
         nowPlaying?.refresh()
     }
@@ -281,6 +284,7 @@ final class PlayerEngine {
         observeStatus(of: item)
         preloadNextItem()
         state = .playing
+        onTrackStarted?(entry.show, entry.track)
         nowPlaying?.refresh()
     }
 

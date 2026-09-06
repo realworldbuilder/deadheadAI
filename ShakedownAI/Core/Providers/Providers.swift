@@ -35,16 +35,22 @@ protocol AIProvider: AnyObject {
     func curateCollection(brief: CollectionBrief, candidates: [CollectionCandidate]) async throws -> CuratedCollection
 }
 
-nonisolated struct UserAccount: Sendable, Equatable {
-    var displayName: String
-    var appleUserID: String?
+/// A head on the notesfile: the handle the phone rides as. Nothing else —
+/// no email, no password; the notesfile keeps the passkey.
+nonisolated struct NetheadAccount: Sendable, Equatable, Codable {
+    var id: String
+    var handle: String
+    /// "When did the bus come by for you?" — a date or a year, as typed there.
+    var firstShow: String?
 }
 
 protocol AuthProvider: AnyObject {
-    var currentAccount: UserAccount? { get }
-    func signInLocally(displayName: String) async throws -> UserAccount
-    func signInWithApple(userID: String, displayName: String) async throws -> UserAccount
+    var currentAccount: NetheadAccount? { get }
+    /// Joins the head's notesfile account with the code from their page.
+    func pair(code: String) async throws -> NetheadAccount
     func signOut() async
+    /// Re-checks the session with the notesfile at launch; a dead one signs out.
+    func refresh() async
 }
 
 nonisolated struct FriendProfile: Sendable, Identifiable, Hashable {

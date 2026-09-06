@@ -47,10 +47,13 @@ final class CachedHeroNarrative {
 
 // MARK: - Journal
 
-// JournalEntry, ShowCollection, CollectionItem, Playlist, and PlaylistItem live
-// in the CloudKit-synced store: no unique attributes, every property defaulted,
-// relationships optional. Duplicates that sync can introduce are collapsed by
-// LibraryStore.dedupAfterSync().
+// JournalEntry, ShowCollection, CollectionItem, Playlist, and PlaylistItem are
+// the rows the notesfile keeps in step with the phone (see Core/Sync): every
+// row has a client UUID, an `updatedAt` for last-writer-wins, and `needsPush`
+// while the notesfile hasn't seen the latest edit. No unique attributes,
+// every property defaulted, relationships optional — the store was once
+// CloudKit-mirrored and old installs still open it. Duplicates are collapsed
+// by LibraryStore.dedupAfterSync().
 
 @Model
 final class JournalEntry {
@@ -62,6 +65,7 @@ final class JournalEntry {
     var mood: String?
     var createdAt: Date = Date.now
     var updatedAt: Date = Date.now
+    var needsPush: Bool = true
 
     init(showIdentifier: String,
          showDate: Date?,
@@ -88,6 +92,8 @@ final class ShowCollection {
     var blurb: String = ""
     var iconName: String = "sparkles"
     var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
+    var needsPush: Bool = true
     @Relationship(deleteRule: .cascade, inverse: \CollectionItem.collection)
     var items: [CollectionItem]? = []
 
@@ -97,20 +103,28 @@ final class ShowCollection {
         self.blurb = blurb
         self.iconName = iconName
         self.createdAt = .now
+        self.updatedAt = .now
+        self.needsPush = true
         self.items = []
     }
 }
 
 @Model
 final class CollectionItem {
+    var id: UUID = UUID()
     var showIdentifier: String = ""
     var showDate: Date?
     var displayName: String = ""
     var addedAt: Date = Date.now
     var sortIndex: Int = 0
+    var updatedAt: Date = Date.now
+    var needsPush: Bool = true
     var collection: ShowCollection?
 
     init(showIdentifier: String, showDate: Date?, displayName: String, sortIndex: Int) {
+        self.id = UUID()
+        self.updatedAt = .now
+        self.needsPush = true
         self.showIdentifier = showIdentifier
         self.showDate = showDate
         self.displayName = displayName
@@ -131,6 +145,8 @@ final class Playlist {
     var blurb: String = ""
     var iconName: String = "music.note.list"
     var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
+    var needsPush: Bool = true
     @Relationship(deleteRule: .cascade, inverse: \PlaylistItem.playlist)
     var items: [PlaylistItem]? = []
 
@@ -140,6 +156,8 @@ final class Playlist {
         self.blurb = blurb
         self.iconName = iconName
         self.createdAt = .now
+        self.updatedAt = .now
+        self.needsPush = true
         self.items = []
     }
 }
@@ -148,6 +166,9 @@ final class Playlist {
 /// the row with no network: streaming only needs (showIdentifier, fileName).
 @Model
 final class PlaylistItem {
+    var id: UUID = UUID()
+    var updatedAt: Date = Date.now
+    var needsPush: Bool = true
     var showIdentifier: String = ""
     var fileName: String = ""
     var trackTitle: String = ""
@@ -164,6 +185,9 @@ final class PlaylistItem {
 
     init(showIdentifier: String, fileName: String, trackTitle: String, songKey: String,
          showDateString: String, showDisplayName: String, durationSeconds: Double, sortIndex: Int) {
+        self.id = UUID()
+        self.updatedAt = .now
+        self.needsPush = true
         self.showIdentifier = showIdentifier
         self.fileName = fileName
         self.trackTitle = trackTitle
@@ -408,11 +432,32 @@ final class DownloadedTrackRecord {
     }
 }
 
+// MARK: - Sync tombstones
+
+/// A row the phone deleted that the notesfile hasn't heard about yet. Lives
+/// in the local store; SyncEngine sends it up and drops it once acked.
+@Model
+final class SyncTombstone {
+    @Attribute(.unique) var id: UUID
+    /// "shelf" | "shelfItem" | "mixtape" | "mixtapeItem" | "journalEntry"
+    var kind: String
+    /// The shelf or mix tape an item belonged to, so the notesfile can place it.
+    var parentID: UUID?
+    var deletedAt: Date
+
+    init(id: UUID, kind: String, parentID: UUID? = nil) {
+        self.id = id
+        self.kind = kind
+        self.parentID = parentID
+        self.deletedAt = .now
+    }
+}
+
 // MARK: - Container factory
 
 enum ModelContainerFactory {
-    /// User shelves & journal — the models eligible for CloudKit sync. They
-    /// live in their own store file so sync can flip on without moving data.
+    /// User shelves, mix tapes & journal — the rows the notesfile syncs. They
+    /// still live in their own store file (it was CloudKit's once; nothing moves).
     static let cloudModels: [any PersistentModel.Type] = [
         JournalEntry.self,
         ShowCollection.self,
@@ -434,6 +479,7 @@ enum ModelContainerFactory {
         ChatThread.self,
         ChatMessageRecord.self,
         LocalAccount.self,
+        SyncTombstone.self,
         DownloadedShowRecord.self,
         DownloadedTrackRecord.self,
     ]

@@ -49,6 +49,8 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
         OpenAIAPIKey: $(OPENAI_API_KEY)
+        # The notesfile (RDVAX::GRATEFUL on the web): accounts, shelves, notes.
+        NetheadURL: https://nethead.nethead-web.workers.dev
     settings:
       base:
         # Must match the App Store Connect app record (being renamed to
