@@ -1,31 +1,13 @@
 import Foundation
 import SwiftData
 
-/// Collections + journal, MainActor-only. Every edit stamps `updatedAt`,
-/// marks the row `needsPush`, and tells the sync engine; every delete leaves
-/// a tombstone so the notesfile hears about it.
+/// Collections + journal, MainActor-only.
 @Observable
 final class LibraryStore {
     private let context: ModelContext
-    /// Called after every save that changed a synced row (debounced by the sync engine).
-    var onMutation: (() -> Void)?
 
     init(container: ModelContainer) {
         self.context = container.mainContext
-    }
-
-    private func touch(_ collection: ShowCollection) { collection.updatedAt = .now; collection.needsPush = true }
-    private func touch(_ item: CollectionItem) { item.updatedAt = .now; item.needsPush = true }
-    private func touch(_ playlist: Playlist) { playlist.updatedAt = .now; playlist.needsPush = true }
-    private func touch(_ item: PlaylistItem) { item.updatedAt = .now; item.needsPush = true }
-
-    private func tombstone(_ id: UUID, kind: String, parent: UUID? = nil) {
-        context.insert(SyncTombstone(id: id, kind: kind, parentID: parent))
-    }
-
-    private func saveAndNotify() {
-        try? context.save()
-        onMutation?()
     }
 
     // MARK: - Collections
@@ -39,22 +21,13 @@ final class LibraryStore {
     func createCollection(name: String, blurb: String = "", iconName: String = "sparkles") -> ShowCollection {
         let collection = ShowCollection(name: name, blurb: blurb, iconName: iconName)
         context.insert(collection)
-        saveAndNotify()
+        try? context.save()
         return collection
     }
 
     func deleteCollection(_ collection: ShowCollection) {
-        for item in collection.items ?? [] { tombstone(item.id, kind: "shelfItem", parent: collection.id) }
-        tombstone(collection.id, kind: "shelf")
         context.delete(collection)
-        saveAndNotify()
-    }
-
-    func rename(_ collection: ShowCollection, name: String, blurb: String) {
-        collection.name = name
-        collection.blurb = blurb
-        touch(collection)
-        saveAndNotify()
+        try? context.save()
     }
 
     func add(show: Show, to collection: ShowCollection) {
@@ -66,15 +39,12 @@ final class LibraryStore {
                                   sortIndex: existing.count)
         item.collection = collection
         context.insert(item)
-        touch(collection)
-        saveAndNotify()
+        try? context.save()
     }
 
     func remove(item: CollectionItem) {
-        if let collection = item.collection { touch(collection) }
-        tombstone(item.id, kind: "shelfItem", parent: item.collection?.id)
         context.delete(item)
-        saveAndNotify()
+        try? context.save()
     }
 
     // MARK: - Playlists
@@ -88,15 +58,13 @@ final class LibraryStore {
     func createPlaylist(name: String, blurb: String = "", iconName: String = "music.note.list") -> Playlist {
         let playlist = Playlist(name: name, blurb: blurb, iconName: iconName)
         context.insert(playlist)
-        saveAndNotify()
+        try? context.save()
         return playlist
     }
 
     func deletePlaylist(_ playlist: Playlist) {
-        for item in playlist.items ?? [] { tombstone(item.id, kind: "mixtapeItem", parent: playlist.id) }
-        tombstone(playlist.id, kind: "mixtape")
         context.delete(playlist)
-        saveAndNotify()
+        try? context.save()
     }
 
     /// Appends tracks from one show, in the order given, skipping tracks the
@@ -121,23 +89,20 @@ final class LibraryStore {
             nextIndex += 1
             inserted = true
         }
-        if inserted { touch(playlist); saveAndNotify() }
+        if inserted { try? context.save() }
     }
 
     func remove(item: PlaylistItem) {
         let playlist = item.playlist
         let itemID = item.persistentModelID
-        tombstone(item.id, kind: "mixtapeItem", parent: playlist?.id)
         context.delete(item)
         if let playlist {
             let remaining = sortedItems(of: playlist).filter { $0.persistentModelID != itemID }
             for (index, survivor) in remaining.enumerated() where survivor.sortIndex != index {
                 survivor.sortIndex = index
-                touch(survivor)
             }
-            touch(playlist)
         }
-        saveAndNotify()
+        try? context.save()
     }
 
     /// Swaps the item with its neighbor above (`up`) or below.
@@ -149,8 +114,7 @@ final class LibraryStore {
         guard items.indices.contains(target) else { return }
         let other = items[target]
         swap(&item.sortIndex, &other.sortIndex)
-        touch(item); touch(other); touch(playlist)
-        saveAndNotify()
+        try? context.save()
     }
 
     /// Rewrites every item's sortIndex to the given track-key order (unlisted
@@ -166,10 +130,8 @@ final class LibraryStore {
         }
         for (index, entry) in reordered.enumerated() where entry.element.sortIndex != index {
             entry.element.sortIndex = index
-            touch(entry.element)
         }
-        touch(playlist)
-        saveAndNotify()
+        try? context.save()
     }
 
     func sortedItems(of playlist: Playlist) -> [PlaylistItem] {
@@ -317,7 +279,7 @@ final class LibraryStore {
                                  body: body,
                                  mood: mood)
         context.insert(entry)
-        saveAndNotify()
+        try? context.save()
         return entry
     }
 
@@ -325,14 +287,12 @@ final class LibraryStore {
         entry.body = body
         entry.mood = mood
         entry.updatedAt = .now
-        entry.needsPush = true
-        saveAndNotify()
+        try? context.save()
     }
 
     func deleteJournalEntry(_ entry: JournalEntry) {
-        tombstone(entry.id, kind: "journalEntry")
         context.delete(entry)
-        saveAndNotify()
+        try? context.save()
     }
 
     /// Markdown export of the whole journal.

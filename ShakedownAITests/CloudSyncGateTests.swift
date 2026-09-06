@@ -235,98 +235,47 @@ struct LibraryDedupTests {
     }
 }
 
-// MARK: - The notesfile account
+// MARK: - Persistent auth
 
-/// Answers the notesfile's few calls from memory, so the provider can be
-/// exercised with no network.
-nonisolated final class NotesfileStubProtocol: URLProtocol {
-    nonisolated(unsafe) static var meStatus = 200
-    nonisolated(unsafe) static var lastPath = ""
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-    override func stopLoading() {}
-
-    override func startLoading() {
-        let path = request.url?.path ?? ""
-        Self.lastPath = path
-        var status = 200
-        var body = "{}"
-        switch path {
-        case "/api/pair":
-            body = #"{"token":"tok-123","head":{"id":"H1","handle":"SHAKEDOWN::OG","firstShow":"1987-11-18"}}"#
-        case "/api/me":
-            status = Self.meStatus
-            body = status == 200 ? #"{"head":{"id":"H1","handle":"SHAKEDOWN::OG","firstShow":"1987-11-18"},"cursor":4}"# : #"{"error":"Not on the bus."}"#
-        case "/api/signout":
-            status = 204
-            body = ""
-        default:
-            status = 404
-            body = #"{"error":"nope"}"#
-        }
-        let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil,
-                                       headerFields: ["Content-Type": "application/json"])!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Data(body.utf8))
-        client?.urlProtocolDidFinishLoading(self)
-    }
-}
-
-struct NetheadAuthProviderTests {
-    private func make() throws -> (NetheadAuthProvider, UserDefaults, String, InMemorySecretStore) {
+struct PersistentAuthProviderTests {
+    private func makeDefaults() throws -> (UserDefaults, String) {
         let suite = "auth-test-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [NotesfileStubProtocol.self]
-        let secrets = InMemorySecretStore()
-        let api = try #require(NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
-                                                session: URLSession(configuration: config), secrets: secrets))
-        return (NetheadAuthProvider(api: api, defaults: defaults), defaults, suite, secrets)
+        return (defaults, suite)
     }
 
-    @Test func pairingRemembersTheHandleAndTheToken() async throws {
-        let (provider, defaults, suite, secrets) = try make()
+    @Test func appleAccountSurvivesRelaunch() async throws {
+        let (defaults, suite) = try makeDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
-        #expect(provider.currentAccount == nil)
-        let account = try await provider.pair(code: "rose-77")
-        #expect(account.handle == "SHAKEDOWN::OG")
-        #expect(account.firstShow == "1987-11-18")
-        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == "tok-123")
-        // a relaunch with the same defaults and Keychain still knows the head
-        let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [NotesfileStubProtocol.self]
-        let again = NetheadAuthProvider(api: NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
-                                                              session: URLSession(configuration: config), secrets: secrets),
-                                        defaults: defaults)
-        #expect(again.currentAccount == account)
-        // no token means no account, whatever the defaults say
-        let bare = NetheadAuthProvider(api: NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
-                                                             session: URLSession(configuration: config), secrets: InMemorySecretStore()),
-                                       defaults: defaults)
-        #expect(bare.currentAccount == nil)
+
+        let first = PersistentAuthProvider(defaults: defaults)
+        _ = try await first.signInWithApple(userID: "apple-123", displayName: "Jerry")
+
+        let second = PersistentAuthProvider(defaults: defaults)
+        #expect(second.currentAccount == UserAccount(displayName: "Jerry", appleUserID: "apple-123"))
+        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == "apple-123")
     }
 
-    @Test func signOutForgetsEverything() async throws {
-        let (provider, defaults, suite, secrets) = try make()
+    @Test func localAccountDoesNotEnableSync() async throws {
+        let (defaults, suite) = try makeDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
-        _ = try await provider.pair(code: "rose-77")
+
+        let provider = PersistentAuthProvider(defaults: defaults)
+        _ = try await provider.signInLocally(displayName: "Deadhead")
+
+        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == nil)
+        #expect(PersistentAuthProvider(defaults: defaults).currentAccount?.displayName == "Deadhead")
+    }
+
+    @Test func signOutClearsAccount() async throws {
+        let (defaults, suite) = try makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let provider = PersistentAuthProvider(defaults: defaults)
+        _ = try await provider.signInWithApple(userID: "apple-123", displayName: "Jerry")
         await provider.signOut()
-        #expect(provider.currentAccount == nil)
-        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == nil)
-        #expect(NetheadAuthProvider.persistedAccount(in: defaults) == nil)
-    }
 
-    @Test func aDeadSessionSignsOutOnRefresh() async throws {
-        let (provider, defaults, suite, _) = try make()
-        defer { defaults.removePersistentDomain(forName: suite) }
-        _ = try await provider.pair(code: "rose-77")
-        NotesfileStubProtocol.meStatus = 200
-        await provider.refresh()
-        #expect(provider.currentAccount?.handle == "SHAKEDOWN::OG")
-        NotesfileStubProtocol.meStatus = 401
-        await provider.refresh()
-        NotesfileStubProtocol.meStatus = 200
         #expect(provider.currentAccount == nil)
+        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == nil)
     }
 }

@@ -19,10 +19,12 @@ struct ShakedownAIApp: App {
                 .modelContainer(environment.modelContainer)
                 .tint(Theme.textPrimary)
                 .preferredColorScheme(appearance.colorScheme)
-                // On or off the bus: the sync engine takes it from here. The
-                // tape keeps rolling.
+                // Sign-in/out changes which mode the cloud store opens in, and
+                // that's fixed at container creation — so rebuild the whole
+                // environment. Same store file either way; no data moves.
                 .onReceive(NotificationCenter.default.publisher(for: .shakedownAuthChanged)) { _ in
-                    environment.sync.handleAuthChange()
+                    environment.playerEngine.stop()
+                    environment = AppEnvironment.live()
                 }
         }
     }

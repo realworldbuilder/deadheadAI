@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftUI
 
 struct SettingsScreen: View {
@@ -5,9 +6,9 @@ struct SettingsScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var aiActive = KeychainStore.hasUsableKey
     @State private var cacheSize = 0
+    @State private var displayName = ""
     @State private var confirmingClearCache = false
     @State private var confirmingSignOut = false
-    @State private var showingPair = false
     @State private var confirmingDeleteDownloads = false
     @State private var catalogStamp: String?
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.dark
@@ -21,7 +22,6 @@ struct SettingsScreen: View {
                 providerSection
                 downloadsSection
                 cacheSection
-                notesfileSection
                 aboutSection
             }
             .scrollContentBackground(.hidden)
@@ -59,13 +59,13 @@ struct SettingsScreen: View {
                 titleVisibility: .visible
             ) {
                 Button("Sign Out", role: .destructive) {
-                    Task { await env.authProvider.signOut() }
+                    Task {
+                        await env.authProvider.signOut()
+                        NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+                    }
                 }
             } message: {
-                Text("Your shelves, mix tapes and journal stay on this phone. The notesfile keeps its copy; get back on any time with a new code.")
-            }
-            .sheet(isPresented: $showingPair) {
-                PairSheet()
+                Text("iCloud syncing stops. Your shelves and journal stay on this device, and the copies already in iCloud stay there too.")
             }
         }
         .tint(Theme.textPrimary)
@@ -103,73 +103,56 @@ struct SettingsScreen: View {
 
     // MARK: - Account
 
+    private var signedInWithApple: Bool {
+        env.authProvider.currentAccount?.appleUserID != nil
+    }
+
     private var accountSection: some View {
         Section {
-            if let account = env.authProvider.currentAccount {
-                HStack(spacing: 12) {
-                    Image(systemName: "person.crop.circle.badge.checkmark")
-                        .font(.title3)
-                        .foregroundStyle(Theme.sage)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(account.handle)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(syncLine)
-                            .font(Theme.footnote)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
+            HStack(spacing: 12) {
+                Image(systemName: signedInWithApple
+                      ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
+                    .font(.title3)
+                    .foregroundStyle(signedInWithApple ? Theme.sage : Theme.textSecondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(env.authProvider.currentAccount?.displayName ?? "Not signed in")
+                        .font(Theme.body)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(signedInWithApple ? "Signed in with Apple" : "Local, this device only")
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.textSecondary)
                 }
-                Button("Sync now") {
-                    Task { await env.sync.syncNow() }
-                }
-                .disabled(env.sync.status == .syncing)
-                if let page = env.api?.url(path: "/heads/\(account.handle)") {
-                    Link("Your page on the notesfile", destination: page)
-                }
+            }
+            if signedInWithApple {
                 Button("Sign Out", role: .destructive) {
                     confirmingSignOut = true
                 }
             } else {
-                HStack(spacing: 12) {
-                    Image(systemName: "person.crop.circle")
-                        .font(.title3)
-                        .foregroundStyle(Theme.textSecondary)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Riding along")
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text("Shelves and journal live on this phone only")
-                            .font(Theme.footnote)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                }
-                if env.api != nil {
-                    Button("Get on the Bus") {
-                        showingPair = true
-                    }
-                }
+                signInWithAppleRow
             }
         } header: {
             Text("Account")
         } footer: {
-            Text(env.authProvider.currentAccount != nil
-                 ? "Shelves, mix tapes and the journal are the same here and on the notesfile. The phone shows up in the lot while it's spinning."
-                 : "A handle from the notesfile keeps your shelves, mix tapes and journal the same here and on the web.")
+            Text(signedInWithApple
+                 ? "Your shelves and journal sync to iCloud."
+                 : "Sign in with Apple to keep your shelves and journal in iCloud.")
         }
         .listRowBackground(Theme.surface)
     }
 
-    private var syncLine: String {
-        switch env.sync.status {
-        case .syncing: return "Syncing with the notesfile…"
-        case .offline: return "Offline — changes go up when you're back"
-        case .failed(let text): return text
-        case .idle:
-            if let at = env.sync.lastSyncedAt {
-                return "In step with the notesfile · \(at.formatted(.relative(presentation: .named)))"
+    private var signInWithAppleRow: some View {
+        SignInWithAppleButton(.signIn) { request in
+            request.requestedScopes = [.fullName]
+        } onCompletion: { result in
+            if case .success(let auth) = result,
+               let credential = auth.credential as? ASAuthorizationAppleIDCredential {
+                signInWithApple(credential: credential)
             }
-            return "On the bus"
         }
+        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+        .frame(height: 44)
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
     }
 
     // MARK: - AI
@@ -201,6 +184,17 @@ struct SettingsScreen: View {
             return "AI's on the house. Every pick is grounded in real tapes and real setlists, with the offline brain as backup."
         }
         return "This build shipped without an AI key, so chat runs off the built-in knowledge base. Everything still works, all of it offline."
+    }
+
+    private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
+        let fallbackName = displayName.isEmpty ? "Nethead" : displayName
+        Task {
+            _ = try? await env.authProvider.signInWithApple(
+                userID: credential.user,
+                displayName: credential.fullName?.givenName ?? fallbackName)
+            // Rebuild the environment so the cloud store reopens with sync on.
+            NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+        }
     }
 
     // MARK: - Providers
@@ -290,38 +284,6 @@ struct SettingsScreen: View {
             Text("Setlists, reviews, and search results are cached so the app works offline and stays polite to the archive.")
         }
         .listRowBackground(Theme.surface)
-    }
-
-    // MARK: - The Notesfile
-
-    /// The Dead conference, back up on the web: RDVAX::GRATEFUL. Every show
-    /// is a topic, heads write notes, tape lists get passed around as trees.
-    private var notesfileSection: some View {
-        Section {
-            Link(destination: URL(string: "https://nethead.nethead-web.workers.dev")!) {
-                HStack(spacing: 12) {
-                    Image(systemName: "terminal")
-                        .foregroundStyle(Theme.accent)
-                        .frame(width: 24)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("The Notesfile")
-                            .font(Theme.body)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text("RDVAX::GRATEFUL on the web. Notes on every show, tape lists, the lot.")
-                            .font(Theme.footnote)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(Theme.footnote)
-                        .foregroundStyle(Theme.textTertiary)
-                }
-            }
-        } header: {
-            Text("The Notesfile")
-        } footer: {
-            Text("Get on the bus there with a handle like PHISH::HUSSEY and a passkey. No email, no password.")
-        }
     }
 
     // MARK: - About

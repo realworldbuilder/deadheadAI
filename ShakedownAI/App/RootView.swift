@@ -44,8 +44,7 @@ struct RootView: View {
             }
             .task {
                 env.library.dedupAfterSync()
-                await env.authProvider.refresh()
-                await env.sync.syncNow()
+                await validateAppleCredentialIfNeeded()
                 await stageForScreenshotsIfRequested()
                 await runDemoAutoplayIfRequested()
                 await runDemoDownloadIfRequested()
@@ -86,11 +85,15 @@ struct RootView: View {
                 .environment(env.playerEngine)
             }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active {
-                    env.library.dedupAfterSync()
-                    Task { await env.sync.syncNow() }
-                }
+                if phase == .active { env.library.dedupAfterSync() }
             }
+    }
+
+    /// A revoked Apple ID (user removed the app in Settings > Apple ID) signs
+    /// the account out and relocks AI + sync on next launch.
+    private func validateAppleCredentialIfNeeded() async {
+        guard let auth = env.authProvider as? PersistentAuthProvider else { return }
+        await auth.validateAppleCredentialAtLaunch()
     }
 
     private var tabs: some View {
