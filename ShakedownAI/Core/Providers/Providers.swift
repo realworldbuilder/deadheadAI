@@ -35,16 +35,25 @@ protocol AIProvider: AnyObject {
     func curateCollection(brief: CollectionBrief, candidates: [CollectionCandidate]) async throws -> CuratedCollection
 }
 
-nonisolated struct UserAccount: Sendable, Equatable {
-    var displayName: String
-    var appleUserID: String?
+/// Who the phone is signed in as: the notesfile's row for an Apple ID. The
+/// app never shows the handle; it exists so the same shelves come up on the
+/// web. Nothing else — no email, no password.
+nonisolated struct NetheadAccount: Sendable, Equatable, Codable {
+    var id: String
+    var handle: String
+    var firstShow: String?
 }
 
 protocol AuthProvider: AnyObject {
-    var currentAccount: UserAccount? { get }
-    func signInLocally(displayName: String) async throws -> UserAccount
-    func signInWithApple(userID: String, displayName: String) async throws -> UserAccount
+    var currentAccount: NetheadAccount? { get }
+    /// Fetches a fresh nonce from the notesfile and returns the hash to put on
+    /// the Apple request. Nil when this build has no notesfile.
+    func prepareAppleSignIn() async -> String?
+    /// Trades Apple's identity token for the notesfile session.
+    func signInWithApple(identityToken: Data, fullName: PersonNameComponents?) async throws -> NetheadAccount
     func signOut() async
+    /// Re-checks the session at launch; a dead one signs out.
+    func refresh() async
 }
 
 nonisolated struct FriendProfile: Sendable, Identifiable, Hashable {

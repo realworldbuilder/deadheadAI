@@ -18,6 +18,7 @@ struct LibraryScreen: View {
                     SmartShelfSection()
                     playlistsSection
                     collectionsSection
+                    ShelvesSignInNudge()
                     linksSection
                 }
                 .padding(Theme.screenPadding)

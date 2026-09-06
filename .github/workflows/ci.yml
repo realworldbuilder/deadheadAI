@@ -3,13 +3,17 @@ name: CI
 on:
   push:
     branches: [main]
-    # Docs-site and markdown-only pushes shouldn't burn a TestFlight build.
+    # Docs-site, web-notesfile and markdown-only pushes shouldn't burn a TestFlight build.
     paths-ignore:
       - 'docs/**'
+      - 'web/**'
+      - '.github/workflows/web.yml'
       - '**.md'
   pull_request:
     paths-ignore:
       - 'docs/**'
+      - 'web/**'
+      - '.github/workflows/web.yml'
       - '**.md'
   workflow_dispatch:
 

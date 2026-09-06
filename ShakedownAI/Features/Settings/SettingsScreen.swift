@@ -6,7 +6,8 @@ struct SettingsScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var aiActive = KeychainStore.hasUsableKey
     @State private var cacheSize = 0
-    @State private var displayName = ""
+    @State private var nonceHash: String?
+    @State private var signInProblem: String?
     @State private var confirmingClearCache = false
     @State private var confirmingSignOut = false
     @State private var confirmingDeleteDownloads = false
@@ -59,13 +60,10 @@ struct SettingsScreen: View {
                 titleVisibility: .visible
             ) {
                 Button("Sign Out", role: .destructive) {
-                    Task {
-                        await env.authProvider.signOut()
-                        NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
-                    }
+                    Task { await env.authProvider.signOut() }
                 }
             } message: {
-                Text("iCloud syncing stops. Your shelves and journal stay on this device, and the copies already in iCloud stay there too.")
+                Text("Your shelves stay on this phone, and the copy on the web stays there too. Sign in again any time.")
             }
         }
         .tint(Theme.textPrimary)
@@ -74,6 +72,9 @@ struct SettingsScreen: View {
             aiActive = KeychainStore.hasUsableKey
         }
         .task {
+            if env.authProvider.currentAccount == nil {
+                nonceHash = await env.authProvider.prepareAppleSignIn()
+            }
             guard env.catalog.isAvailable else { return }
             let meta = await env.catalog.meta()
             if let shows = meta["show_count"], let generated = meta["generated_at"] {
@@ -103,46 +104,66 @@ struct SettingsScreen: View {
 
     // MARK: - Account
 
-    private var signedInWithApple: Bool {
-        env.authProvider.currentAccount?.appleUserID != nil
-    }
+    private var signedIn: Bool { env.authProvider.currentAccount != nil }
 
     private var accountSection: some View {
         Section {
             HStack(spacing: 12) {
-                Image(systemName: signedInWithApple
-                      ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
+                Image(systemName: signedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle")
                     .font(.title3)
-                    .foregroundStyle(signedInWithApple ? Theme.sage : Theme.textSecondary)
+                    .foregroundStyle(signedIn ? Theme.sage : Theme.textSecondary)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(env.authProvider.currentAccount?.displayName ?? "Not signed in")
+                    Text(signedIn ? "Signed in with Apple" : "Riding along")
                         .font(Theme.body)
                         .foregroundStyle(Theme.textPrimary)
-                    Text(signedInWithApple ? "Signed in with Apple" : "Local, this device only")
+                    Text(signedIn ? syncLine : "Shelves live on this phone only")
                         .font(Theme.footnote)
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
-            if signedInWithApple {
+            if signedIn {
+                Button("Sync now") {
+                    Task { await env.sync.syncNow() }
+                }
+                .disabled(env.sync.status == .syncing)
                 Button("Sign Out", role: .destructive) {
                     confirmingSignOut = true
                 }
-            } else {
+            } else if nonceHash != nil {
                 signInWithAppleRow
+                if let signInProblem {
+                    Text(signInProblem)
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.accent)
+                }
             }
         } header: {
             Text("Account")
         } footer: {
-            Text(signedInWithApple
-                 ? "Your shelves and journal sync to iCloud."
-                 : "Sign in with Apple to keep your shelves and journal in iCloud.")
+            Text(signedIn
+                 ? "Your shelves are the same here and on the web."
+                 : "Sign in with Apple to keep your shelves the same on every device and on the web.")
         }
         .listRowBackground(Theme.surface)
+    }
+
+    private var syncLine: String {
+        switch env.sync.status {
+        case .syncing: return "Syncing your shelves…"
+        case .offline: return "Offline — changes go up when you're back"
+        case .failed(let text): return text
+        case .idle:
+            if let at = env.sync.lastSyncedAt {
+                return "Shelves in step · \(at.formatted(.relative(presentation: .named)))"
+            }
+            return "Shelves follow you"
+        }
     }
 
     private var signInWithAppleRow: some View {
         SignInWithAppleButton(.signIn) { request in
             request.requestedScopes = [.fullName]
+            request.nonce = nonceHash
         } onCompletion: { result in
             if case .success(let auth) = result,
                let credential = auth.credential as? ASAuthorizationAppleIDCredential {
@@ -187,13 +208,18 @@ struct SettingsScreen: View {
     }
 
     private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
-        let fallbackName = displayName.isEmpty ? "Nethead" : displayName
+        guard let token = credential.identityToken else { return }
+        signInProblem = nil
         Task {
-            _ = try? await env.authProvider.signInWithApple(
-                userID: credential.user,
-                displayName: credential.fullName?.givenName ?? fallbackName)
-            // Rebuild the environment so the cloud store reopens with sync on.
-            NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+            do {
+                _ = try await env.authProvider.signInWithApple(identityToken: token, fullName: credential.fullName)
+            } catch NetheadAPIError.offline {
+                signInProblem = "The notesfile didn't answer. Check your connection and try again."
+                nonceHash = await env.authProvider.prepareAppleSignIn()
+            } catch {
+                signInProblem = "Bummer — that sign-in didn't take. Try again."
+                nonceHash = await env.authProvider.prepareAppleSignIn()
+            }
         }
     }
 
