@@ -2,7 +2,7 @@
 
 The Yoast sitemaps list every show URL with the date in the slug, so no
 index crawling: map our catalog dates onto show pages, fetch each page
-once (cached under cache/jgimages/, committed), and parse its galleries.
+once (cached under cache/jgimages/, gitignored), and parse its galleries.
 
 A show page carries two carousels:
   rel="ticket_gallery"  the Ticket Archive — ticket scans and backstage

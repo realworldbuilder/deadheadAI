@@ -1,10 +1,16 @@
-# Raw crawl caches are rebuildable from the network, so they stay out —
-# with two exceptions that are committed forever: cache/setlists/ (the CMU
-# origin is unmaintained) and cache/digests/ (regenerating them costs
-# OpenAI spend; they are the digest source of truth).
+# Raw crawl caches are rebuildable from the network, so most stay out.
+# Committed on purpose: cache/setlists/ (plain-text setlist facts; the CMU
+# origin is unmaintained) and cache/digests/ (the review-digest source of
+# truth — regenerating them needs an OpenAI key, which nobody else should
+# need). cache/jgimages/ pages are verbatim copies of another site and stay
+# out; `make images` refetches them. Only the two derived, URL-only indexes
+# stage 4 needs are kept.
 cache/search/
 cache/metadata/
 cache/tracks/
+cache/jgimages/*
+!cache/jgimages/gallery.json
+!cache/jgimages/index.json
 out/
 __pycache__/
 .pytest_cache/

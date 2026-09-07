@@ -20,8 +20,10 @@ archive.org queries for anything the catalog doesn't know.
 - **jerrygarcia.com** — the Ticket Archive (ticket scans, backstage passes)
   and the poster entries of each show page's Photos carousel (fan venue
   snapshots are skipped). URLs only, hotlinked at runtime — no scan is
-  redistributed. Every show page is cached under `cache/jgimages/`
-  (committed), so `make images` rebuilds `show_images` offline.
+  redistributed. Fetched show pages are cached under `cache/jgimages/`
+  (gitignored — they are verbatim copies of another site); only the two
+  derived, URL-only indexes (`gallery.json`, `index.json`) are committed,
+  which is all `make build` needs. `make images` refetches the pages.
 
 We copy no third-party app's data or code; setlists are facts, ratings math
 and source detection are reimplemented here (see `sourcetype.py`,
@@ -36,7 +38,7 @@ make metadata   # stage 2: per-item metadata, 8 workers @ ~5 req/s (~1h cold, re
 make build      # stage 4: emit out/catalog.sqlite + build report with regression gates
 make tracks     # stage 2b: file lists for the top 4 tapes per show (~7k items, ~30 min cold, resume-safe), then rebuild
 make images     # jerrygarcia.com galleries -> cache/jgimages/gallery.json, then re-embeds (offline)
-make digests    # stage 5: AI review digests (needs OPENAI_API_KEY), then re-embeds
+make digests    # stage 5: AI review digests — optional, maintainers only, needs OPENAI_API_KEY; the output is committed under cache/digests/ so nobody needs the key to build
 make fixture    # small catalog for ShakedownAITests
 make install    # copy out/catalog.sqlite into the app bundle resources
 make test       # pytest over parsers/scorer/detection

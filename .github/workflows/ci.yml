@@ -3,13 +3,17 @@ name: CI
 on:
   push:
     branches: [main]
-    # Docs-site and markdown-only pushes shouldn't burn a TestFlight build.
+    # Docs-site, web-notesfile and markdown-only pushes shouldn't burn a TestFlight build.
     paths-ignore:
       - 'docs/**'
+      - 'web/**'
+      - '.github/workflows/web.yml'
       - '**.md'
   pull_request:
     paths-ignore:
       - 'docs/**'
+      - 'web/**'
+      - '.github/workflows/web.yml'
       - '**.md'
   workflow_dispatch:
 
@@ -97,17 +101,6 @@ jobs:
         run: |
           mkdir -p ~/private_keys
           printf '%s' "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey.p8
-
-      - name: Write bundled OpenAI key
-        if: steps.secrets.outputs.configured == 'true'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [[ -n "$OPENAI_API_KEY" ]]; then
-            printf 'OPENAI_API_KEY = %s\n' "$OPENAI_API_KEY" > Config/Secrets.xcconfig
-          else
-            echo "::warning::OPENAI_API_KEY secret not set — build ships without a bundled key (offline brain / user-supplied key only)."
-          fi
 
       # The archive MUST be signed: an unsigned archive exports into a
       # TestFlight build that iOS kills at launch (black screen, no crash

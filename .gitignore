@@ -26,7 +26,8 @@ xcuserdata/
 *.p12
 *.mobileprovision
 
-# Machine-local secrets (API keys) — never commit
-Config/Secrets.xcconfig
 shot1.png
 build-device-rel/
+
+# Claude desktop app worktrees
+.claude/worktrees/

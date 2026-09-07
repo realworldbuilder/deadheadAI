@@ -235,7 +235,7 @@ nonisolated struct SmartCollection: Codable, Hashable, Identifiable, Sendable {
     var items: [SmartCollectionItem]
     var generatedAt: Date
     var contextKey: String
-    /// Which brain named it — "OpenAI" or "Offline Brain".
+    /// Which brain named it — "On-device" or "Offline Brain".
     var curatedBy: String
 
     var id: String { slotID }

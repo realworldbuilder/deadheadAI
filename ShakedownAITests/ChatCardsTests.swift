@@ -134,7 +134,7 @@ struct ChatCardsTests {
         var audience = MockData.cornell
         audience.identifier = "gd77-05-08.aud.other"
         audience.avgRating = 3.0
-        let nights = OpenAIResponsesAI.bestTapePerNight([audience, MockData.veneta, MockData.cornell])
+        let nights = RecordingRanker.bestTapePerNight([audience, MockData.veneta, MockData.cornell])
         #expect(nights.map(\.dateString) == ["1977-05-08", "1972-08-27"] || nights.map(\.dateString) == ["1972-08-27", "1977-05-08"])
         #expect(nights.count == 2)
         #expect(nights.contains { $0.identifier == MockData.cornell.identifier })

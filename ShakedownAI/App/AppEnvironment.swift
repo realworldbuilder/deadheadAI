@@ -72,8 +72,6 @@ final class AppEnvironment {
         let catalog = CatalogStore()
         let kb = KnowledgeBase.loadFromBundle()
         let downloads = DownloadManager(container: container)
-        // Shared by the UI and the chat's tools, so the tape the model
-        // "verified" is the same one the reply's card resolves to.
         let recordingProvider = CatalogFirstShowProvider(catalog: catalog, fallback: archive)
         let environment = AppEnvironment(
             modelContainer: container,
@@ -84,7 +82,7 @@ final class AppEnvironment {
             metadataProvider: archive,
             streamingProvider: OfflineFirstStreamingProvider(store: downloads.store,
                                                             fallback: ArchiveStreamingProvider()),
-            aiProvider: CompositeAIProvider(knowledgeBase: kb, recordingProvider: recordingProvider),
+            aiProvider: CompositeAIProvider(knowledgeBase: kb),
             authProvider: PersistentAuthProvider()
         )
         downloads.reconcileOnLaunch()

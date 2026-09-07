@@ -93,17 +93,13 @@ All three live on GitHub Pages (`docs/` on main → https://realworldbuilder.git
 
 ## 4. App Privacy (Data Collection questionnaire)
 
-The app has no backend and no analytics. The only data that leaves the device is the text of AI chats/searches, which goes to OpenAI's API to generate responses. Sign-in name and Apple user ID never leave the device (the auth layer is local).
+The app has no backend and no analytics. Nothing leaves the device for AI: on iOS 26 Apple's on-device model answers, everywhere else the built-in knowledge base does. Sign-in name and Apple user ID never leave the device (the auth layer is local). The only network traffic is to archive.org for the tapes and, when signed in, the user's own iCloud for sync.
 
 Declare:
 
-- **User Content → Other User Content** (the text of chat messages and AI searches)
-  - Used for: **App Functionality**
-  - Linked to identity: **No** (requests carry no user identifier)
-  - Used for tracking: **No**
-- Everything else: **not collected** (on-device only doesn't count as collection).
+- Everything: **not collected** (on-device only doesn't count as collection, and CloudKit private-database sync is the user's own iCloud).
 
-Result: privacy label shows "Data Not Linked to You — User Content."
+Result: privacy label shows "Data Not Collected."
 
 ## 5. Age rating questionnaire
 
@@ -126,7 +122,7 @@ App Store Connect asks whether the app contains, shows, or accesses third-party 
 ```
 Nethead is a client for the Internet Archive's Grateful Dead collection (archive.org/details/GratefulDead). All audio streams directly from archive.org; the app hosts and stores no recordings. The Grateful Dead have permitted audience taping and free trading of their live recordings since the 1970s, and the Internet Archive hosts this collection publicly in cooperation with the band's representatives — the Archive enforces the streaming rules per recording. The app is an independent project, clearly disclaimed as unaffiliated in the description.
 
-SIGN-IN IS OPTIONAL. No demo account is needed. Tap "Hop on the Bus" on the welcome screen for full access to every feature without any account. Sign in with Apple only unlocks the hosted AI mode (server-generated prose via OpenAI); without it, recommendations, search, show guides, and journeys run on the app's built-in offline knowledge base.
+SIGN-IN IS OPTIONAL. No demo account is needed. Tap "Hop on the Bus" on the welcome screen for full access to every feature without any account. Sign in with Apple only turns on iCloud sync of shelves and journal entries. AI runs on the device either way: Apple's on-device model on iOS 26, the app's built-in offline knowledge base everywhere else.
 
 AI content: chat and recommendations are grounded — the AI only recommends real recordings from the Archive and quotes real setlists. It has no web access and is scoped to Grateful Dead history and music.
 
@@ -165,8 +161,7 @@ xcrun simctl io booted screenshot shot1.png
 
 - [ ] **CloudKit schema deployed to Production** (CloudKit Console → `iCloud.com.deadhead.ai` → Deploy Schema Changes). TestFlight/App Store builds use the Production environment; without this, sync silently fails. Redo after any synced-model change.
 - [ ] Latest TestFlight build finished processing and is selectable
-- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm Settings shows "Nethead AI connected"; also confirm "Hop on the Bus" alone leaves the offline brain active
-- [ ] OpenAI spending limit set (the bundled key ships in the binary — treat as semi-public)
+- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm shelves sync; confirm Settings → The Brain reads "On-device brain running" on an Apple Intelligence phone and "Offline brain active" elsewhere
 - [ ] Privacy policy URL live and pasted in
 - [ ] Support URL pasted in
 - [ ] Screenshots uploaded (6.9" set)

@@ -229,4 +229,12 @@ nonisolated enum RecordingRanker {
             return a.identifier < b.identifier
         }
     }
+
+    /// Archive searches return tapes, not nights, so the same show can appear
+    /// several times. Keep the ranker's order and the first (best) tape of
+    /// each date — the brain recommends nights, and the card resolves the tape.
+    static func bestTapePerNight(_ shows: [Show]) -> [Show] {
+        var seen = Set<String>()
+        return rank(shows).filter { seen.insert($0.dateString ?? $0.identifier).inserted }
+    }
 }

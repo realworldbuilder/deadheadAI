@@ -1,7 +1,7 @@
 import Foundation
 
 /// Deterministic, offline AI provider built on the bundled knowledge base.
-/// The whole app works with this alone; an OpenAI key only upgrades the prose.
+/// The whole app works with this alone; Apple's on-device model only upgrades the prose.
 final class LocalKnowledgeAI: AIProvider {
     let name = "Offline Brain"
     private let kb: KnowledgeBase
@@ -37,7 +37,8 @@ final class LocalKnowledgeAI: AIProvider {
     }
 
     nonisolated static func years(inQuery query: String) -> ClosedRange<Int>? {
-        let lower = query.lowercased()
+        // The iPhone keyboard curls apostrophes, so "’73" has to read as '73.
+        let lower = query.lowercased().replacingOccurrences(of: "\u{2019}", with: "'")
         // Full years: 1965...1995
         let fullYears = lower.matches(of: /19[6-9][0-9]/).compactMap { Int($0.output) }
             .filter { (1965...1995).contains($0) }
@@ -93,6 +94,40 @@ final class LocalKnowledgeAI: AIProvider {
         return kb.songs
             .filter { needle.contains($0.key) }
             .max { $0.key.count < $1.key.count }
+    }
+
+    /// Song titles that are also plain English — "big deal", "a ripple of
+    /// applause", "he's gone home". Any of these inside a question that also
+    /// names a year or an era is taken as idiom, not the song, unless the head
+    /// wrote it the way a title gets written (see `isClearSubject`).
+    nonisolated static let everydayTitles: Set<String> = [
+        "deal", "ripple", "caution", "the wheel", "he's gone", "good lovin'", "touch of grey",
+    ]
+
+    /// True when the question names a year ('73, 1973, the 70s) or an era,
+    /// which makes it an era/year question before it is anything else.
+    nonisolated static func mentionsYearOrEra(_ question: String, kb: KnowledgeBase) -> Bool {
+        if years(inQuery: question) != nil { return true }
+        let lower = question.lowercased()
+        if lower.contains("wall of sound") { return true }
+        return kb.eras.contains { lower.contains($0.name.lowercased()) || lower.contains($0.id) }
+    }
+
+    /// Is the song what the question is about? Distinctive titles ("Dark Star")
+    /// always are. An everyday-word title only counts as the song when it is
+    /// written as a title — capitalised somewhere past the first word, where
+    /// the keyboard would not have capitalised it for you ("Best Deal for a
+    /// first-timer?" yes, "the big deal about '73" no).
+    nonisolated static func isClearSubject(_ song: SongInfo, in question: String) -> Bool {
+        guard everydayTitles.contains(song.key) else { return true }
+        let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        var from = text.startIndex
+        while from < text.endIndex,
+              let range = text.range(of: song.title, options: .caseInsensitive, range: from..<text.endIndex) {
+            if range.lowerBound != text.startIndex, text[range].first?.isUppercase == true { return true }
+            from = range.upperBound
+        }
+        return false
     }
 
     // MARK: - Recommendation
@@ -288,8 +323,13 @@ final class LocalKnowledgeAI: AIProvider {
         let lower = question.lowercased()
         var out: [String] = []
 
-        // Song question?
-        if let song = kb.song(matching: question) ?? Self.songMention(in: question, kb: kb) {
+        // Song question? A year or era in the question takes precedence over a
+        // song title that doubles as everyday English ("What's the big deal
+        // about '73?" is about 1973, not Deal) — unless the title is plainly
+        // the subject.
+        let namesYearOrEra = Self.mentionsYearOrEra(question, kb: kb)
+        if let song = kb.song(matching: question) ?? Self.songMention(in: question, kb: kb),
+           !namesYearOrEra || Self.isClearSubject(song, in: question) {
             out.append("\(ChatLink.song(song.key, label: song.title)). Good call.")
             out.append(song.evolution)
             // One show per line: the chat renders each as a card carrying
@@ -310,12 +350,20 @@ final class LocalKnowledgeAI: AIProvider {
             return out
         }
 
-        // Era / year question?
+        // Era / year question? A single year leads with that year and picks
+        // its own nights first; a span or a decade speaks for the era.
         if let years = Self.years(inQuery: question), let era = kb.era(forYear: years.lowerBound) {
-            out.append("\(ChatLink.era(era.id, label: era.name)) — \(era.years).")
+            let year = years.count == 1 ? years.lowerBound : nil
+            if let year {
+                out.append("\(year) sits in \(ChatLink.era(era.id, label: era.name)) (\(era.years)).")
+            } else {
+                out.append("\(ChatLink.era(era.id, label: era.name)) — \(era.years).")
+            }
             out.append(era.summary)
             out.append(era.context)
-            let picks = kb.shows(inEra: era.id).prefix(3)
+            var picks = year.map { y in kb.notableShows.filter { $0.year == y } } ?? []
+            if picks.isEmpty { picks = kb.shows(inEra: era.id) }
+            picks = Array(picks.prefix(3))
             if !picks.isEmpty {
                 out.append("Start with these:\n" + picks.map { "\(Self.showLink($0.date, kb: kb)) — \($0.blurb)" }.joined(separator: "\n") + "\n")
             }
@@ -392,8 +440,8 @@ final class LocalKnowledgeAI: AIProvider {
 }
 
 nonisolated enum AIError: Error {
-    case missingKey
-    case rateLimited
+    /// The on-device model can't answer right now (off, downloading, or unsupported hardware).
+    case unavailable
     case badResponse
     case noCandidates
 }

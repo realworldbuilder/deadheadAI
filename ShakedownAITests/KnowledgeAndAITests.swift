@@ -138,6 +138,61 @@ struct LocalKnowledgeAITests {
         for try await chunk in stream { reply += chunk }
         #expect(reply.count > 100)
     }
+
+    private func chat(_ question: String) async throws -> String {
+        let stream = try await ai.chatReply(messages: [ChatTurn(role: .user, text: question)], grounding: .empty)
+        var reply = ""
+        for try await chunk in stream { reply += chunk }
+        return reply
+    }
+
+    // The starter chip "What's the big deal about '73?" is about 1973, not Deal.
+    @Test func yearOutranksAnEverydayWordSongTitle() async throws {
+        let reply = try await chat("What's the big deal about '73?")
+        #expect(reply.contains("1973"))
+        #expect(reply.contains("[[era:europe-wall|"))
+        #expect(!reply.contains("[[song:deal|"))
+        // A single year leads with its own nights.
+        #expect(reply.contains("[[show:1973-11-11|"))
+    }
+
+    @Test func everydayWordTitleStaysTheSongWithNoYear() async throws {
+        let reply = try await chat("Best Deal for a first-timer?")
+        #expect(reply.contains("[[song:deal|Deal]]"))
+        #expect(!reply.contains("[[era:"))
+    }
+
+    @Test func capitalisedEverydayTitleIsTheSongEvenWithAYear() async throws {
+        let reply = try await chat("What's the best Deal from '77?")
+        #expect(reply.contains("[[song:deal|Deal]]"))
+    }
+
+    @Test func distinctiveSongTitleWinsEvenWithAYear() async throws {
+        let reply = try await chat("Best Dark Star from '72?")
+        #expect(reply.contains("[[song:dark star|"))
+    }
+
+    @Test func decadeAndEraNameOutrankEverydayTitles() async throws {
+        #expect(try await chat("Was the 70s a big deal?").contains("[[era:"))
+        #expect(try await chat("No big deal, but where do I start with Brent?").contains("[[era:brent|"))
+        #expect(!(try await chat("No big deal, but where do I start with Brent?")).contains("[[song:deal|"))
+    }
+
+    @Test func curlyApostropheStillReadsAsAShorthandYear() {
+        #expect(LocalKnowledgeAI.years(inQuery: "What\u{2019}s the big deal about \u{2019}73?") == 1973...1973)
+    }
+
+    @Test func clearSubjectHeuristic() throws {
+        let deal = try #require(kb.song(forKey: "deal"))
+        let darkStar = try #require(kb.song(forKey: "dark star"))
+        #expect(LocalKnowledgeAI.isClearSubject(darkStar, in: "any old dark star from '72"))
+        #expect(LocalKnowledgeAI.isClearSubject(deal, in: "Best Deal for a first-timer?"))
+        #expect(!LocalKnowledgeAI.isClearSubject(deal, in: "What's the big deal about '73?"))
+        // Sentence-start capitals are the keyboard's doing, not the head's.
+        #expect(!LocalKnowledgeAI.isClearSubject(deal, in: "Deal with '73 first?"))
+        #expect(LocalKnowledgeAI.mentionsYearOrEra("the big deal about '73", kb: kb))
+        #expect(!LocalKnowledgeAI.mentionsYearOrEra("Best Deal for a first-timer?", kb: kb))
+    }
 }
 
 // MARK: - Taste engine

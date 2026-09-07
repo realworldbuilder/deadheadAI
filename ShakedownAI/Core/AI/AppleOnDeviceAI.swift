@@ -53,7 +53,7 @@ import FoundationModels
 
 /// Apple's on-device foundation model as an `AIProvider`. Free forever, works
 /// offline, needs no key and no account — but it is a ~3B model with a small
-/// context window, so every prompt here is tighter than the OpenAI equivalent
+/// context window, so every prompt here is tighter than a server model's would be
 /// and the model picks candidates *by number* rather than reproducing archive
 /// identifiers verbatim, which small models get wrong.
 ///
@@ -106,11 +106,11 @@ final class AppleOnDeviceAI: AIProvider {
     }
 
     func recommend(query: String?, profile: TasteSnapshot, candidates: [Show]) async throws -> Recommendation {
-        guard Self.isReady else { throw AIError.missingKey }
+        guard Self.isReady else { throw AIError.unavailable }
         guard !candidates.isEmpty else { throw AIError.noCandidates }
 
         // The context window is ~4k tokens for prompt *and* output, so we offer
-        // far fewer candidates than the OpenAI path's 15.
+        // only a handful of candidates.
         let offered = Array(candidates.prefix(8))
         // Songs are listed per candidate so the model has a real vocabulary to
         // draw `listenFor` from. Without it a 3B model invents song titles.
@@ -188,7 +188,7 @@ final class AppleOnDeviceAI: AIProvider {
     }
 
     func showGuide(for detail: RecordingDetail, show: Show?) async throws -> ShowGuide {
-        guard Self.isReady else { throw AIError.missingKey }
+        guard Self.isReady else { throw AIError.unavailable }
 
         let setlist = detail.tracks.map(\.title).prefix(30).joined(separator: ", ")
         let review = detail.reviews.prefix(2).compactMap(\.body).map { String($0.prefix(200)) }
@@ -255,7 +255,7 @@ final class AppleOnDeviceAI: AIProvider {
     }
 
     func parseSearchIntent(_ text: String) async throws -> SearchFilters {
-        guard Self.isReady else { throw AIError.missingKey }
+        guard Self.isReady else { throw AIError.unavailable }
 
         let prompt = """
         Extract search filters from this request. Leave a field empty when the \
@@ -306,7 +306,7 @@ final class AppleOnDeviceAI: AIProvider {
     }
 
     func curateCollection(brief: CollectionBrief, candidates: [CollectionCandidate]) async throws -> CuratedCollection {
-        guard Self.isReady else { throw AIError.missingKey }
+        guard Self.isReady else { throw AIError.unavailable }
         guard !candidates.isEmpty else { throw AIError.noCandidates }
 
         let offered = Array(candidates.prefix(10))
@@ -356,7 +356,7 @@ final class AppleOnDeviceAI: AIProvider {
     // MARK: - Chat
 
     func chatReply(messages: [ChatTurn], grounding: GroundingContext) async throws -> AsyncThrowingStream<String, any Error> {
-        guard Self.isReady else { throw AIError.missingKey }
+        guard Self.isReady else { throw AIError.unavailable }
 
         var context: [String] = []
         if let nowPlaying = grounding.nowPlaying { context.append("Now playing: \(nowPlaying)") }
@@ -368,7 +368,7 @@ final class AppleOnDeviceAI: AIProvider {
             context.append("Notes: " + grounding.knowledgeSnippets.prefix(2).joined(separator: " "))
         }
 
-        // Six turns rather than the OpenAI path's twelve — the window is small
+        // Only the last six turns — the window is small
         // and the tool schemas already cost tokens.
         let transcript = messages.suffix(6)
             .map { "\($0.role == .user ? "Listener" : "You"): \($0.text.prefix(400))" }
@@ -431,8 +431,8 @@ final class AppleOnDeviceAI: AIProvider {
 
 // MARK: - Tools
 
-/// Same three capabilities the OpenAI chat path exposes, expressed as the
-/// framework's `Tool` protocol so the session drives the loop itself.
+/// The chat's three capabilities — search, song lookup, best tape for a date —
+/// expressed as the framework's `Tool` protocol so the session drives the loop itself.
 @available(iOS 26.0, *)
 nonisolated struct SearchArchiveTool: Tool {
     let name = "search_archive"
