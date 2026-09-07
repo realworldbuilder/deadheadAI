@@ -146,16 +146,12 @@ final class MockAIProvider: AIProvider {
 // MARK: - Auth mock
 
 final class MockAuthProvider: AuthProvider {
-    private(set) var currentAccount: UserAccount?
+    private(set) var currentAccount: NetheadAccount?
 
-    func signInLocally(displayName: String) async throws -> UserAccount {
-        let account = UserAccount(displayName: displayName, appleUserID: nil)
-        currentAccount = account
-        return account
-    }
+    func prepareAppleSignIn() async -> String? { "mock-nonce" }
 
-    func signInWithApple(userID: String, displayName: String) async throws -> UserAccount {
-        let account = UserAccount(displayName: displayName, appleUserID: userID)
+    func signInWithApple(identityToken: Data, fullName: PersonNameComponents?) async throws -> NetheadAccount {
+        let account = NetheadAccount(id: "mock-head", handle: "BUS::TEST", firstShow: "1977-05-08")
         currentAccount = account
         return account
     }
@@ -163,6 +159,8 @@ final class MockAuthProvider: AuthProvider {
     func signOut() async {
         currentAccount = nil
     }
+
+    func refresh() async {}
 }
 
 // MARK: - Catalog mock

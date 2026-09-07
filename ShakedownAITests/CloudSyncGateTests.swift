@@ -235,47 +235,134 @@ struct LibraryDedupTests {
     }
 }
 
-// MARK: - Persistent auth
+// MARK: - The notesfile account
 
-struct PersistentAuthProviderTests {
-    private func makeDefaults() throws -> (UserDefaults, String) {
+/// Answers the notesfile's few calls from memory, so the provider can be
+/// exercised with no network and no Apple.
+nonisolated final class NotesfileStubProtocol: URLProtocol {
+    nonisolated(unsafe) static var meStatus = 200
+    nonisolated(unsafe) static var lastApplePayload: [String: Any] = [:]
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func stopLoading() {}
+
+    override func startLoading() {
+        let path = request.url?.path ?? ""
+        var status = 200
+        var body = "{}"
+        switch path {
+        case "/api/apple/nonce":
+            body = #"{"nonce":"raw-nonce-123"}"#
+        case "/api/apple":
+            if let data = request.httpBody ?? request.httpBodyStream.map({ stream -> Data in
+                stream.open(); defer { stream.close() }
+                var out = Data(); let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096); defer { buffer.deallocate() }
+                while stream.hasBytesAvailable { let n = stream.read(buffer, maxLength: 4096); if n <= 0 { break }; out.append(buffer, count: n) }
+                return out
+            }), let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                Self.lastApplePayload = json
+            }
+            body = #"{"token":"tok-123","head":{"id":"H1","handle":"BUS::WILL","firstShow":null}}"#
+        case "/api/me":
+            status = Self.meStatus
+            body = status == 200 ? #"{"head":{"id":"H1","handle":"BUS::WILL","firstShow":null},"cursor":4}"# : #"{"error":"Not signed in."}"#
+        case "/api/signout":
+            status = 204
+            body = ""
+        default:
+            status = 404
+            body = #"{"error":"nope"}"#
+        }
+        let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil,
+                                       headerFields: ["Content-Type": "application/json"])!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data(body.utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+}
+
+struct NetheadAuthProviderTests {
+    private func make() throws -> (NetheadAuthProvider, UserDefaults, String, InMemorySecretStore) {
         let suite = "auth-test-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        return (defaults, suite)
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [NotesfileStubProtocol.self]
+        let secrets = InMemorySecretStore()
+        let api = try #require(NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
+                                                session: URLSession(configuration: config), secrets: secrets))
+        return (NetheadAuthProvider(api: api, defaults: defaults), defaults, suite, secrets)
     }
 
-    @Test func appleAccountSurvivesRelaunch() async throws {
-        let (defaults, suite) = try makeDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        let first = PersistentAuthProvider(defaults: defaults)
-        _ = try await first.signInWithApple(userID: "apple-123", displayName: "Jerry")
-
-        let second = PersistentAuthProvider(defaults: defaults)
-        #expect(second.currentAccount == UserAccount(displayName: "Jerry", appleUserID: "apple-123"))
-        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == "apple-123")
+    private func signIn(_ provider: NetheadAuthProvider) async throws -> NetheadAccount {
+        let hash = await provider.prepareAppleSignIn()
+        #expect(hash == NetheadAuthProvider.sha256Hex("raw-nonce-123"))
+        var name = PersonNameComponents()
+        name.givenName = "Will"
+        return try await provider.signInWithApple(identityToken: Data("apple-jwt".utf8), fullName: name)
     }
 
-    @Test func localAccountDoesNotEnableSync() async throws {
-        let (defaults, suite) = try makeDefaults()
+    @Test func appleSignInRemembersTheAccountAndTheToken() async throws {
+        let (provider, defaults, suite, secrets) = try make()
         defer { defaults.removePersistentDomain(forName: suite) }
-
-        let provider = PersistentAuthProvider(defaults: defaults)
-        _ = try await provider.signInLocally(displayName: "Deadhead")
-
-        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == nil)
-        #expect(PersistentAuthProvider(defaults: defaults).currentAccount?.displayName == "Deadhead")
-    }
-
-    @Test func signOutClearsAccount() async throws {
-        let (defaults, suite) = try makeDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        let provider = PersistentAuthProvider(defaults: defaults)
-        _ = try await provider.signInWithApple(userID: "apple-123", displayName: "Jerry")
-        await provider.signOut()
-
         #expect(provider.currentAccount == nil)
-        #expect(PersistentAuthProvider.persistedAppleUserID(in: defaults) == nil)
+        let account = try await signIn(provider)
+        #expect(account.handle == "BUS::WILL")
+        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == "tok-123")
+        // the raw nonce and the name went up with Apple's token
+        #expect(NotesfileStubProtocol.lastApplePayload["nonce"] as? String == "raw-nonce-123")
+        #expect(NotesfileStubProtocol.lastApplePayload["identityToken"] as? String == "apple-jwt")
+        #expect(NotesfileStubProtocol.lastApplePayload["name"] as? String == "Will")
+        // a relaunch with the same defaults and Keychain still knows the head
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [NotesfileStubProtocol.self]
+        let again = NetheadAuthProvider(api: NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
+                                                              session: URLSession(configuration: config), secrets: secrets),
+                                        defaults: defaults)
+        #expect(again.currentAccount == account)
+        // no token means no account, whatever the defaults say
+        let bare = NetheadAuthProvider(api: NetheadAPIClient(baseURL: URL(string: "https://nethead.test")!,
+                                                             session: URLSession(configuration: config), secrets: InMemorySecretStore()),
+                                       defaults: defaults)
+        #expect(bare.currentAccount == nil)
+    }
+
+    @Test func signingInWithoutANonceFails() async throws {
+        let (provider, defaults, suite, _) = try make()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        await #expect(throws: NetheadAPIError.self) {
+            _ = try await provider.signInWithApple(identityToken: Data("apple-jwt".utf8), fullName: nil)
+        }
+    }
+
+    @Test func signOutForgetsEverything() async throws {
+        let (provider, defaults, suite, secrets) = try make()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        _ = try await signIn(provider)
+        await provider.signOut()
+        #expect(provider.currentAccount == nil)
+        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == nil)
+        #expect(NetheadAuthProvider.persistedAccount(in: defaults) == nil)
+    }
+
+    @Test func aDeadSessionSignsOutOnRefresh() async throws {
+        let (provider, defaults, suite, _) = try make()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        _ = try await signIn(provider)
+        NotesfileStubProtocol.meStatus = 200
+        await provider.refresh()
+        #expect(provider.currentAccount?.handle == "BUS::WILL")
+        NotesfileStubProtocol.meStatus = 401
+        await provider.refresh()
+        NotesfileStubProtocol.meStatus = 200
+        #expect(provider.currentAccount == nil)
+    }
+
+    @Test func noNotesfileMeansNoAppleButton() async throws {
+        let suite = "auth-test-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let provider = NetheadAuthProvider(api: nil, defaults: defaults)
+        #expect(await provider.prepareAppleSignIn() == nil)
     }
 }

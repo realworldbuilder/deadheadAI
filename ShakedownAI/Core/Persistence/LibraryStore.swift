@@ -1,13 +1,28 @@
 import Foundation
 import SwiftData
 
-/// Collections + journal, MainActor-only.
+/// Collections + journal, MainActor-only. Shelf edits stamp `updatedAt`,
+/// mark the row `needsPush`, and tell the sync engine; shelf deletes leave a
+/// tombstone so the notesfile hears about it.
 @Observable
 final class LibraryStore {
     private let context: ModelContext
+    /// Called after every save that changed a shelf (debounced by the sync engine).
+    var onMutation: (() -> Void)?
 
     init(container: ModelContainer) {
         self.context = container.mainContext
+    }
+
+    private func touch(_ collection: ShowCollection) { collection.updatedAt = .now; collection.needsPush = true }
+
+    private func tombstone(_ id: UUID, kind: String, parent: UUID? = nil) {
+        context.insert(SyncTombstone(id: id, kind: kind, parentID: parent))
+    }
+
+    private func saveAndNotify() {
+        try? context.save()
+        onMutation?()
     }
 
     // MARK: - Collections
@@ -21,13 +36,15 @@ final class LibraryStore {
     func createCollection(name: String, blurb: String = "", iconName: String = "sparkles") -> ShowCollection {
         let collection = ShowCollection(name: name, blurb: blurb, iconName: iconName)
         context.insert(collection)
-        try? context.save()
+        saveAndNotify()
         return collection
     }
 
     func deleteCollection(_ collection: ShowCollection) {
+        for item in collection.items ?? [] { tombstone(item.id, kind: "shelfItem", parent: collection.id) }
+        tombstone(collection.id, kind: "shelf")
         context.delete(collection)
-        try? context.save()
+        saveAndNotify()
     }
 
     func add(show: Show, to collection: ShowCollection) {
@@ -39,12 +56,15 @@ final class LibraryStore {
                                   sortIndex: existing.count)
         item.collection = collection
         context.insert(item)
-        try? context.save()
+        touch(collection)
+        saveAndNotify()
     }
 
     func remove(item: CollectionItem) {
+        if let collection = item.collection { touch(collection) }
+        tombstone(item.id, kind: "shelfItem", parent: item.collection?.id)
         context.delete(item)
-        try? context.save()
+        saveAndNotify()
     }
 
     // MARK: - Playlists

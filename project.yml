@@ -45,6 +45,8 @@ targets:
         CFBundleIconName: AppIcon
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
+        # The notesfile (RDVAX::GRATEFUL on the web): accounts, shelves, notes.
+        NetheadURL: https://nethead.nethead-web.workers.dev
     settings:
       base:
         # Upstream's App Store Connect record: frozen for the shipping app.

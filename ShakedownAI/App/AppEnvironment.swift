@@ -6,8 +6,8 @@ import SwiftData
 @Observable
 final class AppEnvironment {
     /// The environment the running app is using — the hook for entry points
-    /// SwiftUI doesn't own (App Intents, the CarPlay scene). Rebuilt on auth
-    /// changes, so hold it weakly and read it fresh at each use.
+    /// SwiftUI doesn't own (App Intents, the CarPlay scene). Held weakly and
+    /// read fresh at each use.
     private(set) static weak var current: AppEnvironment?
     let modelContainer: ModelContainer
     let cache: CacheStore
@@ -19,6 +19,9 @@ final class AppEnvironment {
     let playerEngine: PlayerEngine
     let knowledgeBase: KnowledgeBase
     let catalog: any ShowCatalog
+    /// The notesfile, when this build knows where it lives (Info.plist `NetheadURL`).
+    let api: NetheadAPIClient?
+    let sync: SyncEngine
 
     let recordingProvider: any LiveRecordingProvider
     let metadataProvider: any MetadataProvider
@@ -36,7 +39,9 @@ final class AppEnvironment {
          streamingProvider: any StreamingProvider,
          aiProvider: any AIProvider,
          authProvider: any AuthProvider,
-         socialProvider: any SocialProvider = MockSocialProvider()) {
+         socialProvider: any SocialProvider = MockSocialProvider(),
+         api: NetheadAPIClient? = nil,
+         syncTransport: any SyncTransport = NoSyncTransport()) {
         self.modelContainer = modelContainer
         self.knowledgeBase = knowledgeBase
         self.catalog = catalog
@@ -53,20 +58,25 @@ final class AppEnvironment {
         self.aiProvider = aiProvider
         self.authProvider = authProvider
         self.socialProvider = socialProvider
+        self.api = api
+        self.sync = SyncEngine(container: modelContainer, library: library, transport: syncTransport, auth: authProvider)
 
         Self.current = self
         history.loadTasteProfile()
         playerEngine.onListeningEvent = { [weak history] show, track, seconds, completed in
             history?.record(show: show, track: track, seconds: seconds, completed: completed)
         }
+        // Shelf edits go up to the notesfile a few seconds after they land.
+        library.onMutation = { [weak sync] in sync?.scheduleAfterMutation() }
     }
 
     static func live() -> AppEnvironment {
         CloudStoreMigrator.migrateIfNeeded()
-        // Apple sign-in is the key to iCloud sync; without it the cloud store
-        // opens local-only (same file, so nothing moves when sync flips on).
-        let cloudSync = PersistentAuthProvider.persistedAppleUserID() != nil
-        let container = ModelContainerFactory.make(cloudSync: cloudSync)
+        // Shelves follow a signed-in head through the notesfile now; the old
+        // cloud store opens local-only (same file, nothing moves).
+        let container = ModelContainerFactory.make(cloudSync: false)
+        SyncSchemaBackfill.runIfNeeded(container: container)
+        let api = NetheadAPIClient()
         let cache = CacheStore(container: container)
         let archive = ArchiveShowProvider(cache: cache)
         let catalog = CatalogStore()
@@ -83,7 +93,9 @@ final class AppEnvironment {
             streamingProvider: OfflineFirstStreamingProvider(store: downloads.store,
                                                             fallback: ArchiveStreamingProvider()),
             aiProvider: CompositeAIProvider(knowledgeBase: kb),
-            authProvider: PersistentAuthProvider()
+            authProvider: NetheadAuthProvider(api: api),
+            api: api,
+            syncTransport: api ?? NoSyncTransport()
         )
         downloads.reconcileOnLaunch()
         return environment

@@ -1,15 +1,15 @@
 import AuthenticationServices
 import SwiftUI
 
-/// First-launch welcome. Local account by default; the Sign in with Apple
-/// button is present behind the AuthProvider seam (full flow needs a signed
-/// build, so the local path is primary in this build).
+/// First-launch welcome. Ride along with everything on this phone, or sign
+/// in with Apple so your shelves are the same here and on the web. Unsigned
+/// simulator builds can't finish the Apple flow and just ride along.
 struct OnboardingSheet: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    @AppStorage("displayName") private var storedName = ""
-    @State private var name = ""
+    @State private var nonceHash: String?
+    @State private var problem: String?
 
     var body: some View {
         VStack(spacing: 22) {
@@ -36,39 +36,37 @@ struct OnboardingSheet: View {
 
             Spacer()
 
-            TextField("What should we call you?", text: $name)
-                .font(Theme.body)
-                .multilineTextAlignment(.center)
-                .padding(12)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.stroke))
-
-            Button("Get on the Bus") {
-                finish(with: name.isEmpty ? "Nethead" : name)
+            if let problem {
+                Text(problem)
+                    .font(Theme.footnote)
+                    .foregroundStyle(Theme.accent)
+                    .multilineTextAlignment(.center)
             }
-            .buttonStyle(.primary(fullWidth: true))
 
             SignInWithAppleButton(.signIn) { request in
                 request.requestedScopes = [.fullName]
+                request.nonce = nonceHash
             } onCompletion: { result in
                 switch result {
                 case .success(let auth):
-                    guard let credential = auth.credential as? ASAuthorizationAppleIDCredential else {
-                        finish(with: name.isEmpty ? "Nethead" : name)
-                        return
-                    }
+                    guard let credential = auth.credential as? ASAuthorizationAppleIDCredential else { return }
                     finishWithApple(credential: credential)
                 case .failure:
-                    // Unsigned simulator builds can't complete the Apple
-                    // flow; fall back to the local account.
-                    finish(with: name.isEmpty ? "Nethead" : name)
+                    // Cancelled, or an unsigned simulator build: nothing to do.
+                    break
                 }
             }
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
             .frame(height: 44)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .disabled(nonceHash == nil)
 
-            Text("Sign in with Apple to keep your shelves and journal in iCloud. Or skip it — everything stays on this device.")
+            Button("Just ride along") {
+                dismiss()
+            }
+            .buttonStyle(.secondary)
+
+            Text("Sign in with Apple to keep your shelves the same here and on the web. Or ride along — everything stays on this phone, and you can sign in later from Settings.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
@@ -77,6 +75,7 @@ struct OnboardingSheet: View {
         .background(Theme.background)
         .presentationBackground(Theme.background)
         .interactiveDismissDisabled()
+        .task { nonceHash = await env.authProvider.prepareAppleSignIn() }
     }
 
     private func onboardRow(icon: String, text: String) -> some View {
@@ -90,25 +89,19 @@ struct OnboardingSheet: View {
         }
     }
 
-    private func finish(with chosenName: String) {
-        storedName = chosenName
-        Task {
-            _ = try? await env.authProvider.signInLocally(displayName: chosenName)
-            dismiss()
-        }
-    }
-
     private func finishWithApple(credential: ASAuthorizationAppleIDCredential) {
-        let chosenName = name.isEmpty
-            ? (credential.fullName?.givenName ?? "Nethead")
-            : name
-        storedName = chosenName
+        guard let token = credential.identityToken else { return }
         Task {
-            _ = try? await env.authProvider.signInWithApple(userID: credential.user,
-                                                           displayName: chosenName)
-            dismiss()
-            // Rebuild the environment so the cloud store reopens with sync on.
-            NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+            do {
+                _ = try await env.authProvider.signInWithApple(identityToken: token, fullName: credential.fullName)
+                dismiss()
+            } catch NetheadAPIError.offline {
+                problem = "The notesfile didn't answer. Check your connection, or ride along for now."
+                nonceHash = await env.authProvider.prepareAppleSignIn()
+            } catch {
+                problem = "Bummer — that sign-in didn't take. Try again, or ride along for now."
+                nonceHash = await env.authProvider.prepareAppleSignIn()
+            }
         }
     }
 }
