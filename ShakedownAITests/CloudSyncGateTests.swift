@@ -241,6 +241,7 @@ struct LibraryDedupTests {
 /// exercised with no network and no Apple.
 nonisolated final class NotesfileStubProtocol: URLProtocol {
     nonisolated(unsafe) static var meStatus = 200
+    nonisolated(unsafe) static var deleteStatus = 204
     nonisolated(unsafe) static var lastApplePayload: [String: Any] = [:]
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -270,6 +271,9 @@ nonisolated final class NotesfileStubProtocol: URLProtocol {
         case "/api/signout":
             status = 204
             body = ""
+        case "/api/delete":
+            status = Self.deleteStatus
+            body = status == 204 ? "" : #"{"error":"The notesfile is tapped out for the day."}"#
         default:
             status = 404
             body = #"{"error":"nope"}"#
@@ -282,6 +286,8 @@ nonisolated final class NotesfileStubProtocol: URLProtocol {
     }
 }
 
+/// The stub answers from shared statics, so these run one at a time.
+@Suite(.serialized)
 struct NetheadAuthProviderTests {
     private func make() throws -> (NetheadAuthProvider, UserDefaults, String, InMemorySecretStore) {
         let suite = "auth-test-\(UUID().uuidString)"
@@ -343,6 +349,31 @@ struct NetheadAuthProviderTests {
         #expect(provider.currentAccount == nil)
         #expect(secrets.string(for: NetheadAPIClient.tokenKey) == nil)
         #expect(NetheadAuthProvider.persistedAccount(in: defaults) == nil)
+    }
+
+    @Test func leavingTheBusForgetsEverything() async throws {
+        let (provider, defaults, suite, secrets) = try make()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        _ = try await signIn(provider)
+        NotesfileStubProtocol.deleteStatus = 204
+        try await provider.deleteAccount()
+        #expect(provider.currentAccount == nil)
+        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == nil)
+        #expect(NetheadAuthProvider.persistedAccount(in: defaults) == nil)
+    }
+
+    @Test func leavingTheBusFailsLoudlyWhenTheNotesfileRefuses() async throws {
+        let (provider, defaults, suite, secrets) = try make()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        _ = try await signIn(provider)
+        NotesfileStubProtocol.deleteStatus = 503
+        defer { NotesfileStubProtocol.deleteStatus = 204 }
+        await #expect(throws: NetheadAPIError.self) {
+            try await provider.deleteAccount()
+        }
+        // still on the bus: nothing was erased, so nothing is forgotten
+        #expect(provider.currentAccount?.handle == "BUS::WILL")
+        #expect(secrets.string(for: NetheadAPIClient.tokenKey) == "tok-123")
     }
 
     @Test func aDeadSessionSignsOutOnRefresh() async throws {

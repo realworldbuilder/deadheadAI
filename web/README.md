@@ -64,7 +64,7 @@ The web gets a cookie (`POST /auth/apple`); the app gets a bearer token
 (`POST /api/apple`) and from then on keeps its shelves in step with the site
 (`GET /api/sync?since=<seq>` and `POST /api/sync`, last-writer-wins by
 `updatedAt`, tombstones as `deletedAt`, client UUID ids). `GET /api/me`
-checks the session; `POST /api/signout` ends it. Passkeys still work for heads
+checks the session; `POST /api/signout` ends it; `POST /api/delete` leaves the bus (the same erasure as `/me/delete`, for the app's in-app account deletion). Passkeys still work for heads
 who'd rather not use an Apple ID.
 
 **Setup, once, in the Apple developer portal** (Certificates, Identifiers &

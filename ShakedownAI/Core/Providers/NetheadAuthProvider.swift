@@ -82,6 +82,19 @@ final class NetheadAuthProvider: AuthProvider {
         NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
     }
 
+    func deleteAccount() async throws {
+        guard let api else { throw NetheadAPIError.notConfigured }
+        do {
+            try await api.deleteAccount()
+        } catch NetheadAPIError.notOnTheBus {
+            // The notesfile already forgot this phone: nothing left to erase.
+        }
+        log.notice("Left the bus; the notesfile erased the head")
+        Self.forget(in: defaults)
+        currentAccount = nil
+        NotificationCenter.default.post(name: .shakedownAuthChanged, object: nil)
+    }
+
     func refresh() async {
         guard currentAccount != nil, let api else { return }
         do {

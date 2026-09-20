@@ -10,6 +10,9 @@ struct SettingsScreen: View {
     @State private var signInProblem: String?
     @State private var confirmingClearCache = false
     @State private var confirmingSignOut = false
+    @State private var confirmingLeaveBus = false
+    @State private var leavingBus = false
+    @State private var leaveBusProblem: String?
     @State private var confirmingDeleteDownloads = false
     @State private var catalogStamp: String?
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.dark
@@ -66,6 +69,18 @@ struct SettingsScreen: View {
             } message: {
                 Text("Your shelves stay on this phone, and the copy on the web stays there too. Sign in again any time.")
             }
+            .confirmationDialog(
+                "Leave the bus?",
+                isPresented: $confirmingLeaveBus,
+                titleVisibility: .visible
+            ) {
+                Button("Leave the Bus", role: .destructive) {
+                    leaveBus()
+                }
+            } message: {
+                Text("This erases your account on the notesfile — your shelves there, your handle, the lot. The shelves on this phone stay put. No undo.")
+            }
+            .sensoryFeedback(.warning, trigger: confirmingLeaveBus) { !$0 && $1 }
         }
         .tint(Theme.textPrimary)
         .onAppear {
@@ -130,6 +145,16 @@ struct SettingsScreen: View {
                 Button("Sign Out", role: .destructive) {
                     confirmingSignOut = true
                 }
+                .disabled(leavingBus)
+                Button(leavingBus ? "Leaving the bus…" : "Leave the Bus", role: .destructive) {
+                    confirmingLeaveBus = true
+                }
+                .disabled(leavingBus)
+                if let leaveBusProblem {
+                    Text(leaveBusProblem)
+                        .font(Theme.footnote)
+                        .foregroundStyle(Theme.accent)
+                }
             } else if nonceHash != nil {
                 signInWithAppleRow
                 if let signInProblem {
@@ -142,7 +167,7 @@ struct SettingsScreen: View {
             Text("Account")
         } footer: {
             Text(signedIn
-                 ? "Your shelves are the same here and on the web."
+                 ? "Your shelves are the same here and on the web. Leaving the bus erases your account on the notesfile; the phone keeps its shelves."
                  : "Sign in with Apple to keep your shelves the same on every device and on the web.")
         }
         .listRowBackground(Theme.surface)
@@ -206,6 +231,23 @@ struct SettingsScreen: View {
             return "Apple's model on your phone does the talking. Nothing you ask leaves the device, and every pick is grounded in real tapes and real setlists, with the offline brain as backup."
         }
         return "Chat runs off the built-in knowledge base — everything works, all of it offline. On iOS 26 with Apple Intelligence on, the on-device brain takes over."
+    }
+
+    /// Erase the account on the notesfile, then sign this phone out. The sync
+    /// engine hears the auth change and goes idle; local shelves stay.
+    private func leaveBus() {
+        leaveBusProblem = nil
+        leavingBus = true
+        Task {
+            defer { leavingBus = false }
+            do {
+                try await env.authProvider.deleteAccount()
+            } catch NetheadAPIError.offline {
+                leaveBusProblem = "The notesfile didn't answer. Try again when you're back online."
+            } catch {
+                leaveBusProblem = "Bummer — the notesfile couldn't erase the account. Try again in a bit."
+            }
+        }
     }
 
     private func signInWithApple(credential: ASAuthorizationAppleIDCredential) {
