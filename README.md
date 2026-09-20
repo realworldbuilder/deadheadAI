@@ -34,8 +34,8 @@ There are no API keys and no accounts. On iOS 26 with Apple Intelligence, Apple'
 
 ### Building your own copy
 
-- **Simulator**: `xcodegen generate` and the build commands above are all you need; pass `CODE_SIGNING_ALLOWED=NO` so no team is required. Sign in with Apple and iCloud sync fail on unsigned builds by design and fall back to a local account.
-- **Your own phone or TestFlight**: change `DEVELOPMENT_TEAM` in [project.yml](project.yml) and [ExportOptions.plist](ExportOptions.plist) to your team, and set your own `PRODUCT_BUNDLE_IDENTIFIER` in project.yml (`com.deadhead.ai` is this project's App Store record and won't sign for another team). If you want iCloud sync, change the container in project.yml and [ShakedownAI/App/ShakedownAI.entitlements](ShakedownAI/App/ShakedownAI.entitlements) to `iCloud.<your bundle id>`, create it in the developer portal, and enable Sign in with Apple on your App ID; if you don't, delete both entitlements. `run-on-phone.sh` hardcodes the bundle ID for its launch step.
+- **Simulator**: `xcodegen generate` and the build commands above are all you need; pass `CODE_SIGNING_ALLOWED=NO` so no team is required. Sign in with Apple fails on unsigned builds by design; the app just rides along, signed out.
+- **Your own phone or TestFlight**: change `DEVELOPMENT_TEAM` in [project.yml](project.yml) and [ExportOptions.plist](ExportOptions.plist) to your team, and set your own `PRODUCT_BUNDLE_IDENTIFIER` in project.yml (`com.deadhead.ai` is this project's App Store record and won't sign for another team). Enable Sign in with Apple on your App ID (the only entitlement), or delete it from project.yml and ride along signed out. `run-on-phone.sh` hardcodes the bundle ID for its launch step.
 - **CI**: forks need no secrets. Tests run on every push; the TestFlight upload job skips itself until the App Store Connect secrets exist (see Releasing).
 
 ## Architecture
@@ -85,5 +85,5 @@ Until the secrets exist, the upload job skips itself with a warning; tests still
 ## Notes
 
 - Works fully offline; Apple's on-device model only upgrades prose and free-form chat.
-- AI needs no key and no sign-in. Sign in with Apple only turns on iCloud sync of collections and journal entries (CloudKit private database). It needs a signed build with the `com.apple.developer.applesignin` and iCloud entitlements; on unsigned simulator builds the flow fails and falls back to the local on-device account with local-only saves.
+- AI needs no key and no sign-in. Sign in with Apple only creates a notesfile account so shelves are the same on every device and on the web (see CLAUDE.md → The notesfile); Settings → Account → Leave the Bus erases it. It needs a signed build with the `com.apple.developer.applesignin` entitlement; on unsigned simulator builds the flow fails and the app stays signed out.
 - Friends & Listening Sessions are backed by `MockSocialProvider` — the protocol seam is where a real backend plugs in.

@@ -26,20 +26,16 @@ targets:
     entitlements:
       path: ShakedownAI/App/ShakedownAI.entitlements
       properties:
+        # Sign in with Apple is the only entitlement: shelves sync through the
+        # notesfile (NetheadURL below), not CloudKit, and nothing registers
+        # for push.
         com.apple.developer.applesignin: [Default]
-        # CloudKit sync of shelves & journal. The container must exist on the
-        # developer portal and be assigned to the com.deadhead.ai app ID.
-        com.apple.developer.icloud-container-identifiers: [iCloud.com.deadhead.ai]
-        com.apple.developer.icloud-services: [CloudKit]
-        # Export re-signing flips this to production for TestFlight/App Store.
-        aps-environment: development
     info:
       path: ShakedownAI/App/Info.plist
       properties:
         CFBundleDisplayName: Nethead
         UILaunchScreen: {}
-        # remote-notification lets CloudKit push wake sync.
-        UIBackgroundModes: [audio, remote-notification]
+        UIBackgroundModes: [audio]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleIconName: AppIcon

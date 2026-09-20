@@ -11,7 +11,7 @@ Everything needed to submit in [App Store Connect](https://appstoreconnect.apple
 | App name | Nethead (rename the record from Deadhead AI / TapeTree in App Information → Name) |
 | Bundle ID | com.deadhead.ai |
 | Version | 1.0 |
-| Build | Latest from TestFlight (CI run — commit `416929a`, gated AI key) |
+| Build | Latest CI upload from `main` (the run that lands the account-deletion PR; check the build number in the Archive step log, `CFBundleVersion = …`) |
 | Primary category | Music |
 | Secondary category | Entertainment (optional) |
 | Price | Free |
@@ -24,10 +24,10 @@ Everything needed to submit in [App Store Connect](https://appstoreconnect.apple
 AI guide to live Grateful Dead
 ```
 
-**Promotional text** (170 chars max, editable without review — this is ~152, and it echoes the app's own chat greeting):
+**Promotional text** (170 chars max, editable without review — this is ~150, and it echoes the app's own chat greeting):
 
 ```
-It's heard every tape and read every review — decades of comment-section wisdom from real tapers and heads, in your pocket. Free AI with Apple sign-in.
+It's heard every tape and read every review — decades of comment-section wisdom from real tapers and heads, in your pocket. No account, no key, nothing sent anywhere.
 ```
 
 **Description** (4000 chars max):
@@ -40,7 +40,7 @@ You know how it goes. Somebody says "man, you GOTTA hear 5/8/77" and suddenly it
 Nethead puts one of those heads in your pocket. The app hosts no music. It just knows the road.
 
 IT READS THE COMMENT SECTION
-For twenty years, picking a tape has meant scrolling the reviews under every show — tapers talking mic placement, heads naming the minute the X-factor arrives, somebody who was on the floor settling the argument. Deadhead AI reads all of it: every rating, every source note, every review on every recording feeds its answers, and the real reviews sit right on the show page. When it tells you which Cornell source to trust, it's channeling the people who were there.
+For twenty years, picking a tape has meant scrolling the reviews under every show — tapers talking mic placement, heads naming the minute the X-factor arrives, somebody who was on the floor settling the argument. Nethead reads all of it: every rating, every source note, every review on every recording feeds its answers, and the real reviews sit right on the show page. When it tells you which Cornell source to trust, it's channeling the people who were there.
 
 ASK LIKE YOU'D ASK THE RAIL
 "Mellow '73 for a rainy Sunday." "Hottest Scarlet>Fire of the eighties." "Five hour drive — build me a second set that never lands." Plain English in, real tapes out. Every answer is grounded in real recordings and real setlists. No hallucinated bootlegs, ever.
@@ -63,8 +63,11 @@ The more you spin, the better the recs get. Your history, journal, and profile l
 BUILT FOR LISTENING
 Background audio, lock screen controls, gapless queues, streaming straight from archive.org. Setlists and metadata are cached so the app works offline; audio is never stored.
 
-FREE AI, ON THE HOUSE
-Sign in with Apple and the full AI brain is free — and your shelves and journal ride along in your own iCloud. No account? Everything still works on a curated offline knowledge base of essential shows, song histories, and eras. Hop on the bus either way.
+THE BRAIN LIVES ON THE PHONE
+No account, no key, no server in the loop. On iPhones with Apple Intelligence, Apple's on-device model does the talking; everywhere else a curated offline knowledge base of essential shows, song histories, and eras answers instead. Either way nothing you ask leaves the phone.
+
+SHELVES THAT FOLLOW YOU
+Sign in with Apple and your shelves are the same on every phone and on the notesfile, Nethead's home on the web. Skip it and everything still works — just ride along.
 
 Nethead streams from the Internet Archive's Grateful Dead collection, where the band's long-standing taping tradition lives on. This app is an independent project and is not affiliated with the Grateful Dead, Rhino, or Warner Music.
 ```
@@ -93,13 +96,19 @@ All three live on GitHub Pages (`docs/` on main → https://realworldbuilder.git
 
 ## 4. App Privacy (Data Collection questionnaire)
 
-The app has no backend and no analytics. Nothing leaves the device for AI: on iOS 26 Apple's on-device model answers, everywhere else the built-in knowledge base does. Sign-in name and Apple user ID never leave the device (the auth layer is local). The only network traffic is to archive.org for the tapes and, when signed in, the user's own iCloud for sync.
+No analytics, no ads, no trackers. AI runs on the phone (Apple's on-device model on iOS 26, the built-in knowledge base elsewhere). Signed out, the only network traffic is archive.org for the tapes. **Signed in with Apple, the app creates an account on the notesfile** (our Cloudflare Worker, `nethead.nethead-web.workers.dev`) and keeps the user's shelves there — that is collection, and it has to be declared.
 
-Declare:
+Answer **Yes, we collect data from this app**, then declare exactly these three, each with *Linked to the user: Yes*, *Used for tracking: No*, purpose **App Functionality** only:
 
-- Everything: **not collected** (on-device only doesn't count as collection, and CloudKit private-database sync is the user's own iCloud).
+| Data type | Category | What it actually is |
+|---|---|---|
+| **User ID** | Identifiers | Apple's per-app user identifier (`sub`) and the notesfile account id |
+| **Name** | Contact Info | The given name Apple shares at first sign-in, used once to seed the handle (e.g. `BUS::WILL`) |
+| **Other User Content** | User Content | Shelves: their names and the show identifiers on them |
 
-Result: privacy label shows "Data Not Collected."
+Everything else (listening history, taste profile, journal, mix tapes, chat, downloads, device data, diagnostics): **not collected**. The privacy policy at the URL in §3 says the same, in the same words, and names the in-app deletion path.
+
+Result: privacy label shows "Data Linked to You: Identifiers, Contact Info, User Content" for App Functionality.
 
 ## 5. Age rating questionnaire
 
@@ -122,7 +131,7 @@ App Store Connect asks whether the app contains, shows, or accesses third-party 
 ```
 Nethead is a client for the Internet Archive's Grateful Dead collection (archive.org/details/GratefulDead). All audio streams directly from archive.org; the app hosts and stores no recordings. The Grateful Dead have permitted audience taping and free trading of their live recordings since the 1970s, and the Internet Archive hosts this collection publicly in cooperation with the band's representatives — the Archive enforces the streaming rules per recording. The app is an independent project, clearly disclaimed as unaffiliated in the description.
 
-SIGN-IN IS OPTIONAL. No demo account is needed. Tap "Hop on the Bus" on the welcome screen for full access to every feature without any account. Sign in with Apple only turns on iCloud sync of shelves and journal entries. AI runs on the device either way: Apple's on-device model on iOS 26, the app's built-in offline knowledge base everywhere else.
+SIGN-IN IS OPTIONAL. No demo account is needed. Tap "Just ride along" on the welcome screen for full access to every feature without any account. Sign in with Apple creates an account on our server (nethead.nethead-web.workers.dev) whose only purpose is keeping the user's saved shelves the same across devices; it stores the Apple user identifier, a handle, and the shelves — nothing else. Account deletion is in the app: Settings → Account → "Leave the Bus" erases the account and everything stored under it immediately (Guideline 5.1.1(v)). AI runs on the device either way: Apple's on-device model on iOS 26, the app's built-in offline knowledge base everywhere else.
 
 AI content: chat and recommendations are grounded — the AI only recommends real recordings from the Archive and quotes real setlists. It has no web access and is scoped to Grateful Dead history and music.
 
@@ -153,15 +162,15 @@ xcrun simctl io booted screenshot shot1.png
 
 - **Export compliance**: already handled — `ITSAppUsesNonExemptEncryption: false` is in the Info.plist, so no prompt should appear.
 - **Advertising Identifier (IDFA)**: No.
-- **Sign in with Apple**: nothing extra to declare; the entitlement is in the build. It now also enables iCloud sync of collections and journal entries (CloudKit private database, container `iCloud.com.deadhead.ai`).
+- **Sign in with Apple**: nothing extra to declare; the entitlement is in the build (the only one — CloudKit and push were removed). Account deletion (5.1.1(v)) is in Settings → Account → Leave the Bus, backed by `POST /api/delete` on the Worker. Follow-up, not needed for review: revoking the Apple token on deletion via Apple's `auth/revoke` endpoint needs a Sign in with Apple key (.p8) stored as a Worker secret.
 - **App Store Connect → App Information → License Agreement**: default Apple EULA is fine.
 - **Copyright field**: `2026 William Hussey` (or your entity name).
 
 ## 10. Pre-submit checklist
 
-- [ ] **CloudKit schema deployed to Production** (CloudKit Console → `iCloud.com.deadhead.ai` → Deploy Schema Changes). TestFlight/App Store builds use the Production environment; without this, sync silently fails. Redo after any synced-model change.
+- [ ] **Worker deployed from current `main`** (`cd web && npm run deploy`) so `POST /api/delete` is live before the reviewed build is; then `curl https://nethead.nethead-web.workers.dev/api/apple/nonce` answers JSON. Reviewers tap Leave the Bus.
 - [ ] Latest TestFlight build finished processing and is selectable
-- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once and confirm shelves sync; confirm Settings → The Brain reads "On-device brain running" on an Apple Intelligence phone and "Offline brain active" elsewhere
+- [ ] Install that exact build from TestFlight on a real phone; complete Sign in with Apple once, make a shelf, see it on your notesfile page; then Settings → Account → Leave the Bus and confirm the head is gone on the web (and a fresh sign-in makes a new one); confirm Settings → The Brain reads "On-device brain running" on an Apple Intelligence phone and "Offline brain active" elsewhere
 - [ ] Privacy policy URL live and pasted in
 - [ ] Support URL pasted in
 - [ ] Screenshots uploaded (6.9" set)

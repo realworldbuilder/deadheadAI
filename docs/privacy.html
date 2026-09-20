@@ -70,23 +70,32 @@
 <div class="wrap">
   <p class="crumb"><img src="assets/icon.png" alt=""><a href="index.html">← Nethead</a></p>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: September 5, 2026</p>
+  <p class="updated">Last updated: September 20, 2026</p>
 
   <div class="lede">
-    <p>The short version: your listening lives on your phone, your shelves can live in <em>your</em> iCloud, your questions get answered on the phone itself, and nobody here is tracking, profiling, or selling anything. There are no ads, no analytics, and no third-party trackers in the app.</p>
+    <p>The short version: your listening lives on your phone, your questions get answered on the phone itself, and nobody here is tracking, profiling, or selling anything. The one thing that leaves the phone is optional: sign in with Apple and your shelves are kept on the notesfile (our one small server) so they follow you to the next phone and the web. There are no ads, no analytics, and no third-party trackers in the app.</p>
   </div>
 
   <h2>What stays on your device</h2>
   <ul>
     <li>Listening history and the taste profile computed from it</li>
     <li>Trip progress and AI chat transcripts</li>
-    <li>Your display name and, if you sign in with Apple, the Apple-provided user identifier</li>
+    <li>Your journal and your mix tapes</li>
+    <li>Shows you save for offline listening</li>
     <li>Cached setlists and search results (so the app works offline)</li>
   </ul>
-  <p>None of this is transmitted to us. We have no servers and no ability to see it.</p>
+  <p>None of this is transmitted to us. Signed out, the app talks to nobody but archive.org.</p>
 
-  <h2>What syncs to your iCloud (optional)</h2>
-  <p>If you sign in with Apple, your collections (saved shows) and journal entries sync to the <strong>private CloudKit database of your own iCloud account</strong>. Apple encrypts and stores this data under your Apple ID; we cannot read, access, or share it. Sign out and syncing stops; your data stays on the device and in your iCloud until you remove it (iOS Settings → your name → iCloud → Manage Account Storage → Nethead; shown as TapeTree or Deadhead AI on builds installed before the rename).</p>
+  <h2>What the notesfile keeps (optional, only when you sign in)</h2>
+  <p>The notesfile is Nethead on the web (<a href="https://nethead.nethead-web.workers.dev">nethead.nethead-web.workers.dev</a>), a single server we run on Cloudflare. If you sign in with Apple, it creates an account for you and stores:</p>
+  <ul>
+    <li>The anonymous user identifier Apple issues for this app (not your Apple ID email, which we never receive)</li>
+    <li>A handle in the notesfile&rsquo;s style (like <code>BUS::WILL</code>), seeded from the first name you choose to share with Apple, if any</li>
+    <li>Your <strong>shelves</strong>: their names and the shows on them</li>
+    <li>A session token for this phone, and the device name it came from</li>
+  </ul>
+  <p>That is the whole list. Listening history, the taste profile, chat, the journal, mix tapes and downloads never go up. Shelves you save on the web are public on your notesfile page unless you mark them private there. We use this data only to keep your shelves the same on every device; it is never sold, shared, or used for advertising. It is stored on Cloudflare&rsquo;s infrastructure and can be seen by the one person who runs Nethead.</p>
+  <p><strong>Sign out</strong> (Settings → Account) ends this phone&rsquo;s session; the account and its shelves stay on the notesfile for next time. <strong>Leave the bus</strong> (Settings → Account → Leave the Bus, or your page on the web → Leave the bus) erases the account, the Apple identifier, the shelves and every session, immediately and for good. The shelves on your phone stay on your phone.</p>
 
   <h2>What the AI sees</h2>
   <p>Nothing you ask is sent anywhere. On iOS 26 with Apple Intelligence, Apple&rsquo;s on-device model reads your question and the app&rsquo;s own setlists and tape listings, all on the phone. On every other device the built-in knowledge base answers instead. There is no AI server, no API key, and no account behind the chat.</p>
@@ -95,7 +104,7 @@
   <p>Recordings stream directly from the Internet Archive, so archive.org receives the standard information any web request carries (your IP address and the items you stream), governed by the <a href="https://archive.org/about/terms.php">Internet Archive&rsquo;s terms and privacy policy</a>. We are not a party to that traffic.</p>
 
   <h2>Sign in with Apple</h2>
-  <p>Used solely to turn on iCloud sync of your shelves and journal. We receive the name you choose to share and an anonymous Apple user identifier; both stay on your device. No account is created on any server of ours, because we don&rsquo;t have any.</p>
+  <p>Used solely to create your notesfile account and keep your shelves in step. Apple gives us an anonymous user identifier and, if you allow it, your first name; we never see your Apple ID email or password. Signing in is optional: tap &ldquo;Just ride along&rdquo; on the welcome screen and everything works with nothing sent anywhere.</p>
 
   <h2>Children</h2>
   <p>The app is rated 12+ and is not directed at children under 13. We do not knowingly collect personal information from anyone — including children — because we do not collect personal information.</p>
@@ -104,7 +113,7 @@
   <p>If this policy changes, the new version will be posted at this URL with an updated date. Material changes will be noted in the app&rsquo;s release notes.</p>
 
   <h2>Contact</h2>
-  <p>Questions, deletion requests, or anything else: <a href="mailto:phishmiami@gmail.com">phishmiami@gmail.com</a>.</p>
+  <p>Questions, deletion requests you would rather send by hand, or anything else: <a href="mailto:phishmiami@gmail.com">phishmiami@gmail.com</a>.</p>
 
   <footer>
     <p>Nethead is an independent project, not affiliated with the Grateful Dead, Rhino, or Warner Music.</p>
