@@ -52,6 +52,9 @@ protocol AuthProvider: AnyObject {
     /// Trades Apple's identity token for the notesfile session.
     func signInWithApple(identityToken: Data, fullName: PersonNameComponents?) async throws -> NetheadAccount
     func signOut() async
+    /// Leaves the bus: erases the account on the notesfile, then signs out
+    /// here. Throws if the notesfile didn't erase it (offline, hiccup).
+    func deleteAccount() async throws
     /// Re-checks the session at launch; a dead one signs out.
     func refresh() async
 }

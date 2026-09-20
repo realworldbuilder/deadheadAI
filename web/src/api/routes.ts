@@ -9,6 +9,7 @@ import { consumeNonce, findOrCreateAppleHead, mintNonce, verifyAppleIdentityToke
 import { nowIso } from "../db/ids";
 import { one, q, stmt } from "../db/notes";
 import { nextSeq } from "../tapes/store";
+import { eraseHead } from "../me/routes";
 
 export const api = new Hono<App>();
 
@@ -48,6 +49,13 @@ api.get("/api/me", requireBearer(), async (c) => {
 
 api.post("/api/signout", requireBearer(), async (c) => {
   await revokeBearer(c);
+  return c.body(null, 204);
+});
+
+/** Leave the bus from the phone: the head, the identity, the shelves and every session go. */
+api.post("/api/delete", requireBearer(), async (c) => {
+  const head = c.get("head")!;
+  await eraseHead(c.env.NOTES, head.id, head.handle);
   return c.body(null, 204);
 });
 

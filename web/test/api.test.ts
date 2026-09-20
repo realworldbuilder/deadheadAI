@@ -102,7 +102,20 @@ describe("Sign in with Apple", () => {
     await form("/me/delete", { confirm_handle: "shakedown::will" }, cookie);
     expect((await env.NOTES.prepare("SELECT COUNT(*) AS n FROM identities").first<{ n: number }>())!.n).toBe(0);
     const fresh = await phoneSignIn("001234.abcdef.5678", "Will");
-    expect((await fresh.json<{ head: { id: string } }>()).head.id).not.toBe(head.id);
+    const freshHead = (await fresh.clone().json<{ head: { id: string } }>()).head;
+    expect(freshHead.id).not.toBe(head.id);
+
+    // leaving the bus from the phone: the head, its shelves and its sessions are gone; the web cookie too
+    const { token: phoneToken } = await fresh.json<{ token: string }>();
+    const phoneShelf = crypto.randomUUID().toUpperCase();
+    await apiJson("/api/sync", { shelves: [{ id: phoneShelf, name: "Gone Shelf", blurb: "", iconName: "heart.fill", isPrivate: false, createdAt: t0, updatedAt: t0, deletedAt: null }] }, phoneToken);
+    expect((await apiJson("/api/delete", {}, phoneToken)).status).toBe(204);
+    expect((await apiGet("/api/me", phoneToken)).status).toBe(401);
+    expect((await env.NOTES.prepare("SELECT COUNT(*) AS n FROM users WHERE id=?").bind(freshHead.id).first<{ n: number }>())!.n).toBe(0);
+    expect((await env.NOTES.prepare("SELECT COUNT(*) AS n FROM shelves WHERE user_id=?").bind(freshHead.id).first<{ n: number }>())!.n).toBe(0);
+    expect((await env.NOTES.prepare("SELECT COUNT(*) AS n FROM identities").first<{ n: number }>())!.n).toBe(0);
+    // signed-out callers get nothing
+    expect((await apiJson("/api/delete", {})).status).toBe(401);
   });
 
   it("refuses bad tokens and stale nonces", async () => {

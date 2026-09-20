@@ -160,6 +160,10 @@ final class MockAuthProvider: AuthProvider {
         currentAccount = nil
     }
 
+    func deleteAccount() async throws {
+        currentAccount = nil
+    }
+
     func refresh() async {}
 }
 

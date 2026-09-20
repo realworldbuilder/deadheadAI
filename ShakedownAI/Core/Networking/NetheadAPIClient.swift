@@ -191,6 +191,13 @@ nonisolated struct NetheadAPIClient: Sendable {
         secrets.set(nil, for: Self.tokenKey)
     }
 
+    /// Leave the bus: the notesfile erases the head and everything filed under
+    /// it. Throws when it didn't happen, so the phone never pretends it did.
+    func deleteAccount() async throws {
+        _ = try await send("POST", "api/delete", body: Optional<String>.none, auth: true) as Empty
+        secrets.set(nil, for: Self.tokenKey)
+    }
+
     func forgetToken() { secrets.set(nil, for: Self.tokenKey) }
 
     func pull(since: Int) async throws -> SyncPull {
